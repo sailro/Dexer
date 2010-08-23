@@ -1,0 +1,10 @@
+C:\Dexer\Dexer\obj\Debug\ResolveAssemblyReference.cache
+C:\Dexer\Dexer\bin\Debug\Dexer.pdb
+C:\Dexer\Dexer\obj\Debug\Dexer.pdb
+C:\Dexer\Dexer\bin\Debug\Dexer.exe
+C:\Dexer\Dexer\obj\Debug\Dexer.exe
+E:\Devl\Dexer\obj\Debug\Dexer.exe
+E:\Devl\Dexer\obj\Debug\Dexer.pdb
+E:\Devl\Dexer\obj\Debug\ResolveAssemblyReference.cache
+E:\Devl\Dexer\bin\Debug\Dexer.exe
+E:\Devl\Dexer\bin\Debug\Dexer.pdb
