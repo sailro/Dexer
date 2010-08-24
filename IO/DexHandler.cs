@@ -1,16 +1,38 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using Dexer.Metadata;
-using Dexer.Core;
-using Dexer.Extensions;
+﻿/*
+    Dexer, open source framework for .DEX files (Dalvik Executable Format)
+    Copyright (C) 2010 Sebastien LEBRETON
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 using System;
 using System.Collections;
-using System.Diagnostics;
+using System.Collections.Generic;
+using System.IO;
+using Dexer.Core;
+using Dexer.Extensions;
+using Dexer.Metadata;
 
 namespace Dexer.IO
 {
     public class DexHandler : IBinaryReadable
     {
+        readonly byte[] DexFileMagic = { 0x64, 0x65, 0x78, 0x0a, 0x30, 0x33, 0x35, 0x00 };
+        const uint Endian = 0x12345678;
+        const uint ReverseEndian = 0x78563412;
+        const uint NoIndex = 0xffffffff;
+
         private Dex Item { get; set; }
 
         private IList<string> Strings { get; set; }
@@ -81,6 +103,7 @@ namespace Dexer.IO
         private void PrefetchTypeReferences(BinaryReader reader)
         {
             reader.BaseStream.Seek(TypeReferencesOffset, SeekOrigin.Begin);
+
             for (int i = 0; i < TypeReferencesSize; i++)
             {
                 int descriptorIndex = reader.ReadInt32();
@@ -149,6 +172,7 @@ namespace Dexer.IO
         private void PrefetchClassDefinitions(BinaryReader reader, bool prefetchMembers)
         {
             reader.BaseStream.Seek(ClassDefinitionsOffset, SeekOrigin.Begin);
+
             for (int i = 0; i < ClassDefinitionsSize; i++)
             {
                 int classIndex = reader.ReadInt32();
@@ -188,25 +212,26 @@ namespace Dexer.IO
             reader.BaseStream.Seek(ClassDefinitionsOffset, SeekOrigin.Begin);
             for (int i = 0; i < ClassDefinitionsSize; i++)
             {
-                int classIndex = reader.ReadInt32();
+                uint classIndex = reader.ReadUInt32();
 
-                ClassDefinition cdef = (ClassDefinition)Item.TypeReferences[classIndex];
+                ClassDefinition cdef = (ClassDefinition)Item.TypeReferences[(int)classIndex];
                 cdef.AccessFlag = (AccessFlags)reader.ReadUInt32();
 
-                int superClassIndex = reader.ReadInt32();
-                cdef.SuperClass = (ClassReference)Item.TypeReferences[superClassIndex];
+                uint superClassIndex = reader.ReadUInt32();
+                if (superClassIndex != NoIndex)
+                    cdef.SuperClass = (ClassReference)Item.TypeReferences[(int)superClassIndex];
 
-                int interfaceOffset = reader.ReadInt32();
-                int sourceFileIndex = reader.ReadInt32();
-                int annotationOffset = reader.ReadInt32();
-                int classDataOffset = reader.ReadInt32();
-                int staticValuesOffset = reader.ReadInt32();
+                uint interfaceOffset = reader.ReadUInt32();
+                uint sourceFileIndex = reader.ReadUInt32();
+                uint annotationOffset = reader.ReadUInt32();
+                uint classDataOffset = reader.ReadUInt32();
+                uint staticValuesOffset = reader.ReadUInt32();
 
                 if (interfaceOffset > 0)
                     ReadInterfaces(reader, cdef, interfaceOffset);
                 
-                if (sourceFileIndex > 0)
-                    cdef.SourceFile = Strings[sourceFileIndex];
+                if (sourceFileIndex != NoIndex)
+                    cdef.SourceFile = Strings[(int)sourceFileIndex];
 
                 if (classDataOffset > 0)
                     ReadClassDefinition(reader, cdef, classDataOffset);
@@ -229,7 +254,7 @@ namespace Dexer.IO
             }
         }
 
-        private void ReadInterfaces(BinaryReader reader, ClassDefinition classDefinition, int interfaceOffset)
+        private void ReadInterfaces(BinaryReader reader, ClassDefinition classDefinition, uint interfaceOffset)
         {
             long position = reader.BaseStream.Position;
             reader.BaseStream.Seek(interfaceOffset, SeekOrigin.Begin);
@@ -241,7 +266,7 @@ namespace Dexer.IO
             reader.BaseStream.Seek(position, SeekOrigin.Begin);
         }
 
-        private void ReadAnnotationDirectory(BinaryReader reader, ClassDefinition classDefinition, int annotationOffset)
+        private void ReadAnnotationDirectory(BinaryReader reader, ClassDefinition classDefinition, uint annotationOffset)
         {
             // TODO
         }
@@ -278,8 +303,6 @@ namespace Dexer.IO
 
         private object ReadValue(BinaryReader reader)
         {
-            int index;
-
             int data = reader.ReadByte();
             int valueFormat = data & 0x1F;
             int valueArgument = data >> 5;
@@ -322,7 +345,7 @@ namespace Dexer.IO
             }
         }
 
-        private void ReadFieldDefinitions(BinaryReader reader, ClassDefinition classDefinition, uint fieldcount, Action<FieldDefinition> action)
+        private void ReadFieldDefinitions(BinaryReader reader, ClassDefinition classDefinition, uint fieldcount)
         {
             int fieldIndex=0;
             for (int i = 0; i < fieldcount; i++)
@@ -341,22 +364,12 @@ namespace Dexer.IO
                 FieldDefinition fdef = (FieldDefinition)Item.FieldReferences[fieldIndex];
                 fdef.AccessFlags = (AccessFlags)accessFlags;
                 fdef.Owner = classDefinition;
-                action(fdef);
 
-                foreach (FieldDefinition test in classDefinition.Fields)
-                {
-                    Debug.Assert(!test.Equals(fdef));
-                }
                 classDefinition.Fields.Add(fdef);
             }
         }
 
-        private void ReadMethodBody(BinaryReader reader, MethodDefinition methodDefinition, uint codeOffset)
-        {
-
-        }
-
-        private void ReadMethodDefinitions(BinaryReader reader, ClassDefinition classDefinition, uint methodcount, Action<MethodDefinition> action)
+        private void ReadMethodDefinitions(BinaryReader reader, ClassDefinition classDefinition, uint methodcount)
         {
             int methodIndex = 0;
             for (int i = 0; i < methodcount; i++)
@@ -376,15 +389,19 @@ namespace Dexer.IO
                 MethodDefinition mdef = (MethodDefinition)Item.MethodReferences[methodIndex];
                 mdef.AccessFlags = (AccessFlags)accessFlags;
                 mdef.Owner = classDefinition;
-                action(mdef);
-
-                ReadMethodBody(reader, mdef, codeOffset);
 
                 classDefinition.Methods.Add(mdef);
+
+                ReadMethodBody(reader, mdef, codeOffset);
             }
         }
 
-        private void ReadClassDefinition(BinaryReader reader, ClassDefinition classDefinition, int classDataOffset)
+        private void ReadMethodBody(BinaryReader reader, MethodDefinition methodDefinition, uint codeOffset)
+        {
+            // TODO
+        }
+
+        private void ReadClassDefinition(BinaryReader reader, ClassDefinition classDefinition, uint classDataOffset)
         {
             long position = reader.BaseStream.Position;
             reader.BaseStream.Seek(classDataOffset, SeekOrigin.Begin);
@@ -394,10 +411,10 @@ namespace Dexer.IO
             uint directMethodSize = reader.ReadULEB128();
             uint virtualMethodSize = reader.ReadULEB128();
 
-            ReadFieldDefinitions(reader, classDefinition, staticFieldSize, f => f.IsStatic = true);
-            ReadFieldDefinitions(reader, classDefinition, instanceFieldSize, f => f.IsInstance = true);
-            ReadMethodDefinitions(reader, classDefinition, directMethodSize, m => m.IsDirect = true);
-            ReadMethodDefinitions(reader, classDefinition, virtualMethodSize, m => m.IsVirtual = true);
+            ReadFieldDefinitions(reader, classDefinition, staticFieldSize);
+            ReadFieldDefinitions(reader, classDefinition, instanceFieldSize);
+            ReadMethodDefinitions(reader, classDefinition, directMethodSize);
+            ReadMethodDefinitions(reader, classDefinition, virtualMethodSize);
 
             reader.BaseStream.Seek(position, SeekOrigin.Begin);
         }
@@ -517,12 +534,15 @@ namespace Dexer.IO
         private void ReadHeader(BinaryReader reader)
         {
             Magic = reader.ReadBytes(8);
+            FormatChecker.CheckExpression(() => Magic.Match(DexFileMagic, 0));
+
             CheckSum = reader.ReadUInt32();
             Signature = reader.ReadBytes(20);
 
             FileSize = reader.ReadUInt32();
             HeaderSize = reader.ReadUInt32();
             EndianTag = reader.ReadUInt32();
+            FormatChecker.CheckExpression(() => EndianTag == Endian);
 
             LinkSize = reader.ReadUInt32();
             LinkOffset = reader.ReadUInt32();

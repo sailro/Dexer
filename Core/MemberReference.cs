@@ -20,19 +20,9 @@ using System.Text;
 
 namespace Dexer.Core
 {
-    public class FieldReference : MemberReference
+    public abstract class MemberReference
     {
-        public TypeReference Type { get; set; }
-
-        public override string ToString()
-        {
-            StringBuilder builder = new StringBuilder();
-            builder.Append(Owner);
-            builder.Append("::");
-            builder.Append(Name);
-            builder.Append(" : ");
-            builder.Append(Type);
-            return builder.ToString();
-        }
+        public ClassReference Owner { get; set; }
+        public string Name { get; set; }
     }
 }

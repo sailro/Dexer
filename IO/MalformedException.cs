@@ -1,4 +1,4 @@
-﻿/*
+/*
     Dexer, open source framework for .DEX files (Dalvik Executable Format)
     Copyright (C) 2010 Sebastien LEBRETON
 
@@ -16,23 +16,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Text;
+using System;
 
-namespace Dexer.Core
+namespace Dexer.IO
 {
-    public class FieldReference : MemberReference
+    public class MalformedException : Exception
     {
-        public TypeReference Type { get; set; }
 
-        public override string ToString()
+        public MalformedException(String message)
+            : base(message)
         {
-            StringBuilder builder = new StringBuilder();
-            builder.Append(Owner);
-            builder.Append("::");
-            builder.Append(Name);
-            builder.Append(" : ");
-            builder.Append(Type);
-            return builder.ToString();
         }
+
     }
 }
