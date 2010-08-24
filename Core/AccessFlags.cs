@@ -1,5 +1,8 @@
-﻿namespace Dexer.Core
+﻿using System;
+
+namespace Dexer.Core
 {
+    [Flags]
     public enum AccessFlags : uint
     {
         Public = 0x1,

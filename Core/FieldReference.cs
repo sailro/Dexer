@@ -1,27 +1,24 @@
 ﻿using System.Collections.Generic;
 using System;
+using System.Text;
 
 namespace Dexer.Core
 {
     public class FieldReference
     {
-        public ClassReference ClassReference { get; set; }
+        public ClassReference Owner { get; set; }
         public TypeReference Type { get; set; }
         public string Name { get; set; }
 
-        internal List<Action<FieldReference>> loaders = new List<Action<FieldReference>>();
-        internal void DelayLoad(Action<FieldReference> action)
+        public override string ToString()
         {
-            loaders.Add(action);
-        }
-
-        internal void FlushLoaders()
-        {
-            foreach (var loader in loaders)
-                loader(this);
-            loaders.Clear();
-
-            ClassReference.FlushLoaders();
+            StringBuilder builder = new StringBuilder();
+            builder.Append(Owner);
+            builder.Append("::");
+            builder.Append(Name);
+            builder.Append(" : ");
+            builder.Append(Type);
+            return builder.ToString();
         }
     }
 }

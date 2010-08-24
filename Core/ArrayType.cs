@@ -8,5 +8,10 @@
         {
             return string.Concat("[", ElementType.ToString(), "]");
         }
+
+        public override bool Equals(TypeReference other)
+        {
+            return (other is ArrayType) && (ElementType.Equals((other as ArrayType).ElementType));
+        }
     }
 }

@@ -1,28 +1,24 @@
 ﻿using System.Collections.Generic;
 using System;
+using System.Text;
 
 namespace Dexer.Core
 {
     public class MethodReference
     {
-        public ClassReference ClassReference { get; set; }
+        public ClassReference Owner { get; set; }
         public string Name { get; set; }
         public Prototype Prototype { get; set; }
 
-        internal List<Action<MethodReference>> loaders = new List<Action<MethodReference>>();
-        internal void DelayLoad(Action<MethodReference> action)
+        public override string ToString()
         {
-            loaders.Add(action);
+            StringBuilder builder = new StringBuilder();
+            builder.Append(Owner);
+            builder.Append("::");
+            builder.Append(Name);
+            builder.Append(Prototype);
+            return builder.ToString();
         }
 
-        internal void FlushLoaders()
-        {
-            foreach (var loader in loaders)
-                loader(this);
-            loaders.Clear();
-
-            Prototype.FlushLoaders();
-            ClassReference.FlushLoaders();
-        }
     }
 }

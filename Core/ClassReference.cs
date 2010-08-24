@@ -7,16 +7,6 @@ namespace Dexer.Core
 {
     public class ClassReference : TypeReference
     {
-        internal ClassDefinition Promote() {
-            ClassDefinition result = new ClassDefinition();
-            result.Fullname = this.Fullname;
-            result.Namespace = this.Namespace;
-            result.Name = this.Name;
-            result.TypeDescriptor = this.TypeDescriptor;
-            result.loaders = this.loaders;
-            return result;
-        }
-
         public string Name { get; set; }
 
         public string Namespace { get; set; }
@@ -59,17 +49,9 @@ namespace Dexer.Core
             TypeDescriptor = TypeDescriptors.FullyQualifiedName;
         }
 
-        internal List<Action<ClassReference>> loaders = new List<Action<ClassReference>>();
-        internal void DelayLoad(Action<ClassReference> action)
+        public override bool Equals(TypeReference other)
         {
-            loaders.Add(action);
-        }
-
-        internal virtual void FlushLoaders()
-        {
-            foreach (var loader in loaders)
-                loader(this);
-            loaders.Clear();
+            return (other is ClassReference) && (this.Fullname == (other as ClassReference).Fullname);
         }
     }
 }

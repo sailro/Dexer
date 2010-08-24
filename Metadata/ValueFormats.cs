@@ -1,6 +1,6 @@
 ﻿namespace Dexer.Metadata
 {
-    public enum ValueFormats
+    public enum ValueFormats : byte
     {
         Byte = 0x00,
         Short = 0x02,

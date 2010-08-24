@@ -24,5 +24,9 @@ namespace Dexer.Core
             return this.TypeDescriptor.ToString();
         }
 
+        public override bool Equals(TypeReference other)
+        {
+            return (other is PrimitiveType) && (this.TypeDescriptor == other.TypeDescriptor);
+        }
     }
 }

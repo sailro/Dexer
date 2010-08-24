@@ -1,11 +1,12 @@
 ﻿using System;
 using System.IO;
 
-namespace Dexer.Core
+namespace Dexer.Extensions
 {
-	public static class BinaryReaderExtensions
-	{
-        public static uint ReadULEB128(this BinaryReader reader, out int shiftCount) {
+    public static class BinaryReaderExtensions
+    {
+        public static uint ReadULEB128(this BinaryReader reader, out int shiftCount)
+        {
             uint value = 0;
             bool hasNext = true;
             shiftCount = 0;
@@ -29,7 +30,7 @@ namespace Dexer.Core
         public static int ReadSLEB128(this BinaryReader reader)
         {
             int shiftCount;
-            int value = (int) ReadULEB128(reader, out shiftCount);
+            int value = (int)ReadULEB128(reader, out shiftCount);
             return (value << (32 - shiftCount)) >> (32 - shiftCount);
         }
 
@@ -67,5 +68,21 @@ namespace Dexer.Core
             return new String(chars);
         }
 
-	}
+        public static long ReadValueByTypeArgument(this BinaryReader reader, int typeArgument)
+        {
+            return ReadSigned(reader, typeArgument + 1);
+        }
+
+        public static long ReadSigned(this BinaryReader reader, int byteLength)
+        {
+            long value = 0;
+            for (int i = 0; i < byteLength; i++)
+            {
+                value |= (long)reader.ReadByte() << (8 * i);
+            }
+            int shift = 8 * byteLength;
+            return (value << shift) >> shift;
+        }
+
+    }
 }

@@ -1,50 +1,41 @@
 ﻿using System.Collections.Generic;
 using System;
 using Dexer.Core;
+using Dexer.Metadata;
 
 namespace Dexer.Core
 {
-    public class ClassDefinition : ClassReference
+    public class ClassDefinition : ClassReference, IAnnotationProvider
 	{
         public AccessFlags AccessFlag { get; set; }
         public ClassReference SuperClass { get; set; }
-        public IList<TypeReference> Interfaces { get; set; }
+        public IList<ClassReference> Interfaces { get; set; }
         public string SourceFile { get; set; }
         public IList<Annotation> Annotations { get; set; }
         public IList<FieldDefinition> Fields { get; set; }
         public IList<MethodDefinition> Methods { get; set; }
 
-        public ClassDefinition()
+        internal ClassDefinition()
         {
-            Interfaces = new List<TypeReference>();
+            TypeDescriptor = TypeDescriptors.FullyQualifiedName;
+
+            Interfaces = new List<ClassReference>();
             Annotations = new List<Annotation>();
             Fields = new List<FieldDefinition>();
             Methods = new List<MethodDefinition>();
-
         }
 
-        internal List<Action<ClassDefinition>> defloaders = new List<Action<ClassDefinition>>();
-        internal void DelayLoad(Action<ClassDefinition> action)
+        internal ClassDefinition(ClassReference cref)
+            : this()
         {
-            defloaders.Add(action);
+            this.Fullname = cref.Fullname;
+            this.Namespace = cref.Namespace;
+            this.Name = cref.Name;
         }
 
-        internal override void FlushLoaders()
+        public override bool Equals(TypeReference other)
         {
-            foreach (var loader in defloaders)
-                loader(this);
-            defloaders.Clear();
-
-            base.FlushLoaders();
-
-            SuperClass.FlushLoaders();
-
-            foreach (var field in Fields)
-                field.FlushLoaders();
-
-            foreach (var method in Methods)
-                method.FlushLoaders();
+            return (other is ClassDefinition) && (base.Equals(other));
         }
-
-	}
+    }
 }

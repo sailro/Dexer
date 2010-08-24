@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
+using System.Text;
 
 namespace Dexer.Core
 {
@@ -13,20 +14,21 @@ namespace Dexer.Core
             Parameters = new List<Parameter>();
         }
 
-        internal List<Action<Prototype>> loaders = new List<Action<Prototype>>();
-        internal void DelayLoad(Action<Prototype> action)
+        public override string ToString()
         {
-            loaders.Add(action);
-        }
+            StringBuilder builder = new StringBuilder();
+            builder.Append("(");
+            for (int i = 0; i < Parameters.Count; i++)
+            {
+                if (i>0)
+                    builder.Append(",");
 
-        internal void FlushLoaders()
-        {
-            foreach (var loader in loaders)
-                loader(this);
-            loaders.Clear();
-
-            foreach (var parameter in Parameters)
-                parameter.FlushLoaders();
+                builder.Append(Parameters[i]);
+            }
+            builder.Append(")");
+            builder.Append(" : ");
+            builder.Append(ReturnType);
+            return builder.ToString();
         }
 	}
 }

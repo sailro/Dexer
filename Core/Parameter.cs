@@ -3,22 +3,20 @@ using System;
 
 namespace Dexer.Core
 {
-    public class Parameter
+    public class Parameter : IAnnotationProvider
     {
         public TypeReference Type { get; set; }
+        public IList<Annotation> Annotations { get; set; }
 
-
-        internal List<Action<Parameter>> loaders = new List<Action<Parameter>>();
-        internal void DelayLoad(Action<Parameter> action)
+        public override string ToString()
         {
-            loaders.Add(action);
+            return Type.ToString();
         }
 
-        internal void FlushLoaders()
+        internal Parameter()
         {
-            foreach (var loader in loaders)
-                loader(this);
-            loaders.Clear();
+            Annotations = new List<Annotation>();
         }
+
     }
 }

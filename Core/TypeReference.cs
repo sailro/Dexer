@@ -4,8 +4,10 @@ using System;
 
 namespace Dexer.Core
 {
-    public abstract class TypeReference
+    public abstract class TypeReference : IEquatable<TypeReference>
     {
-        protected TypeDescriptors TypeDescriptor { get; set; }
+        internal TypeDescriptors TypeDescriptor { get; set; }
+
+        public abstract bool Equals(TypeReference other);
     }
 }
