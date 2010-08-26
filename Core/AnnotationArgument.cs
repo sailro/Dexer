@@ -17,6 +17,7 @@
 */
 
 using Dexer.Metadata;
+using System.Text;
 
 namespace Dexer.Core
 {
@@ -24,5 +25,14 @@ namespace Dexer.Core
     {
         public string Name { get; set; }
         public object Value { get; set; }
+
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append(Name);
+            builder.Append(":");
+            builder.Append(Value);
+            return builder.ToString();
+        }
     }
 }

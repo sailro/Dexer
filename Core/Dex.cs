@@ -54,6 +54,25 @@ namespace Dexer.Core
             MethodReferences = new List<MethodReference>();
         }
 
+        internal ClassDefinition GetClass(string fullname)
+        {
+            return GetClass(fullname, Classes);
+        }
+
+        internal ClassDefinition GetClass(string fullname, IList<ClassDefinition> container)
+        {
+            foreach (ClassDefinition item in container)
+            {
+                if (fullname.Equals(item.Fullname))
+                    return item;
+
+                var inner = GetClass(fullname, item.InnerClasses);
+                if (inner != null)
+                    return inner;
+            }
+            return null;
+        }
+
         internal TypeReference Import(TypeReference tref) {
             foreach (TypeReference item in TypeReferences)
             {
@@ -68,7 +87,7 @@ namespace Dexer.Core
 
         public static void Main(string[] args)
         {
-            Dex dex = Dex.Load(@"E:\Devl\Java\Budroid\bin\classes.dex");
+            Dex dex = Dex.Load(@"E:\Devl\Dexer\bin\Debug\classes.dex");
         }
 
     }

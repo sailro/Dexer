@@ -25,11 +25,13 @@ namespace Dexer.Core
 	{
         public AccessFlags AccessFlag { get; set; }
         public ClassReference SuperClass { get; set; }
+        public IList<ClassDefinition> InnerClasses { get; set; }
         public IList<ClassReference> Interfaces { get; set; }
         public string SourceFile { get; set; }
         public IList<Annotation> Annotations { get; set; }
         public IList<FieldDefinition> Fields { get; set; }
         public IList<MethodDefinition> Methods { get; set; }
+        public ClassDefinition Owner { get; set; }
 
         internal ClassDefinition()
         {
@@ -39,6 +41,7 @@ namespace Dexer.Core
             Annotations = new List<Annotation>();
             Fields = new List<FieldDefinition>();
             Methods = new List<MethodDefinition>();
+            InnerClasses = new List<ClassDefinition>();
         }
 
         internal ClassDefinition(ClassReference cref)

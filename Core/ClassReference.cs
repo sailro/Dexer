@@ -24,6 +24,9 @@ namespace Dexer.Core
 {
     public class ClassReference : TypeReference
     {
+        const char NamespaceSeparator = '.';
+        const char InternalNamespaceSeparator = '/';
+
         public string Name { get; set; }
 
         public string Namespace { get; set; }
@@ -34,19 +37,19 @@ namespace Dexer.Core
             {
                 StringBuilder result = new StringBuilder(Namespace);
                 if (result.Length > 0)
-                    result.Append(".");
+                    result.Append(NamespaceSeparator);
                 result.Append(Name);
                 return result.ToString();
             }
             set
             {
-                value = value.Replace("/", ".");
-                string[] items = value.Split('.');
+                value = value.Replace(InternalNamespaceSeparator, NamespaceSeparator);
+                string[] items = value.Split(NamespaceSeparator);
                 if (items.Length > 0)
                 {
                     Name = items[items.Length - 1];
                     Array.Resize(ref items, items.Length - 1);
-                    Namespace = string.Join(".", items);
+                    Namespace = string.Join(NamespaceSeparator.ToString(), items);
                 }
                 else
                 {

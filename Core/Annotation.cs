@@ -17,6 +17,7 @@
 */
 
 using System.Collections.Generic;
+using System.Text;
 
 namespace Dexer.Core
 {
@@ -29,6 +30,22 @@ namespace Dexer.Core
         internal Annotation()
         {
             Arguments = new List<AnnotationArgument>();
+        }
+
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append(Type);
+            builder.Append("(");
+            for (int i = 0; i < Arguments.Count; i++)
+            {
+                if (i > 0)
+                    builder.Append(", ");
+
+                builder.Append(Arguments[i]);
+            }
+            builder.Append(")");
+            return builder.ToString();
         }
     }
 }

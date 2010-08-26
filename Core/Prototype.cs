@@ -38,7 +38,7 @@ namespace Dexer.Core
             for (int i = 0; i < Parameters.Count; i++)
             {
                 if (i>0)
-                    builder.Append(",");
+                    builder.Append(", ");
 
                 builder.Append(Parameters[i]);
             }

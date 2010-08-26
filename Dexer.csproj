@@ -47,6 +47,7 @@
     <Compile Include="Core\Annotation.cs" />
     <Compile Include="Core\AnnotationArgument.cs" />
     <Compile Include="Core\AnnotationVisibility.cs" />
+    <Compile Include="Core\AnnotatedParameter.cs" />
     <Compile Include="Core\MemberReference.cs" />
     <Compile Include="Core\IAnnotationProvider.cs" />
     <Compile Include="Extensions\BinaryReaderExtensions.cs" />
