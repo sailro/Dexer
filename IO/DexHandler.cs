@@ -449,12 +449,12 @@ namespace Dexer.IO
                 case ValueFormats.Type:
                     return Item.TypeReferences[(int)reader.ReadValueByTypeArgument(valueArgument)];
                 case ValueFormats.Field:
+                case ValueFormats.Enum:       
                     return Item.FieldReferences[(int)reader.ReadValueByTypeArgument(valueArgument)];
                 case ValueFormats.Method:
                     return Item.MethodReferences[(int)reader.ReadValueByTypeArgument(valueArgument)];
                 case ValueFormats.Array:
                     return ReadValues(reader);
-                case ValueFormats.Enum:       /* TODO */ throw new NotImplementedException();
                 case ValueFormats.Annotation:
                     return ReadEncodedAnnotation(reader);
                 case ValueFormats.Null:
