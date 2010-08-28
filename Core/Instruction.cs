@@ -20,5 +20,7 @@ namespace Dexer.Core
 {
     public class Instruction
     {
+        public OpCodes OpCode { get; set; }
+        public object Operand { get; set; }
     }
 }

@@ -56,6 +56,7 @@
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
     <Compile Include="IO\FormatChecker.cs" />
     <Compile Include="IO\MalformedException.cs" />
+    <Compile Include="Core\Register.cs" />
     <Compile Include="Metadata\ValueFormats.cs" />
     <Compile Include="Core\MethodReference.cs" />
     <Compile Include="Core\FieldReference.cs" />

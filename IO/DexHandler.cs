@@ -519,7 +519,201 @@ namespace Dexer.IO
 
         private void ReadMethodBody(BinaryReader reader, MethodDefinition methodDefinition, uint codeOffset)
         {
-            // TODO
+            PreserveCurrentPosition(reader, codeOffset, () =>
+            {
+                ushort registersSize = reader.ReadUInt16();
+                ushort incomingArgsSize = reader.ReadUInt16();
+                ushort outgoingArgsSize = reader.ReadUInt16();
+                ushort triesSize = reader.ReadUInt16();
+                uint debugOffset = reader.ReadUInt32();
+
+                ReadInstructions(reader, methodDefinition);
+
+                //if ((triesSize != 0) && (instructionsSize % 2 != 0))
+                  //  reader.ReadUInt16(); // padding (4-byte alignment)
+
+                /*            
+                tries 	try_item[tries_size] (optional) 	array indicating where in the code exceptions may be caught and how to handle them. Elements of the array must be non-overlapping in range and in order from low to high address. This element is only present if tries_size is non-zero.
+                handlers 	encoded_catch_handler_list (optional) 	bytes representing a list of lists of catch types and associated handler addresses. Each try_item has a byte-wise offset into this structure. This element is only present if tries_size is non-zero. 
+                 */
+
+
+            });
+
+        }
+
+        private void ReadInstructions(BinaryReader reader, MethodDefinition methodDefinition)
+        {
+            var instructions = new List<Instruction>();
+            uint instructionsSize = reader.ReadUInt32();
+            var registers = new Register[256];
+
+            int[] codes = new int[instructionsSize];
+            int[] lower = new int[instructionsSize];
+            int[] upper = new int[instructionsSize];
+
+            for (int i = 0; i < instructionsSize; i++)
+            {
+                codes[i] = reader.ReadUInt16();
+                lower[i] = codes[i] & 0xFF;
+                upper[i] = codes[i] >> 8;
+            }
+
+            int ip = 0;
+            while (ip < instructionsSize)
+            {
+                Instruction ins = new Instruction();
+                instructions.Add(ins);
+
+                ins.OpCode = (OpCodes)lower[ip];
+
+                int dri = 0;
+                int sri = 0;
+                int data;
+                object value;
+
+                switch (ins.OpCode)
+                {
+
+                    case OpCodes.Nop:
+                    case OpCodes.Return_void:
+                            // [null]
+                            ip++;
+                            break;
+                    case OpCodes.Move_result:
+                    case OpCodes.Move_result_wide:
+                    case OpCodes.Move_result_object:
+                    case OpCodes.Move_exception:
+                    case OpCodes.Return:
+                    case OpCodes.Return_wide:
+                    case OpCodes.Return_object:
+					case OpCodes.Monitor_enter: 
+					case OpCodes.Monitor_exit: 
+					case OpCodes.Throw:
+                            // vAA
+                            dri = upper[ip++];
+                            break;
+                    case OpCodes.Move_object:
+                    case OpCodes.Move_wide:
+                    case OpCodes.Move:
+  					case OpCodes.Array_length: 
+                            // vA, vB
+                            dri = upper[ip] & 0xF;
+                            sri = upper[ip++] >> 4;
+                            break;
+                    case OpCodes.Move_wide_from16:
+                    case OpCodes.Move_from16:
+                    case OpCodes.Move_object_from16:
+                            // vAA, vBBBB
+                            dri = upper[ip++];
+                            sri = codes[ip++];
+                            break;
+                    case OpCodes.Move_16:
+                    case OpCodes.Move_object_16:
+                            // vAAAA, vBBBB
+                            ip++;
+                            dri = codes[ip++];
+                            sri = codes[ip++];
+                            break;
+                    case OpCodes.Const_4:
+                            // vA, #+B
+                            dri = upper[ip] & 0xF;
+                            value = (upper[ip++] << 24) >> 28;
+                            break;
+                    case OpCodes.Const_16:
+                    case OpCodes.Const_wide_16:
+                            // vAA, #+BBBB
+                            dri = upper[ip++];
+                            value = codes[ip++];
+                            break;
+                    case OpCodes.Const:
+                    case OpCodes.Const_wide_32:
+                    case OpCodes.Fill_array_data:
+                            // vAA, #+BBBBBBBB
+                            dri = upper[ip++];
+                            value = codes[ip++];
+                            value = (int) value | codes[ip++] << 16;
+                            break;
+                    case OpCodes.Const_high16:
+                            // vAA, #+BBBB0000
+                            dri = upper[ip++];
+                            value = codes[ip++] << 16;
+                            break;
+                    case OpCodes.Const_wide:
+                            // vAA, #+BBBBBBBBBBBBBBBB
+                            dri = upper[ip++];
+                            value = codes[ip++];
+                            value = (long) value | (long)codes[ip++] << 16;
+                            value = (long) value | (long)codes[ip++] << 32;
+                            value = (long) value | (long)codes[ip++] << 48;
+                            break;
+                    case OpCodes.Const_wide_high16:
+                            // vAA, #+BBBB000000000000
+                            dri = upper[ip++];
+                            value = (long)codes[ip++] << 48;
+                            break;
+                    case OpCodes.Const_string:
+                            // vAA, string@BBBB
+                            dri = upper[ip++];
+                            value = Strings[codes[ip++]];
+                            break;
+                    case OpCodes.Const_string_jumbo:
+                            // vAA, string@BBBBBBBB
+                            dri = upper[ip++];
+                            data = codes[ip++];
+                            data |= codes[ip++] << 16;
+                            value = Strings[data];
+                            break;
+                    case OpCodes.Const_class:
+                    case OpCodes.New_instance:
+					case OpCodes.Check_cast: 
+                            //  vAA, type@BBBB
+                            dri = upper[ip++];
+                            value = Item.TypeReferences[codes[ip++]];
+                            break;
+					case OpCodes.Instance_of: 
+					case OpCodes.New_array: 
+						    // vA, vB, type@CCCC
+     						dri = upper[ip] & 0xF;
+	     					sri = upper[ip++] >> 4;
+                            value = Item.TypeReferences[codes[ip++]];
+			     			break;
+					case OpCodes.Filled_new_array: 
+						    // {vD, vE, vF, vG, vA}, type@CCCC
+						    throw new NotImplementedException(); // TODO Implement
+					case OpCodes.Filled_new_array_range: 
+						    // {vCCCC .. vNNNN}, type@BBBB
+						    throw new NotImplementedException(); // TODO Implement
+
+                        
+					/*case OpCodes.Goto: {
+						// +AA
+						value = (byte)upper[ip++];
+						frame.pc += offset - 1;
+						break;
+					}
+					case OpCodes.Goto_16: {
+						// goto/16 +AAAA
+						frame.pc++;
+						int offset = (short)codes[frame.pc++];
+						frame.pc += offset - 2;
+						break;
+					}
+					case OpCodes.Goto_32: {
+						// goto/32 +AAAAAAAA
+						frame.pc++;
+						int offset = codes[frame.pc++];
+						offset |= codes[frame.pc++] << 16;
+						frame.pc += offset - 3;
+						break;
+					}*/
+
+
+
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
         }
 
         private void ReadClassDefinition(BinaryReader reader, ClassDefinition classDefinition, uint classDataOffset)
