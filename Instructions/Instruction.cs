@@ -16,27 +16,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-using Dexer.Instructions;
+using Dexer.Core;
 
-namespace Dexer.Core
+namespace Dexer.Instructions
 {
-	public class MethodBody
-	{
-        public DebugInfo DebugInfo { get; set; }
-        public IList<Register> Registers { get; set; }
-        public IList<Instruction> Instructions { get; set; }
-        public IList<ExceptionHandler> Exceptions { get; set; }
+    public class Instruction
+    {
+        public OpCodes OpCode { get; set; }
+        public int Offset { get; set; }
 
-        public MethodBody(int registersSize)
+        public override string ToString()
         {
-           Registers = new List<Register>();
-           for (int i = 0; i < registersSize; i++)
-           {
-               Registers.Add(new Register(i));
-           }
-           Instructions = new List<Instruction>();
-           Exceptions = new List<ExceptionHandler>();
+            return OpCode.ToString();
         }
-	}
+
+    }
 }

@@ -16,27 +16,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-using Dexer.Instructions;
-
 namespace Dexer.Core
 {
-	public class MethodBody
-	{
-        public DebugInfo DebugInfo { get; set; }
-        public IList<Register> Registers { get; set; }
-        public IList<Instruction> Instructions { get; set; }
-        public IList<ExceptionHandler> Exceptions { get; set; }
-
-        public MethodBody(int registersSize)
-        {
-           Registers = new List<Register>();
-           for (int i = 0; i < registersSize; i++)
-           {
-               Registers.Add(new Register(i));
-           }
-           Instructions = new List<Instruction>();
-           Exceptions = new List<ExceptionHandler>();
-        }
-	}
+    public enum PseudoOpCodes
+    {
+        Packed_switch = 0x0100,
+        Sparse_switch = 0x0200,
+        Fill_array_data = 0x0300
+    }
 }

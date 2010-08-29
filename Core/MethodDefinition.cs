@@ -36,6 +36,7 @@ namespace Dexer.Core
         }
         public IList<Annotation> Annotations { get; set; }
         public IList<AnnotatedParameter> AnnotatedParameters { get; set; }
+        public MethodBody Body { get; set; }
 
         internal MethodDefinition()
         {

@@ -87,7 +87,7 @@ namespace Dexer.Core
 
         public static void Main(string[] args)
         {
-            Dex dex = Dex.Load(@"classes.dex");
+            Dex dex = Dex.Load(@"bud.classes.dex");
             //Dex dex = Dex.Load(@"E:\Devl\Dexer\bin\Debug\classes.dex");
         }
 

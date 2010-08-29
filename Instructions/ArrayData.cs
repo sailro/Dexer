@@ -16,27 +16,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-using Dexer.Instructions;
+using Dexer.Core;
 
-namespace Dexer.Core
+namespace Dexer.Instructions
 {
-	public class MethodBody
-	{
-        public DebugInfo DebugInfo { get; set; }
-        public IList<Register> Registers { get; set; }
-        public IList<Instruction> Instructions { get; set; }
-        public IList<ExceptionHandler> Exceptions { get; set; }
+    public class ArrayData
+    {
+        public int ElementSize { get; set; }
+        public int ElementCount { get; set; }
+        public byte[] Blob { get; set; }
 
-        public MethodBody(int registersSize)
+        public ArrayData(int elementsize, int elementcount, byte[] blob)
         {
-           Registers = new List<Register>();
-           for (int i = 0; i < registersSize; i++)
-           {
-               Registers.Add(new Register(i));
-           }
-           Instructions = new List<Instruction>();
-           Exceptions = new List<ExceptionHandler>();
+            this.ElementSize = elementsize;
+            this.ElementCount = elementcount;
+            this.Blob = blob;
         }
-	}
+
+        public override string ToString()
+        {
+            return string.Concat("[", ElementSize, 'x', ElementCount, "]");
+        }
+    }
 }

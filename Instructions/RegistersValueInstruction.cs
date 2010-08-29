@@ -17,26 +17,24 @@
 */
 
 using System.Collections.Generic;
-using Dexer.Instructions;
+using System.Text;
+using Dexer.Core;
 
-namespace Dexer.Core
+namespace Dexer.Instructions
 {
-	public class MethodBody
-	{
-        public DebugInfo DebugInfo { get; set; }
-        public IList<Register> Registers { get; set; }
-        public IList<Instruction> Instructions { get; set; }
-        public IList<ExceptionHandler> Exceptions { get; set; }
+    public class RegistersValueInstruction : RegistersInstruction
+    {
+        public object Value { get; set; }
 
-        public MethodBody(int registersSize)
+        public RegistersValueInstruction(object value, params Register[] registers)
+            : base(registers)
         {
-           Registers = new List<Register>();
-           for (int i = 0; i < registersSize; i++)
-           {
-               Registers.Add(new Register(i));
-           }
-           Instructions = new List<Instruction>();
-           Exceptions = new List<ExceptionHandler>();
+            Value = value;
         }
-	}
+
+        public override string ToString()
+        {
+            return string.Concat(base.ToString(), " ", Value);
+        }
+    }
 }

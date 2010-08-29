@@ -23,6 +23,7 @@ using System.IO;
 using Dexer.Core;
 using Dexer.Extensions;
 using Dexer.Metadata;
+using Dexer.Instructions;
 
 namespace Dexer.IO
 {
@@ -527,6 +528,7 @@ namespace Dexer.IO
                 ushort triesSize = reader.ReadUInt16();
                 uint debugOffset = reader.ReadUInt32();
 
+                methodDefinition.Body = new MethodBody(registersSize);
                 ReadInstructions(reader, methodDefinition);
 
                 //if ((triesSize != 0) && (instructionsSize % 2 != 0))
@@ -544,10 +546,10 @@ namespace Dexer.IO
 
         private void ReadInstructions(BinaryReader reader, MethodDefinition methodDefinition)
         {
-            var instructions = new List<Instruction>();
+            var lookup = new Dictionary<int, Instruction>();
+            var registers = methodDefinition.Body.Registers;
             uint instructionsSize = reader.ReadUInt32();
-            var registers = new Register[256];
-
+            
             int[] codes = new int[instructionsSize];
             int[] lower = new int[instructionsSize];
             int[] upper = new int[instructionsSize];
@@ -560,26 +562,29 @@ namespace Dexer.IO
             }
 
             int ip = 0;
+
             while (ip < instructionsSize)
             {
-                Instruction ins = new Instruction();
-                instructions.Add(ins);
-
-                ins.OpCode = (OpCodes)lower[ip];
-
+                OpCodes opcode = (OpCodes)lower[ip];
+                int iip = ip;
                 int dri = 0;
                 int sri = 0;
+                int a1ri = 0;
+                int a2ri = 0;
                 int data;
+                int offset;
                 object value;
+                Instruction ins = null;
 
-                switch (ins.OpCode)
+                switch (opcode)
                 {
 
                     case OpCodes.Nop:
                     case OpCodes.Return_void:
-                            // [null]
-                            ip++;
-                            break;
+                        // [null]
+                        ip++;
+                        ins = new Instruction();
+                        break;
                     case OpCodes.Move_result:
                     case OpCodes.Move_result_wide:
                     case OpCodes.Move_result_object:
@@ -587,133 +592,398 @@ namespace Dexer.IO
                     case OpCodes.Return:
                     case OpCodes.Return_wide:
                     case OpCodes.Return_object:
-					case OpCodes.Monitor_enter: 
-					case OpCodes.Monitor_exit: 
-					case OpCodes.Throw:
-                            // vAA
-                            dri = upper[ip++];
-                            break;
+                    case OpCodes.Monitor_enter:
+                    case OpCodes.Monitor_exit:
+                    case OpCodes.Throw:
+                        // vAA
+                        dri = upper[ip++];
+                        ins = new RegisterInstruction(registers[dri]);
+                        break;
                     case OpCodes.Move_object:
                     case OpCodes.Move_wide:
                     case OpCodes.Move:
-  					case OpCodes.Array_length: 
-                            // vA, vB
-                            dri = upper[ip] & 0xF;
-                            sri = upper[ip++] >> 4;
-                            break;
+                    case OpCodes.Array_length:
+                    case OpCodes.Neg_int:
+                    case OpCodes.Not_int:
+                    case OpCodes.Neg_long:
+                    case OpCodes.Not_long:
+                    case OpCodes.Neg_float:
+                    case OpCodes.Neg_double:
+                    case OpCodes.Int_to_long:
+                    case OpCodes.Int_to_float:
+                    case OpCodes.Int_to_double:
+                    case OpCodes.Long_to_int:
+                    case OpCodes.Long_to_float:
+                    case OpCodes.Long_to_double:
+                    case OpCodes.Float_to_int:
+                    case OpCodes.Float_to_long:
+                    case OpCodes.Float_to_double:
+                    case OpCodes.Double_to_int:
+                    case OpCodes.Double_to_long:
+                    case OpCodes.Double_to_float:
+                    case OpCodes.Int_to_byte:
+                    case OpCodes.Int_to_char:
+                    case OpCodes.Int_to_short:
+                    case OpCodes.Add_int_2addr:
+                    case OpCodes.Sub_int_2addr:
+                    case OpCodes.Mul_int_2addr:
+                    case OpCodes.Div_int_2addr:
+                    case OpCodes.Rem_int_2addr:
+                    case OpCodes.And_int_2addr:
+                    case OpCodes.Or_int_2addr:
+                    case OpCodes.Xor_int_2addr:
+                    case OpCodes.Shl_int_2addr:
+                    case OpCodes.Shr_int_2addr:
+                    case OpCodes.Ushr_int_2addr:
+                    case OpCodes.Add_long_2addr:
+                    case OpCodes.Sub_long_2addr:
+                    case OpCodes.Mul_long_2addr:
+                    case OpCodes.Div_long_2addr:
+                    case OpCodes.Rem_long_2addr:
+                    case OpCodes.And_long_2addr:
+                    case OpCodes.Or_long_2addr:
+                    case OpCodes.Xor_long_2addr:
+                    case OpCodes.Shl_long_2addr:
+                    case OpCodes.Shr_long_2addr:
+                    case OpCodes.Ushr_long_2addr:
+                    case OpCodes.Add_float_2addr:
+                    case OpCodes.Sub_float_2addr:
+                    case OpCodes.Mul_float_2addr:
+                    case OpCodes.Div_float_2addr:
+                    case OpCodes.Rem_float_2addr:
+                    case OpCodes.Add_double_2addr:
+                    case OpCodes.Sub_double_2addr:
+                    case OpCodes.Mul_double_2addr:
+                    case OpCodes.Div_double_2addr:
+                    case OpCodes.Rem_double_2addr:
+                        // vA, vB
+                        dri = upper[ip] & 0xF;
+                        sri = upper[ip++] >> 4;
+                        ins = new RegistersInstruction(registers[dri], registers[sri]);
+                        break;
                     case OpCodes.Move_wide_from16:
                     case OpCodes.Move_from16:
                     case OpCodes.Move_object_from16:
-                            // vAA, vBBBB
-                            dri = upper[ip++];
-                            sri = codes[ip++];
-                            break;
+                        // vAA, vBBBB
+                        dri = upper[ip++];
+                        sri = codes[ip++];
+                        ins = new RegistersInstruction(registers[dri], registers[sri]);
+                        break;
                     case OpCodes.Move_16:
                     case OpCodes.Move_object_16:
-                            // vAAAA, vBBBB
-                            ip++;
-                            dri = codes[ip++];
-                            sri = codes[ip++];
-                            break;
+                        // vAAAA, vBBBB
+                        ip++;
+                        dri = codes[ip++];
+                        sri = codes[ip++];
+                        ins = new RegistersInstruction(registers[dri], registers[sri]);
+                        break;
                     case OpCodes.Const_4:
-                            // vA, #+B
-                            dri = upper[ip] & 0xF;
-                            value = (upper[ip++] << 24) >> 28;
-                            break;
+                        // vA, #+B
+                        dri = upper[ip] & 0xF;
+                        value = (upper[ip++] << 24) >> 28;
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
                     case OpCodes.Const_16:
                     case OpCodes.Const_wide_16:
-                            // vAA, #+BBBB
-                            dri = upper[ip++];
-                            value = codes[ip++];
-                            break;
+                        // vAA, #+BBBB
+                        dri = upper[ip++];
+                        value = codes[ip++];
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
                     case OpCodes.Const:
                     case OpCodes.Const_wide_32:
+                        // vAA, #+BBBBBBBB
+                        dri = upper[ip++];
+                        value = codes[ip++];
+                        value = (int)value | codes[ip++] << 16;
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
                     case OpCodes.Fill_array_data:
-                            // vAA, #+BBBBBBBB
-                            dri = upper[ip++];
-                            value = codes[ip++];
-                            value = (int) value | codes[ip++] << 16;
-                            break;
+                        // vAA, #+BBBBBBBB
+                        dri = upper[ip++];
+                        offset = codes[ip++];
+                        offset |= codes[ip++] << 16;
+                        value = ExtractArrayData(codes, iip + offset);
+                        instructionsSize = (uint) Math.Min(instructionsSize, iip + offset);
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
                     case OpCodes.Const_high16:
-                            // vAA, #+BBBB0000
-                            dri = upper[ip++];
-                            value = codes[ip++] << 16;
-                            break;
+                        // vAA, #+BBBB0000
+                        dri = upper[ip++];
+                        value = codes[ip++] << 16;
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
                     case OpCodes.Const_wide:
-                            // vAA, #+BBBBBBBBBBBBBBBB
-                            dri = upper[ip++];
-                            value = codes[ip++];
-                            value = (long) value | (long)codes[ip++] << 16;
-                            value = (long) value | (long)codes[ip++] << 32;
-                            value = (long) value | (long)codes[ip++] << 48;
-                            break;
+                        // vAA, #+BBBBBBBBBBBBBBBB
+                        dri = upper[ip++];
+                        value = codes[ip++];
+                        value = (long)value | (long)codes[ip++] << 16;
+                        value = (long)value | (long)codes[ip++] << 32;
+                        value = (long)value | (long)codes[ip++] << 48;
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
                     case OpCodes.Const_wide_high16:
-                            // vAA, #+BBBB000000000000
-                            dri = upper[ip++];
-                            value = (long)codes[ip++] << 48;
-                            break;
+                        // vAA, #+BBBB000000000000
+                        dri = upper[ip++];
+                        value = (long)codes[ip++] << 48;
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
                     case OpCodes.Const_string:
-                            // vAA, string@BBBB
-                            dri = upper[ip++];
-                            value = Strings[codes[ip++]];
-                            break;
+                        // vAA, string@BBBB
+                        dri = upper[ip++];
+                        value = Strings[codes[ip++]];
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
                     case OpCodes.Const_string_jumbo:
-                            // vAA, string@BBBBBBBB
-                            dri = upper[ip++];
-                            data = codes[ip++];
-                            data |= codes[ip++] << 16;
-                            value = Strings[data];
-                            break;
+                        // vAA, string@BBBBBBBB
+                        dri = upper[ip++];
+                        data = codes[ip++];
+                        data |= codes[ip++] << 16;
+                        value = Strings[data];
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
                     case OpCodes.Const_class:
                     case OpCodes.New_instance:
-					case OpCodes.Check_cast: 
-                            //  vAA, type@BBBB
-                            dri = upper[ip++];
-                            value = Item.TypeReferences[codes[ip++]];
-                            break;
-					case OpCodes.Instance_of: 
-					case OpCodes.New_array: 
-						    // vA, vB, type@CCCC
-     						dri = upper[ip] & 0xF;
-	     					sri = upper[ip++] >> 4;
-                            value = Item.TypeReferences[codes[ip++]];
-			     			break;
-					case OpCodes.Filled_new_array: 
-						    // {vD, vE, vF, vG, vA}, type@CCCC
-						    throw new NotImplementedException(); // TODO Implement
-					case OpCodes.Filled_new_array_range: 
-						    // {vCCCC .. vNNNN}, type@BBBB
-						    throw new NotImplementedException(); // TODO Implement
-
-                        
-					/*case OpCodes.Goto: {
-						// +AA
-						value = (byte)upper[ip++];
-						frame.pc += offset - 1;
-						break;
-					}
-					case OpCodes.Goto_16: {
-						// goto/16 +AAAA
-						frame.pc++;
-						int offset = (short)codes[frame.pc++];
-						frame.pc += offset - 2;
-						break;
-					}
-					case OpCodes.Goto_32: {
-						// goto/32 +AAAAAAAA
-						frame.pc++;
-						int offset = codes[frame.pc++];
-						offset |= codes[frame.pc++] << 16;
-						frame.pc += offset - 3;
-						break;
-					}*/
-
-
+                    case OpCodes.Check_cast:
+                        //  vAA, type@BBBB
+                        dri = upper[ip++];
+                        value = Item.TypeReferences[codes[ip++]];
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
+                    case OpCodes.Instance_of:
+                    case OpCodes.New_array:
+                        // vA, vB, type@CCCC
+                        dri = upper[ip] & 0xF;
+                        sri = upper[ip++] >> 4;
+                        value = Item.TypeReferences[codes[ip++]];
+                        ins = new RegistersValueInstruction(value, registers[dri], registers[sri]);
+                        break;
+                    case OpCodes.Filled_new_array:
+                        // {vD, vE, vF, vG, vA}, type@CCCC
+                        throw new NotImplementedException(); // TODO Implement
+                    case OpCodes.Filled_new_array_range:
+                        // {vCCCC .. vNNNN}, type@BBBB
+                        throw new NotImplementedException(); // TODO Implement
+                    case OpCodes.Goto:
+                        // +AA
+                        offset = (byte)upper[ip++];
+                        break;
+                    case OpCodes.Goto_16:
+                        // +AAAA
+                        ip++;
+                        offset = (short)codes[ip++];
+                        break;
+                    case OpCodes.Goto_32:
+                        // +AAAAAAAA
+                        ip++;
+                        offset = codes[ip++];
+                        offset |= codes[ip++] << 16;
+                        break;
+                    case OpCodes.Packed_switch:
+                    case OpCodes.Sparse_switch:
+                        // vAA, +BBBBBBBB
+                        throw new NotImplementedException(); // TODO Implement
+                    case OpCodes.Cmpl_float:
+                    case OpCodes.Cmpg_float:
+                    case OpCodes.Cmpl_double:
+                    case OpCodes.Cmpg_double:
+                    case OpCodes.Cmp_long:
+                    case OpCodes.Aget:
+                    case OpCodes.Aget_wide:
+                    case OpCodes.Aget_object:
+                    case OpCodes.Aget_boolean:
+                    case OpCodes.Aget_byte:
+                    case OpCodes.Aget_char:
+                    case OpCodes.Aget_short:
+                    case OpCodes.Aput:
+                    case OpCodes.Aput_wide:
+                    case OpCodes.Aput_object:
+                    case OpCodes.Aput_boolean:
+                    case OpCodes.Aput_byte:
+                    case OpCodes.Aput_char:
+                    case OpCodes.Aput_short:
+                    case OpCodes.Add_int:
+                    case OpCodes.Sub_int:
+                    case OpCodes.Mul_int:
+                    case OpCodes.Div_int:
+                    case OpCodes.Rem_int:
+                    case OpCodes.And_int:
+                    case OpCodes.Or_int:
+                    case OpCodes.Xor_int:
+                    case OpCodes.Shl_int:
+                    case OpCodes.Shr_int:
+                    case OpCodes.Ushr_int:
+                    case OpCodes.Add_long:
+                    case OpCodes.Sub_long:
+                    case OpCodes.Mul_long:
+                    case OpCodes.Div_long:
+                    case OpCodes.Rem_long:
+                    case OpCodes.And_long:
+                    case OpCodes.Or_long:
+                    case OpCodes.Xor_long:
+                    case OpCodes.Shl_long:
+                    case OpCodes.Shr_long:
+                    case OpCodes.Ushr_long:
+                    case OpCodes.Add_float:
+                    case OpCodes.Sub_float:
+                    case OpCodes.Mul_float:
+                    case OpCodes.Div_float:
+                    case OpCodes.Rem_float:
+                    case OpCodes.Add_double:
+                    case OpCodes.Sub_double:
+                    case OpCodes.Mul_double:
+                    case OpCodes.Div_double:
+                    case OpCodes.Rem_double:
+                        // vAA, vBB, vCC
+                        dri = upper[ip++];
+                        a1ri = lower[ip];
+                        a2ri = upper[ip++];
+                        ins = new RegistersInstruction(registers[dri], registers[a1ri], registers[a2ri]);
+                        break;
+                    case OpCodes.If_eq:
+                    case OpCodes.If_ne:
+                    case OpCodes.If_lt:
+                    case OpCodes.If_ge:
+                    case OpCodes.If_gt:
+                    case OpCodes.If_le:
+                        // vA, vB, +CCCC
+                        a1ri = upper[ip] & 0xF;
+                        a2ri = upper[ip++] >> 4;
+                        offset = (short)codes[ip++];
+                        break;
+                    case OpCodes.If_eqz:
+                    case OpCodes.If_nez:
+                    case OpCodes.If_ltz:
+                    case OpCodes.If_gez:
+                    case OpCodes.If_gtz:
+                    case OpCodes.If_lez:
+                        // vAA, +BBBB
+                        a1ri = upper[ip++];
+                        offset = (short)codes[ip++];
+                        break;
+                    case OpCodes.Iget:
+                    case OpCodes.Iget_wide:
+                    case OpCodes.Iget_object:
+                    case OpCodes.Iget_boolean:
+                    case OpCodes.Iget_byte:
+                    case OpCodes.Iget_char:
+                    case OpCodes.Iget_short:
+                    case OpCodes.Iput:
+                    case OpCodes.Iput_wide:
+                    case OpCodes.Iput_object:
+                    case OpCodes.Iput_boolean:
+                    case OpCodes.Iput_byte:
+                    case OpCodes.Iput_char:
+                    case OpCodes.Iput_short:
+                        // vA, vB, field@CCCC
+                        dri = upper[ip] & 0xF;
+                        sri = upper[ip++] >> 4;
+                        value = Item.FieldReferences[codes[ip++]];
+                        ins = new RegistersValueInstruction(value, registers[dri], registers[sri]);
+                        break;
+                    case OpCodes.Sget:
+                    case OpCodes.Sget_wide:
+                    case OpCodes.Sget_object:
+                    case OpCodes.Sget_boolean:
+                    case OpCodes.Sget_byte:
+                    case OpCodes.Sget_char:
+                    case OpCodes.Sget_short:
+                    case OpCodes.Sput:
+                    case OpCodes.Sput_wide:
+                    case OpCodes.Sput_object:
+                    case OpCodes.Sput_boolean:
+                    case OpCodes.Sput_byte:
+                    case OpCodes.Sput_char:
+                    case OpCodes.Sput_short:
+                        // vAA, field@BBBB
+                        dri = upper[ip++];
+                        value = Item.FieldReferences[codes[ip++]];
+                        ins = new RegisterValueInstruction(value, registers[dri]);
+                        break;
+                    case OpCodes.Invoke_virtual:
+                    case OpCodes.Invoke_super:
+                    case OpCodes.Invoke_direct:
+                    case OpCodes.Invoke_static:
+                    case OpCodes.Invoke_interface:
+                        // {vD, vE, vF, vG, vA}, meth@CCCC
+                        data = upper[ip++] << 16;
+                        value = Item.MethodReferences[codes[ip++]];
+                        data |= codes[ip++];
+                        break;
+                    case OpCodes.Invoke_virtual_range:
+                    case OpCodes.Invoke_super_range:
+                    case OpCodes.Invoke_direct_range:
+                    case OpCodes.Invoke_static_range:
+                    case OpCodes.Invoke_interface_range:
+                        // {vCCCC .. vNNNN}, meth@BBBB
+                        data = upper[ip++];
+                        value = Item.MethodReferences[codes[ip++]];
+                        a1ri = codes[ip++];
+                        break;
+                    case OpCodes.Add_int_lit16:
+                    case OpCodes.Rsub_int:
+                    case OpCodes.Mul_int_lit16:
+                    case OpCodes.Div_int_lit16:
+                    case OpCodes.Rem_int_lit16:
+                    case OpCodes.And_int_lit16:
+                    case OpCodes.Or_int_lit16:
+                    case OpCodes.Xor_int_lit16:
+                        // vA, vB, #+CCCC
+                        dri = upper[ip] & 0xF;
+                        sri = upper[ip++] >> 4;
+                        value = (short)codes[ip++];
+                        ins = new RegistersValueInstruction(value, registers[dri], registers[sri]);
+                        break;
+                    case OpCodes.Add_int_lit8:
+                    case OpCodes.Rsub_int_lit8:
+                    case OpCodes.Mul_int_lit8:
+                    case OpCodes.Div_int_lit8:
+                    case OpCodes.Rem_int_lit8:
+                    case OpCodes.And_int_lit8:
+                    case OpCodes.Or_int_lit8:
+                    case OpCodes.Xor_int_lit8:
+                    case OpCodes.Shl_int_lit8:
+                    case OpCodes.Shr_int_lit8:
+                    case OpCodes.Ushr_int_lit8:
+                        // vAA, vBB, #+CC
+                        dri = upper[ip++];
+                        sri = lower[ip];
+                        value = (byte)upper[ip++];
+                        ins = new RegistersValueInstruction(value, registers[dri], registers[sri]);
+                        break;
 
                     default:
-                        throw new NotImplementedException();
+                        throw new NotImplementedException(string.Concat("Unknown opcode:", opcode));
                 }
+
+                if (ins != null) // DEBUG ONLY - TODO: remove
+                {
+                    ins.OpCode = opcode;
+                    ins.Offset = iip;
+                    lookup.Add(ins.Offset, ins);
+                    methodDefinition.Body.Instructions.Add(ins);
+                }
+
             }
+            FormatChecker.CheckExpression(() => ip == instructionsSize);
+        }
+
+        private ArrayData ExtractArrayData(int[] codes, int offset)
+        {
+            PseudoOpCodes poc = (PseudoOpCodes)codes[offset];
+            FormatChecker.CheckExpression(() => poc == PseudoOpCodes.Fill_array_data);
+            
+            int elementsize = codes[offset + 1];
+            int elementcount = (codes[offset + 3] << 16) | codes[offset + 2];
+            int arraysize = elementsize*elementcount;
+            byte[] blob = new byte[arraysize];
+            for (int i = 0; i < arraysize / 2; i++)
+            {
+                blob[i * 2] = (byte) (codes[offset + 4 + i] & 0xff);
+                blob[i * 2 + 1] = (byte) ((codes[offset + 4 + i] >> 8) & 0xff);
+            }
+
+            return new ArrayData(elementsize, elementcount, blob);
         }
 
         private void ReadClassDefinition(BinaryReader reader, ClassDefinition classDefinition, uint classDataOffset)
