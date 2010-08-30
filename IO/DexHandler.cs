@@ -473,16 +473,7 @@ namespace Dexer.IO
                 uint debugOffset = reader.ReadUInt32();
 
                 methodDefinition.Body = new MethodBody(registersSize);
-
-                try
-                {
-                    new InstructionHandler(Dex, methodDefinition).ReadFrom(reader);
-                    Console.WriteLine("OK: " + methodDefinition);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("ERR: " + methodDefinition+ " : "+e);
-                }
+                new InstructionHandler(Dex, methodDefinition).ReadFrom(reader);
 
                 //if ((triesSize != 0) && (instructionsSize % 2 != 0))
                   //  reader.ReadUInt16(); // padding (4-byte alignment)

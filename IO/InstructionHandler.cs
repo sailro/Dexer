@@ -34,6 +34,7 @@ namespace Dexer.IO
         private int[] Lower { get; set; }
         private int[] Upper { get; set; }
         private int Ip { get; set; }
+        private uint InstructionsSize { get; set; }
 
         private Dictionary<int, Instruction> Lookup;
 
@@ -111,20 +112,20 @@ namespace Dexer.IO
         public void ReadFrom(BinaryReader reader)
         {
             var registers = MethodDefinition.Body.Registers;
-            uint instructionsSize = reader.ReadUInt32();
+            InstructionsSize = reader.ReadUInt32();
 
-            Codes = new int[instructionsSize];
-            Lower = new int[instructionsSize];
-            Upper = new int[instructionsSize];
+            Codes = new int[InstructionsSize];
+            Lower = new int[InstructionsSize];
+            Upper = new int[InstructionsSize];
 
-            for (int i = 0; i < instructionsSize; i++)
+            for (int i = 0; i < InstructionsSize; i++)
             {
                 Codes[i] = reader.ReadUInt16();
                 Lower[i] = Codes[i] & 0xFF;
                 Upper[i] = Codes[i] >> 8;
             }
 
-            while (Ip < instructionsSize)
+            while (Ip < InstructionsSize)
             {
                 int data;
                 int offset;
@@ -260,7 +261,6 @@ namespace Dexer.IO
                         ReadvAA(ins);
                         offset = ReadInt();
                         ins.Operand = ExtractArrayData(ins.Offset + offset);
-                        instructionsSize = (uint)Math.Min(instructionsSize, ins.Offset + offset);
                         break;
                     case OpCodes.Const_high16:
                         // vAA, #+BBBB0000
@@ -471,7 +471,7 @@ namespace Dexer.IO
                         // {vCCCC .. vNNNN}, meth@BBBB
                         data = Upper[Ip++];
                         ins.Operand = Dex.MethodReferences[ReadShort()];
-                        //a1ri = Codes[Ip++];
+                        Ip++; //a1ri = Codes[Ip++];
                         // TODO: handle registers
                         break;
                     case OpCodes.Add_int_lit16:
@@ -508,63 +508,92 @@ namespace Dexer.IO
                         throw new NotImplementedException(string.Concat("Unknown opcode:", ins.OpCode));
                 }
             }
-            FormatChecker.CheckExpression(() => Ip == instructionsSize);
+            // Check overhead
+            FormatChecker.CheckExpression(() => Ip == InstructionsSize);
 
             foreach (Action action in LazyInstructionsSetters)
                 action();
         }
 
+        private void ProcessPseudoCode(PseudoOpCodes expected, ref int offset) {
+            // auto reduce scope (PseudoCode data at the end)
+            InstructionsSize = (uint)Math.Min(InstructionsSize, offset);
+            PseudoOpCodes poc = (PseudoOpCodes)RawReadShort(ref offset);
+            FormatChecker.CheckExpression(() => poc == expected);
+        }
+
+        private int RawReadInt(ref int offset)
+        {
+            int result = Codes[offset + 1] << 16;
+            result |= Codes[offset];
+            offset += 2;
+            return result;
+        }
+
+        private short RawReadShort(ref int offset)
+        {
+            return (short) Codes[offset++];
+        }
+
         private SparseSwitch ExtractSparseSwitch(Instruction ins, int offset)
         {
+            int baseOffset = offset;
             SparseSwitch result = new SparseSwitch();
+            ProcessPseudoCode(PseudoOpCodes.Sparse_switch, ref offset);
 
-            PseudoOpCodes poc = (PseudoOpCodes)Codes[offset];
-            FormatChecker.CheckExpression(() => poc == PseudoOpCodes.Sparse_switch);
+            int targetcount = RawReadShort(ref offset);
 
-            int targetcount = Codes[offset + 1];
+            int[] keys = new int[targetcount];
+            for (int i = 0; i < targetcount; i++)
+                keys[i] = RawReadInt(ref offset);
 
-            for (int i=0; i<targetcount; i++) {
-                int key = (Codes[offset + 5 + i*2] << 16) | Codes[offset + 4 + i*2];
-                int target = (Codes[offset + 5 + (i + targetcount)*2] << 16) | Codes[offset + 4 + (i + targetcount)*2];
-                LazyInstructionsSetters.Add( () => result.Targets.Add(key, Lookup[ins.Offset + target]));
+            for (int i = 0; i < targetcount; i++)
+            {
+                int target = RawReadInt(ref offset);
+                //LazyInstructionsSetters.Add(() => result.Targets.Add(keys[i], Lookup[ins.Offset + target]));
             }
 
+            FormatChecker.CheckExpression(() => offset - baseOffset == targetcount * 4 + 2);
             return result;
         }
 
         private PackedSwitch ExtractPackedSwitch(Instruction ins, int offset)
         {
+            int baseOffset = offset;
             PackedSwitch result = new PackedSwitch();
+            ProcessPseudoCode(PseudoOpCodes.Packed_switch, ref offset);
 
-            PseudoOpCodes poc = (PseudoOpCodes)Codes[offset];
-            FormatChecker.CheckExpression(() => poc == PseudoOpCodes.Packed_switch);
-
-            int targetcount = Codes[offset + 1];
-            result.FirstKey = (Codes[offset + 3] << 16) | Codes[offset + 2];
+            int targetcount = RawReadShort(ref offset);
+            result.FirstKey = RawReadInt(ref offset);
 
             for (int i=0; i<targetcount; i++) {
-                int target = (Codes[offset + 5 + i*2] << 16) | Codes[offset + 4 + i*2];
+                int target = RawReadInt(ref offset);
                 LazyInstructionsSetters.Add( () => result.Targets.Add(Lookup[ins.Offset + target]));
             }
 
+            FormatChecker.CheckExpression(() => offset - baseOffset == targetcount * 2 + 4);
             return result;
         }
 
         private ArrayData ExtractArrayData(int offset)
         {
-            PseudoOpCodes poc = (PseudoOpCodes)Codes[offset];
-            FormatChecker.CheckExpression(() => poc == PseudoOpCodes.Fill_array_data);
+            int baseOffset = offset;
+            ProcessPseudoCode(PseudoOpCodes.Fill_array_data, ref offset);
 
-            int elementsize = Codes[offset + 1];
-            int elementcount = (Codes[offset + 3] << 16) | Codes[offset + 2];
+            int elementsize = RawReadShort(ref offset);
+            int elementcount = RawReadInt(ref offset);
             int arraysize = elementsize * elementcount;
             byte[] blob = new byte[arraysize];
-            for (int i = 0; i < arraysize / 2; i++)
-            {
-                blob[i * 2] = (byte)(Codes[offset + 4 + i] & 0xff);
-                blob[i * 2 + 1] = (byte)((Codes[offset + 4 + i] >> 8) & 0xff);
-            }
 
+            // WRONG
+            /*for (int i = 0; i < arraysize / 2; i++)
+            {
+                short value = RawReadShort(ref offset);
+                blob[i * 2] = (byte)(value & 0xff);
+                blob[i * 2 + 1] = (byte)((value >> 8) & 0xff);
+            }*/
+
+            //FormatChecker.CheckExpression(() => offset - baseOffset == (elementsize * elementcount + 1) / 2 + 4);
             return new ArrayData(elementsize, elementcount, blob);
         }
 
