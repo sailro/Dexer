@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Dexer.Core
+namespace Dexer.Instructions
 {
     public enum OpCodes
     {

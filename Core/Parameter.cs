@@ -21,13 +21,39 @@ using System;
 
 namespace Dexer.Core
 {
-    public class Parameter
+    public class Parameter : ICloneable
     {
+        public IList<Annotation> Annotations { get; set; }
         public TypeReference Type { get; set; }
+
+        internal Parameter()
+        {
+            Annotations = new List<Annotation>();
+        }
 
         public override string ToString()
         {
             return Type.ToString();
         }
+
+        internal Parameter Clone()
+        {
+            return (Parameter)(this as ICloneable).Clone();
+        }
+
+        object ICloneable.Clone()
+        {
+            Parameter result = new Parameter();
+            result.Type = this.Type;
+
+            if (Annotations.Count > 0)
+            {
+                // Cloning is here to annotate properly parameters
+                throw new ArgumentException();
+            }
+
+            return result;
+        }
+
     }
 }

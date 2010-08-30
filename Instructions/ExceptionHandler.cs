@@ -16,11 +16,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-
-namespace Dexer.Core
+namespace Dexer.Instructions
 {
-    public class DebugInfo
+    public class ExceptionHandler
     {
+        public Instruction TryStart { get; set; }
+        public Instruction TryEnd { get; set; }
     }
 }

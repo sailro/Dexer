@@ -16,12 +16,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Dexer.Core
+using System;
+
+namespace Dexer.Instructions
 {
-    public enum PseudoOpCodes
+    public class DebugInfo
     {
-        Packed_switch = 0x0100,
-        Sparse_switch = 0x0200,
-        Fill_array_data = 0x0300
     }
 }

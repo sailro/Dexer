@@ -284,10 +284,7 @@ namespace Dexer.IO
                     {
                         if (annotations[i].Count > 0)
                         {
-                            AnnotatedParameter aprm = new AnnotatedParameter();
-                            aprm.Parameter = mdef.Prototype.Parameters[i];
-                            aprm.Annotations = annotations[i];
-                            mdef.AnnotatedParameters.Add(aprm);
+                            mdef.Prototype.Parameters[i].Annotations = annotations[i];
                         }
                     }
                 }
@@ -473,15 +470,29 @@ namespace Dexer.IO
                 uint debugOffset = reader.ReadUInt32();
 
                 methodDefinition.Body = new MethodBody(registersSize);
-                new InstructionHandler(Dex, methodDefinition).ReadFrom(reader);
+                InstructionHandler ihandler = new InstructionHandler(Dex, methodDefinition);
+                ihandler.ReadFrom(reader);
 
-                //if ((triesSize != 0) && (instructionsSize % 2 != 0))
-                  //  reader.ReadUInt16(); // padding (4-byte alignment)
+                if ((triesSize != 0) && (ihandler.Codes.Length % 2 != 0))
+                    reader.ReadUInt16(); // padding (4-byte alignment)
 
-                /*            
-                tries 	try_item[tries_size] (optional) 	array indicating where in the code exceptions may be caught and how to handle them. Elements of the array must be non-overlapping in range and in order from low to high address. This element is only present if tries_size is non-zero.
-                handlers 	encoded_catch_handler_list (optional) 	bytes representing a list of lists of catch types and associated handler addresses. Each try_item has a byte-wise offset into this structure. This element is only present if tries_size is non-zero. 
-                 */
+                if (triesSize != 0)
+                {
+                    for (int i = 0; i < triesSize; i++)
+                    {
+                        uint startOffset = reader.ReadUInt32();
+                        uint insCount = reader.ReadUInt16();
+                        uint endOffset = startOffset + insCount;
+                        uint handlerOffset = reader.ReadUInt16();
+                        
+                        ExceptionHandler handler = new ExceptionHandler();
+                        methodDefinition.Body.Exceptions.Add(handler);
+                        //handler.TryStart = ihandler.Lookup[(int)startOffset];
+                        //handler.TryEnd = ihandler.Lookup[(int)endOffset];
+
+                        // TODO handlers
+                    }
+                }
 
 
             });

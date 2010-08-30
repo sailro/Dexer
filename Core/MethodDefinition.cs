@@ -17,6 +17,7 @@
 */
 
 using System.Collections.Generic;
+using Dexer.Instructions;
 
 namespace Dexer.Core
 {
@@ -35,13 +36,11 @@ namespace Dexer.Core
             }
         }
         public IList<Annotation> Annotations { get; set; }
-        public IList<AnnotatedParameter> AnnotatedParameters { get; set; }
         public MethodBody Body { get; set; }
 
         internal MethodDefinition()
         {
             Annotations = new List<Annotation>();
-            AnnotatedParameters = new List<AnnotatedParameter>();
         }
 
         internal MethodDefinition(MethodReference mref) : this()

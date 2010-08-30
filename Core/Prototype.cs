@@ -18,10 +18,11 @@
 
 using System.Collections.Generic;
 using System.Text;
+using System;
 
 namespace Dexer.Core
 {
-	public class Prototype
+	public class Prototype : ICloneable
 	{
         public TypeReference ReturnType { get; set; }
         public IList<Parameter> Parameters { get; set; }
@@ -47,5 +48,23 @@ namespace Dexer.Core
             builder.Append(ReturnType);
             return builder.ToString();
         }
-	}
+
+        internal Prototype Clone()
+        {
+            return (Prototype)(this as ICloneable).Clone();
+        }
+
+        object ICloneable.Clone()
+        {
+            Prototype result = new Prototype();
+            result.ReturnType = this.ReturnType;
+
+            foreach (Parameter p in Parameters)
+            {
+                result.Parameters.Add(p.Clone());
+            }
+
+            return result;
+        }
+    }
 }

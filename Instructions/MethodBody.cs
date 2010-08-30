@@ -17,19 +17,25 @@
 */
 
 using System.Collections.Generic;
-using System;
 
-namespace Dexer.Core
+namespace Dexer.Instructions
 {
-    public class AnnotatedParameter : IAnnotationProvider
-    {
-        public IList<Annotation> Annotations { get; set; }
-        public Parameter Parameter { get; set; }
+	public class MethodBody
+	{
+        public DebugInfo DebugInfo { get; set; }
+        public IList<Register> Registers { get; set; }
+        public IList<Instruction> Instructions { get; set; }
+        public IList<ExceptionHandler> Exceptions { get; set; }
 
-        internal AnnotatedParameter()
+        public MethodBody(int registersSize)
         {
-            Annotations = new List<Annotation>();
+           Registers = new List<Register>();
+           for (int i = 0; i < registersSize; i++)
+           {
+               Registers.Add(new Register(i));
+           }
+           Instructions = new List<Instruction>();
+           Exceptions = new List<ExceptionHandler>();
         }
-
-    }
+	}
 }

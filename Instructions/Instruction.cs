@@ -47,7 +47,10 @@ namespace Dexer.Instructions
             if (Operand is Instruction)
                 builder.Append(string.Concat("=> {", (Operand as Instruction).Offset,"}"));
             else
-                builder.Append(Operand);
+                if (Operand is string)
+                    builder.Append(string.Concat("\"",Operand,"\""));
+                else
+                    builder.Append(Operand);
 
             return builder.ToString();
         }

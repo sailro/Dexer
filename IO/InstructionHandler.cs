@@ -30,13 +30,13 @@ namespace Dexer.IO
         private List<Action> LazyInstructionsSetters { get; set; }
         private Dex Dex { get; set; }
 
-        private int[] Codes { get; set; }
+        internal int[] Codes { get; set; }
         private int[] Lower { get; set; }
         private int[] Upper { get; set; }
         private int Ip { get; set; }
         private uint InstructionsSize { get; set; }
 
-        private Dictionary<int, Instruction> Lookup;
+        internal Dictionary<int, Instruction> Lookup;
 
         public InstructionHandler(Dex dex, MethodDefinition methodDefinition)
         {
@@ -518,21 +518,37 @@ namespace Dexer.IO
         private void ProcessPseudoCode(PseudoOpCodes expected, ref int offset) {
             // auto reduce scope (PseudoCode data at the end)
             InstructionsSize = (uint)Math.Min(InstructionsSize, offset);
-            PseudoOpCodes poc = (PseudoOpCodes)RawReadShort(ref offset);
+            PseudoOpCodes poc = (PseudoOpCodes)ReadRawShort(ref offset);
             FormatChecker.CheckExpression(() => poc == expected);
         }
 
-        private int RawReadInt(ref int offset)
+        private byte ReadRawByte(ref int offset, bool next)
         {
-            int result = Codes[offset + 1] << 16;
-            result |= Codes[offset];
-            offset += 2;
+            if (next)
+                return (byte)((Codes[offset++] >> 8) & 0xff);
+            else
+                return (byte)(Codes[offset] & 0xff);
+        }
+
+        private int ReadRawInt(ref int offset)
+        {
+            int result = ReadRawShort(ref offset);
+            result |= ((int)ReadRawShort(ref offset)) << 16;
             return result;
         }
 
-        private short RawReadShort(ref int offset)
+        private short ReadRawShort(ref int offset)
         {
             return (short) Codes[offset++];
+        }
+
+        private long ReadRawLong(ref int offset)
+        {
+            long result = ReadRawShort(ref offset);
+            result |= ((long)ReadRawShort(ref offset)) << 16;
+            result |= ((long)ReadRawShort(ref offset)) << 32;
+            result |= ((long)ReadRawShort(ref offset)) << 48;
+            return result;
         }
 
         private SparseSwitch ExtractSparseSwitch(Instruction ins, int offset)
@@ -541,16 +557,17 @@ namespace Dexer.IO
             SparseSwitch result = new SparseSwitch();
             ProcessPseudoCode(PseudoOpCodes.Sparse_switch, ref offset);
 
-            int targetcount = RawReadShort(ref offset);
+            int targetcount = ReadRawShort(ref offset);
 
             int[] keys = new int[targetcount];
             for (int i = 0; i < targetcount; i++)
-                keys[i] = RawReadInt(ref offset);
+                keys[i] = ReadRawInt(ref offset);
 
             for (int i = 0; i < targetcount; i++)
             {
-                int target = RawReadInt(ref offset);
-                //LazyInstructionsSetters.Add(() => result.Targets.Add(keys[i], Lookup[ins.Offset + target]));
+                int index = i; // used for closure
+                int target = ReadRawInt(ref offset);
+                LazyInstructionsSetters.Add(() => result.Targets.Add(keys[index], Lookup[ins.Offset + target]));
             }
 
             FormatChecker.CheckExpression(() => offset - baseOffset == targetcount * 4 + 2);
@@ -563,11 +580,11 @@ namespace Dexer.IO
             PackedSwitch result = new PackedSwitch();
             ProcessPseudoCode(PseudoOpCodes.Packed_switch, ref offset);
 
-            int targetcount = RawReadShort(ref offset);
-            result.FirstKey = RawReadInt(ref offset);
+            int targetcount = ReadRawShort(ref offset);
+            result.FirstKey = ReadRawInt(ref offset);
 
             for (int i=0; i<targetcount; i++) {
-                int target = RawReadInt(ref offset);
+                int target = ReadRawInt(ref offset);
                 LazyInstructionsSetters.Add( () => result.Targets.Add(Lookup[ins.Offset + target]));
             }
 
@@ -575,26 +592,43 @@ namespace Dexer.IO
             return result;
         }
 
-        private ArrayData ExtractArrayData(int offset)
+        private object[] ExtractArrayData(int offset)
         {
             int baseOffset = offset;
             ProcessPseudoCode(PseudoOpCodes.Fill_array_data, ref offset);
 
-            int elementsize = RawReadShort(ref offset);
-            int elementcount = RawReadInt(ref offset);
-            int arraysize = elementsize * elementcount;
-            byte[] blob = new byte[arraysize];
+            int elementsize = ReadRawShort(ref offset);
+            int elementcount = ReadRawInt(ref offset);
+            List<object> items = new List<object>();
 
-            // WRONG
-            /*for (int i = 0; i < arraysize / 2; i++)
+            bool next = false;
+            for (int i = 0; i < elementcount; i++)
             {
-                short value = RawReadShort(ref offset);
-                blob[i * 2] = (byte)(value & 0xff);
-                blob[i * 2 + 1] = (byte)((value >> 8) & 0xff);
-            }*/
+                switch (elementsize)
+                {
+                    case 1:
+                        items.Add(ReadRawByte(ref offset, next));
+                        next = !next;
+                        break;
+                    case 2: 
+                        items.Add(ReadRawShort(ref offset));
+                        break;
+                    case 4: 
+                        items.Add(ReadRawInt(ref offset));
+                        break;
+                    case 8: 
+                        items.Add(ReadRawLong(ref offset));
+                        break;
+                    default:
+                        throw new NotImplementedException("Unknown Fill_array_data element size");
+                }
+            }
 
-            //FormatChecker.CheckExpression(() => offset - baseOffset == (elementsize * elementcount + 1) / 2 + 4);
-            return new ArrayData(elementsize, elementcount, blob);
+            if ((elementcount % 2 != 0) && (elementsize == 1))
+                offset++;
+
+            FormatChecker.CheckExpression(() => offset - baseOffset == (elementsize * elementcount + 1) / 2 + 4);
+            return items.ToArray();
         }
 
     }
