@@ -23,6 +23,17 @@ namespace Dexer.Extensions
 {
     public static class BinaryReaderExtensions
     {
+
+        public static void PreserveCurrentPosition(this BinaryReader reader, uint newPosition, Action action)
+        {
+            long position = reader.BaseStream.Position;
+            reader.BaseStream.Seek(newPosition, SeekOrigin.Begin);
+
+            action();
+
+            reader.BaseStream.Seek(position, SeekOrigin.Begin);
+        }
+
         public static uint ReadULEB128(this BinaryReader reader, out int shiftCount)
         {
             uint value = 0;

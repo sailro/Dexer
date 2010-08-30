@@ -16,22 +16,38 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.IO;
 using Dexer.Core;
+using Dexer.Extensions;
+using Dexer.Metadata;
 
-namespace Dexer.Instructions
+namespace Dexer.IO
 {
-    public class RegisterInstruction : Instruction
+    internal class MapHandler : IBinaryReadable
     {
-        public Register Register { get; set; }
 
-        public RegisterInstruction(Register register)
+        private Dex Dex { get; set; }
+
+        public MapHandler(Dex dex)
         {
-            Register = register;
+            Dex = dex;
         }
 
-        public override string ToString()
+        public void ReadFrom(BinaryReader reader)
         {
-            return string.Concat(base.ToString(), " ", Register);
+            reader.PreserveCurrentPosition(Dex.Header.MapOffset, () =>
+            {
+                uint mapsize = reader.ReadUInt32();
+                for (int i = 0; i < mapsize; i++)
+                {
+                    MapItem item = new MapItem();
+                    item.Type = (TypeCodes)reader.ReadUInt16();
+                    reader.ReadUInt16(); // unused
+                    item.Size = reader.ReadUInt32();
+                    item.Offset = reader.ReadUInt32();
+                    Dex.Map.Add(item.Type, item);
+                }
+            });
         }
     }
 }

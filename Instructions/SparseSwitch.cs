@@ -16,23 +16,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Dexer.Core;
+using System.Collections.Generic;
 
 namespace Dexer.Instructions
 {
-    public class RegisterValueInstruction : RegisterInstruction
+    public class SparseSwitch
     {
-        public object Value { get; set; }
+        public IDictionary<int, Instruction> Targets { get; set; }
 
-        public RegisterValueInstruction(object value, Register register)
-            : base(register)
+        public SparseSwitch()
         {
-            Value = value;
-        }
-
-        public override string ToString()
-        {
-            return string.Concat(base.ToString(), " ", Value);
+            Targets = new Dictionary<int, Instruction>();
         }
     }
 }

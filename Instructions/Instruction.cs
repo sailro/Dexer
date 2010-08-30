@@ -17,6 +17,8 @@
 */
 
 using Dexer.Core;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Dexer.Instructions
 {
@@ -24,10 +26,30 @@ namespace Dexer.Instructions
     {
         public OpCodes OpCode { get; set; }
         public int Offset { get; set; }
+        public IList<Register> Registers { get; set; }
+        public object Operand { get; set; }
+
+        public Instruction()
+        {
+            Registers = new List<Register>();
+        }
 
         public override string ToString()
         {
-            return OpCode.ToString();
+            StringBuilder builder = new StringBuilder();
+            builder.Append(OpCode.ToString());
+            for (int i = 0; i < Registers.Count; i++)
+            {
+                builder.Append(" ");
+                builder.Append(Registers[i]);
+            }
+            builder.Append(" ");
+            if (Operand is Instruction)
+                builder.Append(string.Concat("=> {", (Operand as Instruction).Offset,"}"));
+            else
+                builder.Append(Operand);
+
+            return builder.ToString();
         }
 
     }

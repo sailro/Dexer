@@ -17,24 +17,17 @@
 */
 
 using System.Collections.Generic;
-using System.Text;
-using Dexer.Core;
 
 namespace Dexer.Instructions
 {
-    public class RegistersValueInstruction : RegistersInstruction
+    public class PackedSwitch
     {
-        public object Value { get; set; }
+        public int FirstKey { get; set; }
+        public IList<Instruction> Targets { get; set; }
 
-        public RegistersValueInstruction(object value, params Register[] registers)
-            : base(registers)
+        public PackedSwitch()
         {
-            Value = value;
-        }
-
-        public override string ToString()
-        {
-            return string.Concat(base.ToString(), " ", Value);
+            Targets = new List<Instruction>();
         }
     }
 }

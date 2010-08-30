@@ -19,6 +19,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Dexer.IO;
+using Dexer.Metadata;
 
 namespace Dexer.Core
 {
@@ -26,10 +27,14 @@ namespace Dexer.Core
     {
         public IList<ClassDefinition> Classes { get; internal set; }
 
-        internal IList<Prototype> Prototypes { get; set; }
         internal IList<TypeReference> TypeReferences { get; set; }
         internal IList<FieldReference> FieldReferences { get; set; }
         internal IList<MethodReference> MethodReferences { get; set; }
+
+        internal DexHeader Header { get; set; }
+        internal IList<string> Strings { get; set; }
+        internal IList<Prototype> Prototypes { get; set; }
+        internal Map Map { get; set; }
 
         public static Dex Load(string filename)
         {
@@ -49,9 +54,13 @@ namespace Dexer.Core
         {
             Classes = new List<ClassDefinition>();
             TypeReferences = new List<TypeReference>();
-            Prototypes = new List<Prototype>();
             FieldReferences = new List<FieldReference>();
             MethodReferences = new List<MethodReference>();
+
+            Header = new DexHeader();
+            Map = new Map();
+            Prototypes = new List<Prototype>();
+            Strings = new List<string>();
         }
 
         internal ClassDefinition GetClass(string fullname)
@@ -87,7 +96,7 @@ namespace Dexer.Core
 
         public static void Main(string[] args)
         {
-            Dex dex = Dex.Load(@"bud.classes.dex");
+            Dex dex = Dex.Load(@"classes.dex");
             //Dex dex = Dex.Load(@"E:\Devl\Dexer\bin\Debug\classes.dex");
         }
 

@@ -16,33 +16,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using Dexer.Core;
+using Dexer.Extensions;
+using Dexer.Metadata;
 
-namespace Dexer.Instructions
+namespace Dexer.IO
 {
-    public class RegistersInstruction : Instruction
+    internal class StringHandler : IBinaryReadable
     {
-        public IList<Register> Registers { get; set; }
 
-        public RegistersInstruction(params Register[] registers)
+        private Dex Dex { get; set; }
+
+        public StringHandler(Dex dex)
         {
-            Registers = new List<Register>(registers);
+            Dex = dex;
         }
 
-        public override string ToString()
+        public void ReadFrom(BinaryReader reader)
         {
-            StringBuilder builder = new StringBuilder();
-            builder.Append(base.ToString());
-            builder.Append(" ");
-            for (int i = 0; i < Registers.Count; i++)
+            reader.PreserveCurrentPosition(Dex.Header.StringsOffset, () =>
             {
-                if (i > 0)
-                    builder.Append(" ");
-                builder.Append(Registers[i]);
-            }
-            return builder.ToString();
+                uint StringsDataOffset = reader.ReadUInt32();
+                reader.BaseStream.Seek(StringsDataOffset, SeekOrigin.Begin);
+                for (int i = 0; i < Dex.Header.StringsSize; i++)
+                {
+                    Dex.Strings.Add(reader.ReadMUTF8String());
+                }
+            });
         }
     }
 }
