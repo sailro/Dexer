@@ -17,12 +17,28 @@
 */
 
 using System.Text;
+using System;
 
 namespace Dexer.Core
 {
-    public abstract class MemberReference
+    public abstract class MemberReference: IEquatable<MemberReference>
     {
         public ClassReference Owner { get; set; }
         public string Name { get; set; }
+
+        public MemberReference()
+        {
+        }
+
+        public MemberReference(ClassReference owner, string name)
+        {
+            Owner = owner;
+            Name = name;
+        }
+
+        public bool Equals(MemberReference other)
+        {
+            return Owner.Equals(other.Owner) && Name.Equals(other.Name);
+        }
     }
 }

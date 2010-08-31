@@ -34,6 +34,23 @@ namespace Dexer.Instructions
             Registers = new List<Register>();
         }
 
+        public Instruction(OpCodes opcode, params Register[] registers)
+            : this(opcode, null, registers)
+        {
+        }
+
+        public Instruction(OpCodes opcode, object operand)
+            : this(opcode, operand, null)
+        {
+        }
+
+        public Instruction(OpCodes opcode, object operand, params Register[] registers) : this()
+        {
+            OpCode = opcode;
+            Operand = operand;
+            Registers = new List<Register>(registers);
+        }
+
         public override string ToString()
         {
             StringBuilder builder = new StringBuilder();

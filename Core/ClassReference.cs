@@ -69,6 +69,11 @@ namespace Dexer.Core
             TypeDescriptor = TypeDescriptors.FullyQualifiedName;
         }
 
+        public ClassReference(string fullname) : this()
+        {
+            Fullname = fullname;
+        }
+
         public override bool Equals(TypeReference other)
         {
             return (other is ClassReference) && (this.Fullname == (other as ClassReference).Fullname);

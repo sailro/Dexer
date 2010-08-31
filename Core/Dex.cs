@@ -81,7 +81,7 @@ namespace Dexer.Core
             Strings = new List<string>();
         }
 
-        internal ClassDefinition GetClass(string fullname)
+        public ClassDefinition GetClass(string fullname)
         {
             return GetClass(fullname, Classes);
         }
@@ -100,7 +100,7 @@ namespace Dexer.Core
             return null;
         }
 
-        internal TypeReference Import(TypeReference tref) {
+        public TypeReference Import(TypeReference tref) {
             foreach (TypeReference item in TypeReferences)
             {
                 if (tref.Equals(item))
@@ -110,6 +110,19 @@ namespace Dexer.Core
             }
             TypeReferences.Add(tref);
             return tref;
+        }
+
+        public MethodReference Import(MethodReference mref)
+        {
+            foreach (MethodReference item in MethodReferences)
+            {
+                if (mref.Equals(item))
+                {
+                    return item;
+                }
+            }
+            MethodReferences.Add(mref);
+            return mref;
         }
 
     }

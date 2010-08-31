@@ -18,6 +18,7 @@
 
 using System.Collections.Generic;
 using Dexer.Metadata;
+using System.Linq;
 
 namespace Dexer.Core
 {
@@ -55,6 +56,18 @@ namespace Dexer.Core
         public override bool Equals(TypeReference other)
         {
             return (other is ClassDefinition) && (base.Equals(other));
+        }
+
+        public IEnumerable<MethodDefinition> GetMethods(string name)
+        {
+            foreach (var mdef in Methods)
+                if (mdef.Name == name)
+                    yield return mdef;
+        }
+
+        public MethodDefinition GetMethod(string name)
+        {
+            return Enumerable.First(GetMethods(name));
         }
     }
 }

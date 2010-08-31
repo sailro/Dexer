@@ -22,7 +22,7 @@ using System;
 
 namespace Dexer.Core
 {
-	public class Prototype : ICloneable
+    public class Prototype : ICloneable, IEquatable<Prototype>
 	{
         public TypeReference ReturnType { get; set; }
         public IList<Parameter> Parameters { get; set; }
@@ -30,6 +30,13 @@ namespace Dexer.Core
         public Prototype()
         {
             Parameters = new List<Parameter>();
+        }
+
+        public Prototype(TypeReference returntype, params Parameter[] parameters)
+            : this()
+        {
+            ReturnType = returntype;
+            Parameters = new List<Parameter>(parameters);
         }
 
         public override string ToString()
@@ -64,6 +71,16 @@ namespace Dexer.Core
                 result.Parameters.Add(p.Clone());
             }
 
+            return result;
+        }
+
+        public bool Equals(Prototype other)
+        {
+            bool result = ReturnType.Equals(other.ReturnType) && Parameters.Count.Equals(other.Parameters.Count);
+            if (result) {
+                for (int i = 0; i<Parameters.Count; i++)
+                    result = result && Parameters[i].Equals(other.Parameters[i]);
+            }
             return result;
         }
     }

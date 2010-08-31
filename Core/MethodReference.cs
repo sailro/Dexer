@@ -17,12 +17,22 @@
 */
 
 using System.Text;
+using System;
 
 namespace Dexer.Core
 {
-    public class MethodReference : MemberReference
+    public class MethodReference : MemberReference, IEquatable<MethodReference>
     {
         public Prototype Prototype { get; set; }
+
+        public MethodReference() : base()
+        {
+        }
+
+        public MethodReference(ClassReference owner, string name, Prototype prototype) : base(owner, name)
+        {
+            Prototype = prototype;
+        }
 
         public override string ToString()
         {
@@ -34,5 +44,9 @@ namespace Dexer.Core
             return builder.ToString();
         }
 
+        public bool Equals(MethodReference other)
+        {
+            return other.Prototype.Equals(Prototype) && base.Equals(other);
+        }
     }
 }

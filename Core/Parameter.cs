@@ -21,14 +21,19 @@ using System;
 
 namespace Dexer.Core
 {
-    public class Parameter : ICloneable
+    public class Parameter : ICloneable, IEquatable<Parameter>
     {
         public IList<Annotation> Annotations { get; set; }
         public TypeReference Type { get; set; }
 
-        internal Parameter()
+        public Parameter()
         {
             Annotations = new List<Annotation>();
+        }
+
+        public Parameter(TypeReference type) : this()
+        {
+            Type = type;
         }
 
         public override string ToString()
@@ -55,5 +60,10 @@ namespace Dexer.Core
             return result;
         }
 
+        public bool Equals(Parameter other)
+        {
+            // do not check annotations at this time.
+            return Type.Equals(other.Type);
+        }
     }
 }
