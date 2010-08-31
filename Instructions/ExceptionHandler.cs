@@ -16,11 +16,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Collections.Generic;
+
 namespace Dexer.Instructions
 {
     public class ExceptionHandler
     {
         public Instruction TryStart { get; set; }
         public Instruction TryEnd { get; set; }
+        public Instruction CatchAll { get; set; }
+        public IList<Catch> Catches { get; set; }
+
+        public ExceptionHandler()
+        {
+            Catches = new List<Catch>();
+        }
     }
 }

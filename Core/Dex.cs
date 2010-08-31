@@ -40,12 +40,27 @@ namespace Dexer.Core
 
         public static Dex Load(string filename)
         {
+            return Load(filename, true);
+        }
+
+        public static Dex Load(string filename, bool preload)
+        {
             Dex result = new Dex();
-            using (FileStream stream = new FileStream(filename, FileMode.Open))
+
+            using (FileStream filestream = new FileStream(filename, FileMode.Open))
             {
-                using (BinaryReader binaryReader = new BinaryReader(stream))
+                Stream sourcestream = filestream; 
+                if (preload)
                 {
-                    DexHandler reader = new DexHandler(result);
+                    MemoryStream memorystream = new MemoryStream();
+                    filestream.CopyTo(memorystream);
+                    memorystream.Position = 0;
+                    sourcestream = memorystream;
+                }
+
+                using (BinaryReader binaryReader = new BinaryReader(sourcestream))
+                {
+                    DexReader reader = new DexReader(result);
                     reader.ReadFrom(binaryReader);
                     return result;
                 }

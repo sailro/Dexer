@@ -24,7 +24,7 @@ using Dexer.Instructions;
 
 namespace Dexer.IO
 {
-    internal class InstructionHandler : IBinaryReadable
+    internal class InstructionReader : IBinaryReadable
     {
         private MethodDefinition MethodDefinition { get; set; }
         private List<Action> LazyInstructionsSetters { get; set; }
@@ -36,13 +36,15 @@ namespace Dexer.IO
         private int Ip { get; set; }
         private uint InstructionsSize { get; set; }
 
-        internal Dictionary<int, Instruction> Lookup;
+        internal Dictionary<int, Instruction> Lookup;     // instructions by starting offset
+        internal Dictionary<int, Instruction> LookupLast; // instructions by ending offset
 
-        public InstructionHandler(Dex dex, MethodDefinition methodDefinition)
+        public InstructionReader(Dex dex, MethodDefinition methodDefinition)
         {
             Dex = dex;
             MethodDefinition = methodDefinition;
             Lookup = new Dictionary<int, Instruction>();
+            LookupLast = new Dictionary<int, Instruction>();
             LazyInstructionsSetters = new List<Action>();
             Ip = 0;
         }
@@ -134,7 +136,7 @@ namespace Dexer.IO
                 ins.OpCode = (OpCodes)Lower[Ip];
                 ins.Offset = Ip;
 
-                Lookup.Add(ins.Offset, ins);
+                Lookup.Add(Ip, ins);
                 MethodDefinition.Body.Instructions.Add(ins);
 
                 switch (ins.OpCode)
@@ -507,6 +509,8 @@ namespace Dexer.IO
                     default:
                         throw new NotImplementedException(string.Concat("Unknown opcode:", ins.OpCode));
                 }
+
+                LookupLast.Add(Ip-1, ins);
             }
             // Check overhead
             FormatChecker.CheckExpression(() => Ip == InstructionsSize);

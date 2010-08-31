@@ -16,21 +16,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-
 namespace Dexer.Instructions
 {
-    public class DebugInfo
+    public enum DebugOpCodes
     {
-        public IList<string> Parameters { get; set; }
-        public IList<DebugInstruction> DebugInstructions { get; set; }
-        public uint LineStart { get; set; }
-
-        public DebugInfo()
-        {
-            Parameters = new List<string>();
-            DebugInstructions = new List<DebugInstruction>();
-        }
+        EndSequence = 0x00,
+        AdvancePc = 0x01,
+        AdvanceLine = 0x02,
+        StartLocal = 0x03,
+        StartLocalExtended = 0x04,
+        EndLocal = 0x05,
+        RestartLocal = 0x06,
+        SetPrologueEnd = 0x07,
+        SetEpilogueBegin = 0x08,
+        SetFile = 0x09,
+        Special = 0x0a // to 0xFF 
     }
 }

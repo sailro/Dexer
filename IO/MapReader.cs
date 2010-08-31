@@ -23,25 +23,29 @@ using Dexer.Metadata;
 
 namespace Dexer.IO
 {
-    internal class StringHandler : IBinaryReadable
+    internal class MapReader : IBinaryReadable
     {
 
         private Dex Dex { get; set; }
 
-        public StringHandler(Dex dex)
+        public MapReader(Dex dex)
         {
             Dex = dex;
         }
 
         public void ReadFrom(BinaryReader reader)
         {
-            reader.PreserveCurrentPosition(Dex.Header.StringsOffset, () =>
+            reader.PreserveCurrentPosition(Dex.Header.MapOffset, () =>
             {
-                uint StringsDataOffset = reader.ReadUInt32();
-                reader.BaseStream.Seek(StringsDataOffset, SeekOrigin.Begin);
-                for (int i = 0; i < Dex.Header.StringsSize; i++)
+                uint mapsize = reader.ReadUInt32();
+                for (int i = 0; i < mapsize; i++)
                 {
-                    Dex.Strings.Add(reader.ReadMUTF8String());
+                    MapItem item = new MapItem();
+                    item.Type = (TypeCodes)reader.ReadUInt16();
+                    reader.ReadUInt16(); // unused
+                    item.Size = reader.ReadUInt32();
+                    item.Offset = reader.ReadUInt32();
+                    Dex.Map.Add(item.Type, item);
                 }
             });
         }

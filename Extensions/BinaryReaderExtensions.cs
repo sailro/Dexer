@@ -50,6 +50,11 @@ namespace Dexer.Extensions
             return value;
         }
 
+        public static long ReadULEB128p1(this BinaryReader reader)
+        {
+            return ((long) ReadULEB128(reader)) - 1;
+        }
+
         public static uint ReadULEB128(this BinaryReader reader)
         {
             int shiftCount;

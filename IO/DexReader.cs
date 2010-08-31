@@ -27,20 +27,20 @@ using Dexer.Metadata;
 
 namespace Dexer.IO
 {
-    public class DexHandler : IBinaryReadable
+    public class DexReader : IBinaryReadable
     {
         private Dex Dex { get; set; }
 
-        public DexHandler(Dex dex)
+        public DexReader(Dex dex)
         {
             Dex = dex;
         }
 
         public void ReadFrom(BinaryReader reader)
         {
-            new DexHeaderHandler(Dex.Header).ReadFrom(reader);
-            new MapHandler(Dex).ReadFrom(reader);
-            new StringHandler(Dex).ReadFrom(reader);
+            new DexHeaderReader(Dex.Header).ReadFrom(reader);
+            new MapReader(Dex).ReadFrom(reader);
+            new StringReader(Dex).ReadFrom(reader);
 
             PrefetchTypeReferences(reader);
             PrefetchClassDefinitions(reader, false);
@@ -470,33 +470,176 @@ namespace Dexer.IO
                 uint debugOffset = reader.ReadUInt32();
 
                 methodDefinition.Body = new MethodBody(registersSize);
-                InstructionHandler ihandler = new InstructionHandler(Dex, methodDefinition);
-                ihandler.ReadFrom(reader);
+                methodDefinition.Body.IncomingArguments = incomingArgsSize;
+                methodDefinition.Body.OutgoingArguments = outgoingArgsSize;
 
-                if ((triesSize != 0) && (ihandler.Codes.Length % 2 != 0))
+                InstructionReader ireader = new InstructionReader(Dex, methodDefinition);
+                ireader.ReadFrom(reader);
+
+                if ((triesSize != 0) && (ireader.Codes.Length % 2 != 0))
                     reader.ReadUInt16(); // padding (4-byte alignment)
 
                 if (triesSize != 0)
-                {
-                    for (int i = 0; i < triesSize; i++)
-                    {
-                        uint startOffset = reader.ReadUInt32();
-                        uint insCount = reader.ReadUInt16();
-                        uint endOffset = startOffset + insCount;
-                        uint handlerOffset = reader.ReadUInt16();
-                        
-                        ExceptionHandler handler = new ExceptionHandler();
-                        methodDefinition.Body.Exceptions.Add(handler);
-                        //handler.TryStart = ihandler.Lookup[(int)startOffset];
-                        //handler.TryEnd = ihandler.Lookup[(int)endOffset];
+                    ReadExceptionHandlers(reader, methodDefinition, ireader, triesSize);
 
-                        // TODO handlers
-                    }
-                }
-
-
+                if (debugOffset != 0)
+                    ReadDebugInfo(reader, methodDefinition, ireader, debugOffset);
             });
 
+        }
+
+        private void ReadDebugInfo(BinaryReader reader, MethodDefinition methodDefinition, InstructionReader instructionReader, uint debugOffset)
+        {
+            DebugInfo debugInfo = new DebugInfo();
+            methodDefinition.Body.DebugInfo = debugInfo;
+
+            uint lineStart = reader.ReadULEB128();
+            debugInfo.LineStart = lineStart;
+
+            uint parametersSize = reader.ReadULEB128();
+            for (int i = 0; i < parametersSize; i++)
+            {
+                long index = reader.ReadULEB128p1();
+                string name = null;
+                if (index != DexConsts.NoIndex && index >= 0)
+                    name = Dex.Strings[(int)index];
+                debugInfo.Parameters.Add(name);
+            }
+
+            while (true)
+            {
+                DebugInstruction ins = new DebugInstruction();
+                ins.OpCode = (DebugOpCodes)reader.ReadByte();
+                debugInfo.DebugInstructions.Add(ins);
+
+                uint registerIndex;
+                uint addrDiff;
+                long nameIndex;
+                long typeIndex;
+                long signatureIndex;
+                int lineDiff;
+                string name;
+
+                switch (ins.OpCode)
+                {
+                    case DebugOpCodes.AdvancePc:
+                        // uleb128 addr_diff
+                        addrDiff = reader.ReadULEB128();
+                        ins.Operands.Add(addrDiff);
+                        break;
+                    case DebugOpCodes.AdvanceLine:
+                        // sleb128 line_diff
+                        lineDiff = reader.ReadSLEB128();
+                        ins.Operands.Add(lineDiff);
+                        break;
+                    case DebugOpCodes.EndLocal:
+                    case DebugOpCodes.RestartLocal:
+                        // uleb128 register_num
+                        registerIndex = reader.ReadULEB128();
+                        ins.Operands.Add(methodDefinition.Body.Registers[(int)registerIndex]);
+                        break;
+                    case DebugOpCodes.SetFile:
+                        // uleb128p1 name_idx
+                        nameIndex = reader.ReadULEB128p1();
+                        name = null;
+                        if (nameIndex != DexConsts.NoIndex && nameIndex >= 0)
+                            name = Dex.Strings[(int)nameIndex];
+                        ins.Operands.Add(name);
+                        break;
+                    case DebugOpCodes.StartLocalExtended:
+                    case DebugOpCodes.StartLocal:
+                        // StartLocalExtended : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx, uleb128p1 sig_idx
+                        // StartLocal : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx
+                        Boolean isExtended = ins.OpCode == DebugOpCodes.StartLocalExtended;
+
+                        registerIndex = reader.ReadULEB128();
+                        ins.Operands.Add(methodDefinition.Body.Registers[(int)registerIndex]);
+
+                        nameIndex = reader.ReadULEB128p1();
+                        name = null;
+                        if (nameIndex != DexConsts.NoIndex && nameIndex >= 0)
+                            name = Dex.Strings[(int)nameIndex];
+                        ins.Operands.Add(name);
+
+                        typeIndex = reader.ReadULEB128p1();
+                        TypeReference type = null;
+                        if (typeIndex != DexConsts.NoIndex && typeIndex >= 0)
+                            type = Dex.TypeReferences[(int)typeIndex];
+                        ins.Operands.Add(type);
+
+                        if (isExtended)
+                        {
+                            signatureIndex = reader.ReadULEB128p1();
+                            string signature = null;
+                            if (signatureIndex != DexConsts.NoIndex && signatureIndex >= 0)
+                                signature = Dex.Strings[(int)signatureIndex];
+                            ins.Operands.Add(signature);
+                        }
+
+                        break;
+                    case DebugOpCodes.EndSequence:
+                        return;
+                    case DebugOpCodes.Special:
+                    case DebugOpCodes.SetPrologueEnd:
+                    case DebugOpCodes.SetEpilogueBegin:
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private void ReadExceptionHandlers(BinaryReader reader, MethodDefinition methodDefinition, InstructionReader instructionReader, ushort triesSize)
+        {
+            var exceptionLookup = new Dictionary<uint, List<ExceptionHandler>>();
+            for (int i = 0; i < triesSize; i++)
+            {
+                uint startOffset = reader.ReadUInt32();
+                uint insCount = reader.ReadUInt16();
+                uint endOffset = startOffset + insCount - 1;
+                uint handlerOffset = reader.ReadUInt16();
+
+                ExceptionHandler ehandler = new ExceptionHandler();
+                methodDefinition.Body.Exceptions.Add(ehandler);
+                if (!exceptionLookup.ContainsKey(handlerOffset))
+                {
+                    exceptionLookup.Add(handlerOffset, new List<ExceptionHandler>());
+                }
+                exceptionLookup[handlerOffset].Add(ehandler);
+                ehandler.TryStart = instructionReader.Lookup[(int)startOffset];
+                // The last code unit covered (inclusive) is start_addr + insn_count - 1
+                ehandler.TryEnd = instructionReader.LookupLast[(int)endOffset];
+            }
+
+            long baseOffset = reader.BaseStream.Position;
+            uint catchHandlersSize = reader.ReadULEB128();
+            for (int i = 0; i < catchHandlersSize; i++)
+            {
+                long itemoffset = reader.BaseStream.Position - baseOffset;
+                int catchTypes = reader.ReadSLEB128();
+                bool catchAllPresent = catchTypes <= 0;
+                catchTypes = Math.Abs(catchTypes);
+
+                for (int j = 0; j < catchTypes; j++)
+                {
+                    uint typeIndex = reader.ReadULEB128();
+                    uint offset = reader.ReadULEB128();
+                    Catch @catch = new Catch();
+                    @catch.Type = Dex.TypeReferences[(int)typeIndex];
+                    @catch.Instruction = instructionReader.Lookup[(int)offset];
+
+                    // As catch handler can be used in several tries, let's clone him
+                    foreach (ExceptionHandler ehandler in exceptionLookup[(uint)itemoffset])
+                        ehandler.Catches.Add(@catch.Clone());
+                }
+
+                if (catchAllPresent)
+                {
+                    uint offset = reader.ReadULEB128();
+                    foreach (ExceptionHandler ehandler in exceptionLookup[(uint)itemoffset])
+                        ehandler.CatchAll = instructionReader.Lookup[(int)offset];
+                }
+
+            }
         }
 
         private void ReadClassDefinition(BinaryReader reader, ClassDefinition classDefinition, uint classDataOffset)
@@ -527,7 +670,8 @@ namespace Dexer.IO
 
                     MethodReference mref = new MethodReference();
                     mref.Owner = (ClassReference)Dex.TypeReferences[classIndex];
-                    mref.Prototype = Dex.Prototypes[prototypeIndex];
+                    // Clone the prototype so we can annotate & update it easily
+                    mref.Prototype = Dex.Prototypes[prototypeIndex].Clone();
                     mref.Name = Dex.Strings[nameIndex];
 
                     Dex.MethodReferences.Add(mref);

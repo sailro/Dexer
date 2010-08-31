@@ -26,6 +26,8 @@ namespace Dexer.Instructions
         public IList<Register> Registers { get; set; }
         public IList<Instruction> Instructions { get; set; }
         public IList<ExceptionHandler> Exceptions { get; set; }
+        public ushort IncomingArguments { get; set; }
+        public ushort OutgoingArguments { get; set; }
 
         public MethodBody(int registersSize)
         {
@@ -37,5 +39,5 @@ namespace Dexer.Instructions
            Instructions = new List<Instruction>();
            Exceptions = new List<ExceptionHandler>();
         }
-	}
+    }
 }

@@ -16,21 +16,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
+using Dexer.Core;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Dexer.Instructions
 {
-    public class DebugInfo
+    public class DebugInstruction
     {
-        public IList<string> Parameters { get; set; }
-        public IList<DebugInstruction> DebugInstructions { get; set; }
-        public uint LineStart { get; set; }
+        public DebugOpCodes OpCode { get; set; }
+        public IList<object> Operands { get; set; }
 
-        public DebugInfo()
+        public DebugInstruction()
         {
-            Parameters = new List<string>();
-            DebugInstructions = new List<DebugInstruction>();
+            Operands = new List<object>();
         }
+
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append(OpCode.ToString());
+            for (int i = 0; i < Operands.Count; i++)
+            {
+                builder.Append(" ");
+                builder.Append(Operands[i]);
+            }
+            return builder.ToString();
+        }
+
     }
 }

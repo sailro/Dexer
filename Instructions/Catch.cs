@@ -16,21 +16,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Dexer.Core;
 using System;
-using System.Collections.Generic;
 
 namespace Dexer.Instructions
 {
-    public class DebugInfo
+    public class Catch : ICloneable
     {
-        public IList<string> Parameters { get; set; }
-        public IList<DebugInstruction> DebugInstructions { get; set; }
-        public uint LineStart { get; set; }
+        public TypeReference Type { get; set; }
+        public Instruction Instruction { get; set; }
 
-        public DebugInfo()
+        internal Catch Clone()
         {
-            Parameters = new List<string>();
-            DebugInstructions = new List<DebugInstruction>();
+            return (Catch)(this as ICloneable).Clone();
         }
+
+        object ICloneable.Clone()
+        {
+            Catch result = new Catch();
+            
+            result.Type = this.Type;
+            result.Instruction = this.Instruction;
+
+            return result;
+        }
+
     }
 }

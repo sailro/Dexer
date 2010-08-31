@@ -22,12 +22,12 @@ using Dexer.Extensions;
 
 namespace Dexer.IO
 {
-    internal class DexHeaderHandler : IBinaryReadable
+    internal class DexHeaderReader : IBinaryReadable
     {
 
         private DexHeader Item { get; set; }
 
-        public DexHeaderHandler(DexHeader item)
+        public DexHeaderReader(DexHeader item)
         {
             Item = item;
         }
