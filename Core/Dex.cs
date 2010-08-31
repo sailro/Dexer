@@ -16,12 +16,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using Dexer.Extensions;
 using Dexer.IO;
 using Dexer.Metadata;
-using System;
-using System.Linq;
 
 namespace Dexer.Core
 {
@@ -109,17 +110,6 @@ namespace Dexer.Core
             }
             TypeReferences.Add(tref);
             return tref;
-        }
-
-        public static void Main(string[] args)
-        {
-            DateTime dt = DateTime.Now;
-            Dex dex = Dex.Load(@"classes.dex");
-            Console.WriteLine(DateTime.Now.Subtract(dt).TotalMilliseconds);
-            var count = (from c in dex.TypeReferences where c is ClassDefinition select c).Count();
-            Console.WriteLine(string.Concat(count, " classes"));
-            Console.ReadKey();
-            //Dex dex = Dex.Load(@"E:\Devl\Dexer\bin\Debug\classes.dex");
         }
 
     }

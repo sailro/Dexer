@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("OPAC DU RHONE")]
 [assembly: AssemblyProduct("Dexer")]
-[assembly: AssemblyCopyright("Copyright © OPAC DU RHONE 2010")]
+[assembly: AssemblyCopyright("Copyright © 2010 Sebastien LEBRETON")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

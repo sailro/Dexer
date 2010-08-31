@@ -16,20 +16,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Dexer.Metadata
+using System;
+using System.IO;
+
+namespace Dexer.Extensions
 {
-	public enum TypeDescriptors
-	{
-        Void = 'V',
-        Boolean = 'Z',
-        Byte = 'B',
-        Short = 'S',
-        Char = 'C',
-        Int = 'I',
-        Long = 'J',
-        Float = 'F',
-        Double = 'D',
-        FullyQualifiedName = 'L',
-        Array = '[',
-	}
+    public static class StreamExtensions
+    {
+
+        // Note: already implemented in .NET 4.0
+        public static void CopyTo(this Stream source, Stream destination)
+        {
+            int num;
+            byte[] buffer = new byte[0x1000];
+            while ((num = source.Read(buffer, 0, buffer.Length)) != 0)
+            {
+                destination.Write(buffer, 0, num);
+            }
+        }
+
+    }
 }

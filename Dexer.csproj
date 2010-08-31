@@ -6,12 +6,13 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{1151AF14-63F7-470D-9BD7-62BF0FF065D3}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Dexer</RootNamespace>
     <AssemblyName>Dexer</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,17 +37,13 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\AccessFlags.cs" />
     <Compile Include="Core\Annotation.cs" />
     <Compile Include="Core\AnnotationArgument.cs" />
     <Compile Include="Core\AnnotationVisibility.cs" />
+    <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Instructions\DebugInstruction.cs" />
     <Compile Include="Instructions\DebugOpCodes.cs" />
     <Compile Include="Instructions\PseudoOpCodes.cs" />
@@ -93,6 +90,9 @@
     <Compile Include="Metadata\TypeCodes.cs" />
     <Compile Include="Core\ClassDefinition.cs" />
     <Compile Include="Core\TypeReference.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

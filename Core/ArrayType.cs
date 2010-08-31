@@ -16,11 +16,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Dexer.Metadata;
+
 namespace Dexer.Core
 {
     public class ArrayType : TypeReference
     {
         public TypeReference ElementType { get; set; }
+
+        public ArrayType()
+        {
+            TypeDescriptor = TypeDescriptors.Array;
+        }
 
         public override string ToString()
         {

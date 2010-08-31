@@ -49,7 +49,7 @@ namespace Dexer.Metadata
                         return PrimitiveType.Short;
                     case TypeDescriptors.Void:
                         return PrimitiveType.Void;
-                    case TypeDescriptors.ArrayOfDescriptor:
+                    case TypeDescriptors.Array:
                         return new ArrayType();
                     case TypeDescriptors.FullyQualifiedName:
                         return new ClassReference();
@@ -66,7 +66,7 @@ namespace Dexer.Metadata
                 TypeDescriptors td = (TypeDescriptors)prefix;
                 switch (td)
                 {
-                    case TypeDescriptors.ArrayOfDescriptor:
+                    case TypeDescriptors.Array:
                         ArrayType atype = (ArrayType)item;
 
                         TypeReference elementType = Allocate(typeDescriptor.Substring(1));
@@ -83,7 +83,7 @@ namespace Dexer.Metadata
         }
 
         public static bool IsPrimitive(TypeDescriptors td) {
-            return (td != TypeDescriptors.ArrayOfDescriptor) && (td != TypeDescriptors.FullyQualifiedName);
+            return (td != TypeDescriptors.Array) && (td != TypeDescriptors.FullyQualifiedName);
         }
 
 	}

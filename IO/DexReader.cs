@@ -580,6 +580,7 @@ namespace Dexer.IO
                     case DebugOpCodes.EndSequence:
                         return;
                     case DebugOpCodes.Special:
+                        // between 0x0a and 0xff (inclusive)
                     case DebugOpCodes.SetPrologueEnd:
                     case DebugOpCodes.SetEpilogueBegin:
                     default:

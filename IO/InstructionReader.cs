@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.IO;
 using Dexer.Core;
 using Dexer.Instructions;
+using Dexer.Metadata;
 
 namespace Dexer.IO
 {
@@ -129,8 +130,9 @@ namespace Dexer.IO
 
             while (Ip < InstructionsSize)
             {
-                int data;
                 int offset;
+                int registerCount;
+                int registerMask;
 
                 Instruction ins = new Instruction();
                 ins.OpCode = (OpCodes)Lower[Ip];
@@ -305,10 +307,21 @@ namespace Dexer.IO
                         break;
                     case OpCodes.Filled_new_array:
                         // {vD, vE, vF, vG, vA}, type@CCCC
-                        throw new NotImplementedException(); // TODO Implement
+                        registerMask = Upper[Ip++] << 16;
+                        ins.Operand = Dex.TypeReferences[ReadShort()];
+                        registerMask |= Codes[Ip++];
+                        registerCount = registerMask >> 20;
+                        for (int i=0; i<registerCount; i++)
+                            ins.Registers.Add(registers[(registerCount >> (i * 4)) & 0xF]);
+                        break;
                     case OpCodes.Filled_new_array_range:
                         // {vCCCC .. vNNNN}, type@BBBB
-                        throw new NotImplementedException(); // TODO Implement
+                        registerCount = Upper[Ip++] << 16;
+                        ins.Operand = Dex.TypeReferences[ReadShort()];
+                        ReadvBBBB(ins);
+                        for (int i = 1; i < registerCount; i++)
+                            ins.Registers.Add(registers[i + ins.Registers[0].Index]);
+                        break;
                     case OpCodes.Goto:
                         // +AA
                         offset = (sbyte) ReadSByte();
@@ -460,10 +473,10 @@ namespace Dexer.IO
                     case OpCodes.Invoke_static:
                     case OpCodes.Invoke_interface:
                         // {vD, vE, vF, vG, vA}, meth@CCCC
-                        data = Upper[Ip++] << 16;
+                        registerMask = Upper[Ip++] << 16;
                         ins.Operand = Dex.MethodReferences[ReadShort()];
-                        data |= Codes[Ip++];
-                        // TODO: handle registers
+                        registerMask |= Codes[Ip++];
+                        SetRegisters(ins.OpCode != OpCodes.Invoke_static, ins, registerMask);
                         break;
                     case OpCodes.Invoke_virtual_range:
                     case OpCodes.Invoke_super_range:
@@ -471,10 +484,11 @@ namespace Dexer.IO
                     case OpCodes.Invoke_static_range:
                     case OpCodes.Invoke_interface_range:
                         // {vCCCC .. vNNNN}, meth@BBBB
-                        data = Upper[Ip++];
+                        registerCount = ReadSByte();
                         ins.Operand = Dex.MethodReferences[ReadShort()];
-                        Ip++; //a1ri = Codes[Ip++];
-                        // TODO: handle registers
+                        ReadvBBBB(ins);
+                        for (int i = 1; i < registerCount; i++)
+                            ins.Registers.Add(registers[i + ins.Registers[0].Index]);
                         break;
                     case OpCodes.Add_int_lit16:
                     case OpCodes.Rsub_int:
@@ -519,7 +533,43 @@ namespace Dexer.IO
                 action();
         }
 
-        private void ProcessPseudoCode(PseudoOpCodes expected, ref int offset) {
+        private void SetRegisters(bool isVirtual, Instruction ins, int registerMask)
+        {
+            MethodReference mref = (MethodReference)ins.Operand;
+
+            int argumentPosition = 0;
+            if (isVirtual)
+            {
+                ins.Registers.Add(MethodDefinition.Body.Registers[registerMask & 0xF]);
+                argumentPosition++;
+            }
+
+            foreach(Parameter prm in mref.Prototype.Parameters) {
+    			int registerIndex = (registerMask >> (argumentPosition * 4)) & 0xF;
+                switch(prm.Type.TypeDescriptor) {
+                    case TypeDescriptors.Char:
+                    case TypeDescriptors.Byte:
+                    case TypeDescriptors.Short:
+                    case TypeDescriptors.Int:
+                    case TypeDescriptors.Boolean:
+                    case TypeDescriptors.Float:
+                    case TypeDescriptors.FullyQualifiedName:
+                    case TypeDescriptors.Array:
+                        argumentPosition++;
+                        break;
+                    case TypeDescriptors.Long:
+                    case TypeDescriptors.Double:
+                        argumentPosition+=2;
+                        break;
+                    default:
+                        throw new ArgumentException();
+                }
+                ins.Registers.Add(MethodDefinition.Body.Registers[registerIndex]);
+            }
+        }
+
+        private void ProcessPseudoCode(PseudoOpCodes expected, ref int offset)
+        {
             // auto reduce scope (PseudoCode data at the end)
             InstructionsSize = (uint)Math.Min(InstructionsSize, offset);
             PseudoOpCodes poc = (PseudoOpCodes)ReadRawShort(ref offset);
