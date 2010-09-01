@@ -34,7 +34,7 @@ namespace Dexer.IO
         internal int[] Codes { get; set; }
         private int[] Lower { get; set; }
         private int[] Upper { get; set; }
-        private int Ip { get; set; }
+        private int Ip;
         private uint InstructionsSize { get; set; }
 
         internal Dictionary<int, Instruction> Lookup;     // instructions by starting offset
@@ -82,34 +82,37 @@ namespace Dexer.IO
             ReadvAA(ins);
         }
 
-        private int ReadNibble() {
-            return (Upper[Ip++] << 24) >> 28;
+        private sbyte ReadNibble(ref int codeUnitOffset)
+        {
+            return (sbyte)((Upper[codeUnitOffset++] << 24) >> 28);
         }
 
-        private int ReadShort()
+        private short ReadShort(ref int codeUnitOffset)
         {
-            return Codes[Ip++];
+            return (short)Codes[codeUnitOffset++];
         }
 
-        private int ReadInt()
+        private int ReadInt(ref int codeUnitOffset)
         {
-            int result = ReadShort();
-            result |= ((int)ReadShort()) << 16;
+            // don't reuse ReadShort to keep bit sign
+            int result = Codes[codeUnitOffset++];
+            result |= Codes[codeUnitOffset++] << 16;
             return result;
         }
 
-        private long ReadLong()
+        private long ReadLong(ref int codeUnitOffset)
         {
-            long result = ReadShort();
-            result |= ((long)ReadShort()) << 16;
-            result |= ((long)ReadShort()) << 32;
-            result |= ((long)ReadShort()) << 48;
+            // don't reuse ReadShort to keep bit sign
+            long result = Codes[codeUnitOffset++];
+            result |= ((long)Codes[codeUnitOffset++]) << 16;
+            result |= ((long)Codes[codeUnitOffset++]) << 32;
+            result |= ((long)Codes[codeUnitOffset++]) << 48;
             return result;
         }
 
-        private int ReadSByte()
+        private sbyte ReadSByte(ref int codeUnitOffset)
         {
-            return Upper[Ip++];
+            return (sbyte)Upper[Ip++];
         }
 
         public void ReadFrom(BinaryReader reader)
@@ -238,77 +241,77 @@ namespace Dexer.IO
                     case OpCodes.Const_4:
                         // vA, #+B
                         ReadvA(ins);
-                        ins.Operand = (int) ReadNibble();
+                        ins.Operand = (int) ReadNibble(ref Ip);
                         break;
                     case OpCodes.Const_16:
                         // vAA, #+BBBB
                         ReadvAA(ins);
-                        ins.Operand = (int) ReadShort();
+                        ins.Operand = (int)ReadShort(ref Ip);
                         break;
                     case OpCodes.Const_wide_16:
                         // vAA, #+BBBB
                         ReadvAA(ins);
-                        ins.Operand = (long) ReadShort();
+                        ins.Operand = (long)ReadShort(ref Ip);
                         break;
                     case OpCodes.Const:
                         // vAA, #+BBBBBBBB
                         ReadvAA(ins);
-                        ins.Operand = ReadInt();
+                        ins.Operand = (uint)ReadInt(ref Ip);
                         break;
                     case OpCodes.Const_wide_32:
                         // vAA, #+BBBBBBBB
                         ReadvAA(ins);
-                        ins.Operand = (long) ReadInt();
+                        ins.Operand = (long)ReadInt(ref Ip);
                         break;
                     case OpCodes.Fill_array_data:
                         // vAA, #+BBBBBBBB
                         ReadvAA(ins);
-                        offset = ReadInt();
+                        offset = ReadInt(ref Ip);
                         ins.Operand = ExtractArrayData(ins.Offset + offset);
                         break;
                     case OpCodes.Const_high16:
                         // vAA, #+BBBB0000
                         ReadvAA(ins);
-                        ins.Operand = ((long)ReadShort()) << 16;
+                        ins.Operand = ((long)ReadShort(ref Ip)) << 16;
                         break;
                     case OpCodes.Const_wide:
                         // vAA, #+BBBBBBBBBBBBBBBB
                         ReadvAA(ins);
-                        ins.Operand = ReadLong();
+                        ins.Operand = ReadLong(ref Ip);
                         break;
                     case OpCodes.Const_wide_high16:
                         // vAA, #+BBBB000000000000
                         ReadvAA(ins);
-                        ins.Operand = ((long)ReadShort()) << 48;
+                        ins.Operand = ((long)ReadShort(ref Ip)) << 48;
                         break;
                     case OpCodes.Const_string:
                         // vAA, string@BBBB
                         ReadvAA(ins);
-                        ins.Operand = Dex.Strings[ReadShort()];
+                        ins.Operand = Dex.Strings[ReadShort(ref Ip)];
                         break;
                     case OpCodes.Const_string_jumbo:
                         // vAA, string@BBBBBBBB
                         ReadvAA(ins);
-                        ins.Operand = Dex.Strings[ReadInt()];
+                        ins.Operand = Dex.Strings[ReadInt(ref Ip)];
                         break;
                     case OpCodes.Const_class:
                     case OpCodes.New_instance:
                     case OpCodes.Check_cast:
                         // vAA, type@BBBB
                         ReadvAA(ins);
-                        ins.Operand = Dex.TypeReferences[ReadShort()];
+                        ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
                         break;
                     case OpCodes.Instance_of:
                     case OpCodes.New_array:
                         // vA, vB, type@CCCC
                         ReadvA(ins);
                         ReadvB(ins);
-                        ins.Operand = Dex.TypeReferences[ReadShort()];
+                        ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
                         break;
                     case OpCodes.Filled_new_array:
                         // {vD, vE, vF, vG, vA}, type@CCCC
                         registerMask = Upper[Ip++] << 16;
-                        ins.Operand = Dex.TypeReferences[ReadShort()];
+                        ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
                         registerMask |= Codes[Ip++];
                         registerCount = registerMask >> 20;
                         for (int i=0; i<registerCount; i++)
@@ -317,38 +320,38 @@ namespace Dexer.IO
                     case OpCodes.Filled_new_array_range:
                         // {vCCCC .. vNNNN}, type@BBBB
                         registerCount = Upper[Ip++] << 16;
-                        ins.Operand = Dex.TypeReferences[ReadShort()];
+                        ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
                         ReadvBBBB(ins);
                         for (int i = 1; i < registerCount; i++)
                             ins.Registers.Add(registers[i + ins.Registers[0].Index]);
                         break;
                     case OpCodes.Goto:
                         // +AA
-                        offset = (sbyte) ReadSByte();
+                        offset = (sbyte)ReadSByte(ref Ip);
                         LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
                         break;
                     case OpCodes.Goto_16:
                         // +AAAA
                         Ip++;
-                        offset = (short) ReadShort();
+                        offset = (short)ReadShort(ref Ip);
                         LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
                         break;
                     case OpCodes.Goto_32:
                         // +AAAAAAAA
                         Ip++;
-                        offset = ReadInt();
+                        offset = ReadInt(ref Ip);
                         LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
                         break;
                     case OpCodes.Packed_switch:
                         // vAA, +BBBBBBBB
                         ReadvAA(ins);
-                        offset = ReadInt();
+                        offset = ReadInt(ref Ip);
                         ins.Operand = ExtractPackedSwitch(ins, ins.Offset + offset);
                         break;
                     case OpCodes.Sparse_switch:
                         // vAA, +BBBBBBBB
                         ReadvAA(ins);
-                        offset = ReadInt();
+                        offset = ReadInt(ref Ip);
                         ins.Operand = ExtractSparseSwitch(ins, ins.Offset + offset);
                         break;
                     case OpCodes.Cmpl_float:
@@ -416,7 +419,7 @@ namespace Dexer.IO
                         // vA, vB, +CCCC
                         ReadvA(ins);
                         ReadvB(ins);
-                        offset = (short) ReadShort();
+                        offset = (short)ReadShort(ref Ip);
                         LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
                         break;
                     case OpCodes.If_eqz:
@@ -427,7 +430,7 @@ namespace Dexer.IO
                     case OpCodes.If_lez:
                         // vAA, +BBBB
                         ReadvAA(ins);
-                        offset = (short) ReadShort();
+                        offset = (short)ReadShort(ref Ip);
                         LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
                         break;
                     case OpCodes.Iget:
@@ -447,7 +450,7 @@ namespace Dexer.IO
                         // vA, vB, field@CCCC
                         ReadvA(ins);
                         ReadvB(ins);
-                        ins.Operand = Dex.FieldReferences[ReadShort()];
+                        ins.Operand = Dex.FieldReferences[ReadShort(ref Ip)];
                         break;
                     case OpCodes.Sget:
                     case OpCodes.Sget_wide:
@@ -465,7 +468,7 @@ namespace Dexer.IO
                     case OpCodes.Sput_short:
                         // vAA, field@BBBB
                         ReadvAA(ins);
-                        ins.Operand = Dex.FieldReferences[ReadShort()];
+                        ins.Operand = Dex.FieldReferences[ReadShort(ref Ip)];
                         break;
                     case OpCodes.Invoke_virtual:
                     case OpCodes.Invoke_super:
@@ -474,7 +477,7 @@ namespace Dexer.IO
                     case OpCodes.Invoke_interface:
                         // {vD, vE, vF, vG, vA}, meth@CCCC
                         registerMask = Upper[Ip++] << 16;
-                        ins.Operand = Dex.MethodReferences[ReadShort()];
+                        ins.Operand = Dex.MethodReferences[ReadShort(ref Ip)];
                         registerMask |= Codes[Ip++];
                         SetRegisters(ins.OpCode != OpCodes.Invoke_static, ins, registerMask);
                         break;
@@ -484,8 +487,8 @@ namespace Dexer.IO
                     case OpCodes.Invoke_static_range:
                     case OpCodes.Invoke_interface_range:
                         // {vCCCC .. vNNNN}, meth@BBBB
-                        registerCount = ReadSByte();
-                        ins.Operand = Dex.MethodReferences[ReadShort()];
+                        registerCount = ReadSByte(ref Ip);
+                        ins.Operand = Dex.MethodReferences[ReadShort(ref Ip)];
                         ReadvBBBB(ins);
                         for (int i = 1; i < registerCount; i++)
                             ins.Registers.Add(registers[i + ins.Registers[0].Index]);
@@ -501,7 +504,7 @@ namespace Dexer.IO
                         // vA, vB, #+CCCC
                         ReadvA(ins);
                         ReadvB(ins);
-                        ins.Operand = (int) ReadShort();
+                        ins.Operand = (int)ReadShort(ref Ip);
                         break;
                     case OpCodes.Add_int_lit8:
                     case OpCodes.Rsub_int_lit8:
@@ -517,7 +520,7 @@ namespace Dexer.IO
                         // vAA, vBB, #+CC
                         ReadvAA(ins);
                         ReadvBB(ins);
-                        ins.Operand = ReadSByte();
+                        ins.Operand = ReadSByte(ref Ip);
                         break;
 
                     default:
@@ -572,37 +575,8 @@ namespace Dexer.IO
         {
             // auto reduce scope (PseudoCode data at the end)
             InstructionsSize = (uint)Math.Min(InstructionsSize, offset);
-            PseudoOpCodes poc = (PseudoOpCodes)ReadRawShort(ref offset);
+            PseudoOpCodes poc = (PseudoOpCodes)ReadShort(ref offset);
             FormatChecker.CheckExpression(() => poc == expected);
-        }
-
-        private byte ReadRawByte(ref int offset, bool next)
-        {
-            if (next)
-                return (byte)((Codes[offset++] >> 8) & 0xff);
-            else
-                return (byte)(Codes[offset] & 0xff);
-        }
-
-        private int ReadRawInt(ref int offset)
-        {
-            int result = ReadRawShort(ref offset);
-            result |= ((int)ReadRawShort(ref offset)) << 16;
-            return result;
-        }
-
-        private short ReadRawShort(ref int offset)
-        {
-            return (short) Codes[offset++];
-        }
-
-        private long ReadRawLong(ref int offset)
-        {
-            long result = ReadRawShort(ref offset);
-            result |= ((long)ReadRawShort(ref offset)) << 16;
-            result |= ((long)ReadRawShort(ref offset)) << 32;
-            result |= ((long)ReadRawShort(ref offset)) << 48;
-            return result;
         }
 
         private SparseSwitch ExtractSparseSwitch(Instruction ins, int offset)
@@ -611,16 +585,16 @@ namespace Dexer.IO
             SparseSwitch result = new SparseSwitch();
             ProcessPseudoCode(PseudoOpCodes.Sparse_switch, ref offset);
 
-            int targetcount = ReadRawShort(ref offset);
+            int targetcount = ReadShort(ref offset);
 
             int[] keys = new int[targetcount];
             for (int i = 0; i < targetcount; i++)
-                keys[i] = ReadRawInt(ref offset);
+                keys[i] = ReadInt(ref offset);
 
             for (int i = 0; i < targetcount; i++)
             {
                 int index = i; // used for closure
-                int target = ReadRawInt(ref offset);
+                int target = ReadInt(ref offset);
                 LazyInstructionsSetters.Add(() => result.Targets.Add(keys[index], Lookup[ins.Offset + target]));
             }
 
@@ -634,11 +608,11 @@ namespace Dexer.IO
             PackedSwitch result = new PackedSwitch();
             ProcessPseudoCode(PseudoOpCodes.Packed_switch, ref offset);
 
-            int targetcount = ReadRawShort(ref offset);
-            result.FirstKey = ReadRawInt(ref offset);
+            int targetcount = ReadShort(ref offset);
+            result.FirstKey = ReadInt(ref offset);
 
             for (int i=0; i<targetcount; i++) {
-                int target = ReadRawInt(ref offset);
+                int target = ReadInt(ref offset);
                 LazyInstructionsSetters.Add( () => result.Targets.Add(Lookup[ins.Offset + target]));
             }
 
@@ -651,8 +625,8 @@ namespace Dexer.IO
             int baseOffset = offset;
             ProcessPseudoCode(PseudoOpCodes.Fill_array_data, ref offset);
 
-            int elementsize = ReadRawShort(ref offset);
-            int elementcount = ReadRawInt(ref offset);
+            int elementsize = ReadShort(ref offset);
+            int elementcount = ReadInt(ref offset);
             List<object> items = new List<object>();
 
             bool next = false;
@@ -661,17 +635,17 @@ namespace Dexer.IO
                 switch (elementsize)
                 {
                     case 1:
-                        items.Add(ReadRawByte(ref offset, next));
+                        items.Add(next ? (sbyte)((Codes[offset++] >> 8) & 0xff) : (sbyte)(Codes[offset] & 0xff));
                         next = !next;
                         break;
-                    case 2: 
-                        items.Add(ReadRawShort(ref offset));
+                    case 2:
+                        items.Add(ReadShort(ref offset));
                         break;
-                    case 4: 
-                        items.Add(ReadRawInt(ref offset));
+                    case 4:
+                        items.Add(ReadInt(ref offset));
                         break;
-                    case 8: 
-                        items.Add(ReadRawLong(ref offset));
+                    case 8:
+                        items.Add(ReadLong(ref offset));
                         break;
                     default:
                         throw new NotImplementedException("Unknown Fill_array_data element size");
