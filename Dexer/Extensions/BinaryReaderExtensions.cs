@@ -37,22 +37,6 @@ namespace Dexer.Extensions
             reader.BaseStream.Seek(position, SeekOrigin.Begin);
         }
 
-        public static uint ReadULEB128(this BinaryReader reader, out int shiftCount)
-        {
-            uint value = 0;
-            bool hasNext = true;
-            shiftCount = 0;
-
-            while (hasNext)
-            {
-                uint data = reader.ReadByte();
-                value |= (data & 0x7F) << shiftCount;
-                shiftCount += 7;
-                hasNext = (data & 0x80) != 0;
-            }
-            return value;
-        }
-
         public static long ReadULEB128p1(this BinaryReader reader)
         {
             return ((long) ReadULEB128(reader)) - 1;
@@ -60,15 +44,37 @@ namespace Dexer.Extensions
 
         public static uint ReadULEB128(this BinaryReader reader)
         {
-            int shiftCount;
-            return ReadULEB128(reader, out shiftCount);
+            int result = 0;
+            int shift = 0;
+            byte partial;
+
+            do
+            {
+                partial = reader.ReadByte();
+                result |= (partial & 0x7f) << shift;
+                shift += 7;
+            } while ((partial & 0x80) != 0);
+
+            return (uint)result;
         }
 
         public static int ReadSLEB128(this BinaryReader reader)
         {
-            int shiftCount;
-            int value = (int)ReadULEB128(reader, out shiftCount);
-            return (value << (32 - shiftCount)) >> (32 - shiftCount);
+            int result = 0;
+            int shift = 0;
+            byte partial = 0;
+
+            do
+            {
+                partial = reader.ReadByte();
+                result |= (partial & 0x7F) << shift;
+                shift += 7;
+            } while ((partial & 0x80) != 0);
+
+            if ((shift < 31) && ((partial & 0x40) == 0x40))
+                result |= -(1 << shift);
+
+            return result;
         }
 
         public static String ReadMUTF8String(this BinaryReader reader)
