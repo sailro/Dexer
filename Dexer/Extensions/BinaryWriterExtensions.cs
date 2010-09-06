@@ -43,7 +43,7 @@ namespace Dexer.Extensions
         public static void WriteULEB128p1(this BinaryWriter writer, long value)
         {
             if (value < -1 || value >= uint.MaxValue)
-                throw new ArgumentException("Allowed ULEB128p1 range is [-1, uint.MaxValue-1]");
+                throw new ArgumentException("Allowed ULEB128p1 range is [-1, uint.MaxValue[");
 
             WriteULEB128(writer, (uint)(value + 1));
         }
@@ -73,7 +73,27 @@ namespace Dexer.Extensions
 
         public static void WriteMUTF8String(this BinaryWriter writer, String value)
         {
-            // TODO: implement
+            for (int i = 0; i < value.Length; i++)
+            {
+                char c = value[i];
+                if ((c != 0) && (c < 0x80))
+                {
+                    writer.Write((byte)c);
+                }
+                else if (c < 0x800)
+                {
+                    writer.Write((byte)(((c >> 6) & 0x1f) | 0xc0));
+                    writer.Write((byte)((c & 0x3f) | 0x80));
+                }
+                else
+                {
+                    writer.Write((byte)(((c >> 12) & 0x0f) | 0xe0));
+                    writer.Write((byte)(((c >> 6) & 0x3f) | 0x80));
+                    writer.Write((byte)((c & 0x3f) | 0x80));
+                }
+            }
+
+            writer.Write((byte) 0); // 0 padded;
         }
 
     }
