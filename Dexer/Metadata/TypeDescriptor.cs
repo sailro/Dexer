@@ -21,16 +21,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using Dexer.Core;
+using System.Text;
 
 namespace Dexer.Metadata
 {
 	public class TypeDescriptor
 	{
-        internal static TypeReference Allocate(string typeDescriptor)
+        internal static TypeReference Allocate(string tdString)
         {
-            if (!string.IsNullOrEmpty(typeDescriptor))
+            if (!string.IsNullOrEmpty(tdString))
             {
-                char prefix = typeDescriptor[0];
+                char prefix = tdString[0];
                 TypeDescriptors td = (TypeDescriptors)prefix;
                 switch (td)
                 {
@@ -61,25 +62,25 @@ namespace Dexer.Metadata
             return null;
         }
 
-        internal static void Fill(string typeDescriptor, TypeReference item, Dex context)
+        internal static void Fill(string tdString, TypeReference item, Dex context)
         {
-            if (!string.IsNullOrEmpty(typeDescriptor))
+            if (!string.IsNullOrEmpty(tdString))
             {
-                char prefix = typeDescriptor[0];
+                char prefix = tdString[0];
                 TypeDescriptors td = (TypeDescriptors)prefix;
                 switch (td)
                 {
                     case TypeDescriptors.Array:
                         ArrayType atype = (ArrayType)item;
 
-                        TypeReference elementType = Allocate(typeDescriptor.Substring(1));
-                        Fill(typeDescriptor.Substring(1), elementType, context);
+                        TypeReference elementType = Allocate(tdString.Substring(1));
+                        Fill(tdString.Substring(1), elementType, context);
 
                         atype.ElementType = context.Import(elementType);
                         break;
                     case TypeDescriptors.FullyQualifiedName:
                         ClassReference cref = (ClassReference)item;
-                        cref.Fullname = typeDescriptor.Substring(1, typeDescriptor.Length-2);
+                        cref.Fullname = tdString.Substring(1, tdString.Length-2);
                         break;
                 }
             }
@@ -87,6 +88,21 @@ namespace Dexer.Metadata
 
         public static bool IsPrimitive(TypeDescriptors td) {
             return (td != TypeDescriptors.Array) && (td != TypeDescriptors.FullyQualifiedName);
+        }
+
+        public static string Encode(TypeReference tref)
+        {
+            StringBuilder result = new StringBuilder();
+
+            result.Append((char) tref.TypeDescriptor);
+
+            if (tref is ArrayType)
+                result.Append((tref as ArrayType).ElementType);
+
+            if (tref is ClassReference)
+                result.Append(string.Concat((tref as ClassReference).Fullname.Replace(ClassReference.NamespaceSeparator, ClassReference.InternalNamespaceSeparator), ";"));
+
+            return result.ToString();
         }
 
 	}

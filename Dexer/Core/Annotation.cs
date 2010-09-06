@@ -21,6 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
 using System.Text;
+using Dexer.Metadata;
 
 namespace Dexer.Core
 {
@@ -30,7 +31,7 @@ namespace Dexer.Core
         public IList<AnnotationArgument> Arguments { get; set; }
         public AnnotationVisibility Visibility { get; set; }
 
-        internal Annotation()
+        public Annotation()
         {
             Arguments = new List<AnnotationArgument>();
         }
@@ -50,5 +51,6 @@ namespace Dexer.Core
             builder.Append(")");
             return builder.ToString();
         }
+
     }
 }

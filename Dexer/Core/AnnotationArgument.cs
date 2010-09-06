@@ -21,6 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Dexer.Metadata;
 using System.Text;
+using System;
 
 namespace Dexer.Core
 {
@@ -37,5 +38,49 @@ namespace Dexer.Core
             builder.Append(Value);
             return builder.ToString();
         }
+
+        internal ValueFormats Format
+        {
+            get
+            {
+                if (Value is byte)
+                    return ValueFormats.Byte;
+                else if (Value is short)
+                    return ValueFormats.Short;
+                else if (Value is char)
+                    return ValueFormats.Char;
+                else if (Value is int)
+                    return ValueFormats.Int;
+                else if (Value is long)
+                    return ValueFormats.Long;
+                else if (Value is float)
+                    return ValueFormats.Float;
+                else if (Value is double)
+                    return ValueFormats.Double;
+                else if (Value is bool)
+                    return ValueFormats.Boolean;
+                else if (Value is string)
+                    return ValueFormats.String;
+                else if (Value is TypeReference)
+                    return ValueFormats.Type;
+                else if (Value is FieldReference)
+                {
+                    // TODO: check if enum
+                    return ValueFormats.Field;
+                }
+                else if (Value is MethodReference)
+                    return ValueFormats.Method;
+                else if (Value is ArrayType)
+                    return ValueFormats.Array;
+                else if (Value is Annotation)
+                    return ValueFormats.Annotation;
+                else if (Value == null)
+                    return ValueFormats.Null;
+                else
+                    throw new ArgumentException("Unexpected annotation value type");
+
+            }
+        }
     }
 }
+

@@ -27,8 +27,8 @@ namespace Dexer.Core
 {
     public class ClassReference : TypeReference
     {
-        const char NamespaceSeparator = '.';
-        const char InternalNamespaceSeparator = '/';
+        public const char NamespaceSeparator = '.';
+        public const char InternalNamespaceSeparator = '/';
 
         public string Name { get; set; }
 

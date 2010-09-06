@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Dexer")]
 [assembly: AssemblyDescription("Dexer manipulation library for Android/Dalvik DEX files")]
@@ -16,3 +17,6 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyVersion("0.3.0.0")]
 [assembly: AssemblyFileVersion("0.3.0.0")]
+
+[assembly: InternalsVisibleTo("DexerDebug")]
+[assembly: InternalsVisibleTo("DexerTest")]
