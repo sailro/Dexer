@@ -59,6 +59,7 @@ namespace Dexer.Core
             return builder.ToString();
         }
 
+        #region " ICloneable "
         internal Prototype Clone()
         {
             return (Prototype)(this as ICloneable).Clone();
@@ -76,15 +77,20 @@ namespace Dexer.Core
 
             return result;
         }
+        #endregion
 
+        #region " IEquatable "
         public bool Equals(Prototype other)
         {
             bool result = ReturnType.Equals(other.ReturnType) && Parameters.Count.Equals(other.Parameters.Count);
-            if (result) {
-                for (int i = 0; i<Parameters.Count; i++)
+            if (result)
+            {
+                for (int i = 0; i < Parameters.Count; i++)
                     result = result && Parameters[i].Equals(other.Parameters[i]);
             }
             return result;
         }
+        #endregion
+
     }
 }

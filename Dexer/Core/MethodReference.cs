@@ -47,9 +47,18 @@ namespace Dexer.Core
             return builder.ToString();
         }
 
+        #region " IEquatable "
         public bool Equals(MethodReference other)
         {
-            return other.Prototype.Equals(Prototype) && base.Equals(other);
+            return base.Equals(other)
+                && other.Prototype.Equals(Prototype);
         }
+
+        public override bool Equals(TypeReference other)
+        {
+            return (other is MethodReference)
+                && this.Equals(other as MethodReference);
+        }
+        #endregion
     }
 }

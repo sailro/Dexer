@@ -37,9 +37,19 @@ namespace Dexer.Core
             return string.Concat("[", ElementType.ToString(), "]");
         }
 
+        #region " IEquatable "
+        public bool Equals(ArrayType other)
+        {
+            return base.Equals(other) 
+                && ElementType.Equals(other.ElementType);
+        }
+
         public override bool Equals(TypeReference other)
         {
-            return (other is ArrayType) && (ElementType.Equals((other as ArrayType).ElementType));
+            return (other is ArrayType)
+                && this.Equals(other as ArrayType);
         }
+        #endregion
+
     }
 }

@@ -45,9 +45,19 @@ namespace Dexer.Core
             return this.TypeDescriptor.ToString();
         }
 
+        #region " IEquatable "
+        public bool Equals(PrimitiveType other)
+        {
+            return base.Equals(other)
+                && this.TypeDescriptor == other.TypeDescriptor;
+        }
+
         public override bool Equals(TypeReference other)
         {
-            return (other is PrimitiveType) && (this.TypeDescriptor == other.TypeDescriptor);
+            return (other is PrimitiveType)
+                && this.Equals(other as PrimitiveType);
         }
+        #endregion
+
     }
 }

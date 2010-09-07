@@ -204,7 +204,7 @@ namespace Dexer.IO
                     uint classIndex = reader.ReadUInt32();
 
                     ClassDefinition cdef = (ClassDefinition)Dex.TypeReferences[(int)classIndex];
-                    cdef.AccessFlag = (AccessFlags)reader.ReadUInt32();
+                    cdef.AccessFlags = (AccessFlags)reader.ReadUInt32();
 
                     uint superClassIndex = reader.ReadUInt32();
                     if (superClassIndex != DexConsts.NoIndex)

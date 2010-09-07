@@ -29,6 +29,12 @@ namespace Dexer.Core
     {
         internal TypeDescriptors TypeDescriptor { get; set; }
 
-        public abstract bool Equals(TypeReference other);
+        #region " IEquatable "
+        public virtual bool Equals(TypeReference other)
+        {
+            return this.TypeDescriptor == other.TypeDescriptor;
+        }
+        #endregion
+
     }
 }

@@ -24,7 +24,7 @@ using System;
 
 namespace Dexer.Core
 {
-    public class Parameter : ICloneable, IEquatable<Parameter>
+    public class Parameter : IAnnotationProvider, ICloneable, IEquatable<Parameter>
     {
         public IList<Annotation> Annotations { get; set; }
         public TypeReference Type { get; set; }
@@ -44,6 +44,7 @@ namespace Dexer.Core
             return Type.ToString();
         }
 
+        #region " ICloneable "
         internal Parameter Clone()
         {
             return (Parameter)(this as ICloneable).Clone();
@@ -62,11 +63,15 @@ namespace Dexer.Core
 
             return result;
         }
+        #endregion
 
+        #region " IEquatable "
         public bool Equals(Parameter other)
         {
             // do not check annotations at this time.
             return Type.Equals(other.Type);
         }
+        #endregion
+
     }
 }

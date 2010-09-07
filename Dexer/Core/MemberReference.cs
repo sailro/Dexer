@@ -24,24 +24,35 @@ using System;
 
 namespace Dexer.Core
 {
-    public abstract class MemberReference: IEquatable<MemberReference>
+    public abstract class MemberReference: TypeReference
     {
         public ClassReference Owner { get; set; }
         public string Name { get; set; }
 
-        public MemberReference()
+        internal MemberReference()
         {
         }
 
-        public MemberReference(ClassReference owner, string name)
+        internal MemberReference(ClassReference owner, string name)
         {
             Owner = owner;
             Name = name;
         }
 
+        #region " IEquatable "
         public bool Equals(MemberReference other)
         {
-            return Owner.Equals(other.Owner) && Name.Equals(other.Name);
+            return base.Equals(other)
+                && ((Owner == null && other.Owner == null) || Owner.Equals(other.Owner))
+                && Name.Equals(other.Name);
         }
+
+        public override bool Equals(TypeReference other)
+        {
+            return (other is MemberReference)
+                && this.Equals(other as MemberReference);
+        }
+        #endregion
+
     }
 }

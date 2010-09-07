@@ -39,7 +39,7 @@ namespace Dexer.Core
         Native = 0x100,
         Interface = 0x200,
         Abstract = 0x400,
-        Strict = 0x800,
+        StrictFp = 0x800,
         Synthetic = 0x1000,
         Annotation = 0x2000,
         Enum = 0x4000,

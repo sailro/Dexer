@@ -65,7 +65,9 @@ namespace Dexer.Core
                     return ValueFormats.Type;
                 else if (Value is FieldReference)
                 {
-                    // TODO: check if enum
+                    if (Value is FieldDefinition && (Value as FieldDefinition).IsEnum)
+                        return ValueFormats.Enum;
+
                     return ValueFormats.Field;
                 }
                 else if (Value is MethodReference)

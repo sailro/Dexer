@@ -43,6 +43,7 @@
     <Compile Include="Core\Annotation.cs" />
     <Compile Include="Core\AnnotationArgument.cs" />
     <Compile Include="Core\AnnotationVisibility.cs" />
+    <Compile Include="Core\IMemberDefinition.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Instructions\DebugInstruction.cs" />
     <Compile Include="Instructions\DebugOpCodes.cs" />

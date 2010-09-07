@@ -19,12 +19,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+using System.Text;
+using System;
 using System.Collections.Generic;
 
 namespace Dexer.Core
 {
-    public interface IAnnotationProvider
+    public interface IMemberDefinition : IAnnotationProvider
     {
-        IList<Annotation> Annotations { get; set; }
+        AccessFlags AccessFlags { get; set; }
+        ClassDefinition Owner { get; set; }
     }
 }

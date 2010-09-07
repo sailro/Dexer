@@ -37,5 +37,20 @@ namespace Dexer.Core
             builder.Append(Type);
             return builder.ToString();
         }
+
+        #region " IEquatable "
+        public bool Equals(FieldReference other)
+        {
+            return base.Equals(other)
+                && Type.Equals(other.Type);
+        }
+
+        public override bool Equals(TypeReference other)
+        {
+            return (other is FieldReference)
+                && this.Equals(other as FieldReference);
+        }
+        #endregion
+
     }
 }
