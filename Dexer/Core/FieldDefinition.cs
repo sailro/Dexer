@@ -101,7 +101,7 @@ namespace Dexer.Core
             return base.Equals(other);
         }
 
-        public override bool Equals(TypeReference other)
+        public override bool Equals(IMemberReference other)
         {
             return (other is FieldDefinition)
                 && this.Equals(other as FieldDefinition);

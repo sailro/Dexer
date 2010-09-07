@@ -23,7 +23,7 @@ using System.Text;
 
 namespace Dexer.Core
 {
-    public class FieldReference : MemberReference
+    public class FieldReference : PureMemberReference
     {
         public TypeReference Type { get; set; }
 
@@ -45,7 +45,7 @@ namespace Dexer.Core
                 && Type.Equals(other.Type);
         }
 
-        public override bool Equals(TypeReference other)
+        public override bool Equals(IMemberReference other)
         {
             return (other is FieldReference)
                 && this.Equals(other as FieldReference);

@@ -19,46 +19,12 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Text;
 using System;
 
 namespace Dexer.Core
 {
-    public class MethodReference : PureMemberReference
+    public interface IMemberReference : IEquatable<IMemberReference>
     {
-        public Prototype Prototype { get; set; }
-
-        public MethodReference() : base()
-        {
-        }
-
-        public MethodReference(ClassReference owner, string name, Prototype prototype) : base(owner, name)
-        {
-            Prototype = prototype;
-        }
-
-        public override string ToString()
-        {
-            StringBuilder builder = new StringBuilder();
-            builder.Append(Owner);
-            builder.Append("::");
-            builder.Append(Name);
-            builder.Append(Prototype);
-            return builder.ToString();
-        }
-
-        #region " IEquatable "
-        public bool Equals(MethodReference other)
-        {
-            return base.Equals(other)
-                && other.Prototype.Equals(Prototype);
-        }
-
-        public override bool Equals(IMemberReference other)
-        {
-            return (other is MethodReference)
-                && this.Equals(other as MethodReference);
-        }
-        #endregion
+        string Name { get; set; }
     }
 }

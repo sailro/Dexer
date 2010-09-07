@@ -25,12 +25,13 @@ using Dexer.Metadata;
 
 namespace Dexer.Core
 {
-    public class ClassReference : MemberReference
+    public class ClassReference : TypeReference, IMemberReference
     {
         public const char NamespaceSeparator = '.';
         public const char InternalNamespaceSeparator = '/';
 
         public string Namespace { get; set; }
+        public string Name { get; set; }
 
         public string Fullname
         {
@@ -83,6 +84,12 @@ namespace Dexer.Core
         }
 
         public override bool Equals(TypeReference other)
+        {
+            return (other is ClassReference)
+                && this.Equals(other as ClassReference);
+        }
+
+        public bool Equals(IMemberReference other)
         {
             return (other is ClassReference)
                 && this.Equals(other as ClassReference);

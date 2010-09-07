@@ -25,7 +25,7 @@ using System.Collections.Generic;
 
 namespace Dexer.Core
 {
-    public interface IMemberDefinition : IAnnotationProvider
+    public interface IMemberDefinition : IMemberReference, IAnnotationProvider
     {
         AccessFlags AccessFlags { get; set; }
         ClassDefinition Owner { get; set; }

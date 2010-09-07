@@ -35,11 +35,7 @@ namespace Dexer.Core
         public IList<Annotation> Annotations { get; set; }
         public IList<FieldDefinition> Fields { get; set; }
         public IList<MethodDefinition> Methods { get; set; }
-        public new ClassDefinition Owner
-        {
-            get { return base.Owner as ClassDefinition; }
-            set { base.Owner = value; }
-        }
+        public ClassDefinition Owner { get; set; }
 
         internal ClassDefinition()
         {
