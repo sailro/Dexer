@@ -21,11 +21,37 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.IO;
+using Dexer.IO;
 
 namespace Dexer.Extensions
 {
     public static class BinaryWriterExtensions
     {
+
+        public static void PreserveCurrentPosition(this BinaryWriter writer, uint newPosition, Action action)
+        {
+            long position = writer.BaseStream.Position;
+            writer.BaseStream.Seek(newPosition, SeekOrigin.Begin);
+
+            action();
+
+            writer.BaseStream.Seek(position, SeekOrigin.Begin);
+        }
+
+        public static UintMarker MarkUint(this BinaryWriter writer)
+        {
+            return new UintMarker(writer); ;
+        }
+
+        public static SizeOffsetMarker MarkSizeOffset(this BinaryWriter writer)
+        {
+            return new SizeOffsetMarker(writer);
+        }
+
+        public static SignatureMarker MarkSignature(this BinaryWriter writer)
+        {
+            return new SignatureMarker(writer);
+        }
 
         public static void WriteULEB128(this BinaryWriter writer, uint value)
         {

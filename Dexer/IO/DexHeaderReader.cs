@@ -37,14 +37,14 @@ namespace Dexer.IO
 
         public void ReadFrom(BinaryReader reader)
         {
-            Item.Magic = reader.ReadBytes(8);
+            Item.Magic = reader.ReadBytes(DexConsts.FileMagic.Length);
 
-            if (!Item.Magic.Match(DexConsts.DexFileMagic, 0))
+            if (!Item.Magic.Match(DexConsts.FileMagic, 0))
                 throw new MalformedException("Unexpected Magic number");
 
 
             Item.CheckSum = reader.ReadUInt32();
-            Item.Signature = reader.ReadBytes(20);
+            Item.Signature = reader.ReadBytes(DexConsts.SignatureSize);
 
             Item.FileSize = reader.ReadUInt32();
             Item.HeaderSize = reader.ReadUInt32();

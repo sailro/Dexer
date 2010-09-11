@@ -47,14 +47,19 @@ namespace Dexer.Core
             return Load(filename, true);
         }
 
-        public static Dex Load(string filename, bool preload)
+        public void Write(string filename)
+        {
+            Write(filename, true);
+        }
+
+        public static Dex Load(string filename, bool bufferize)
         {
             Dex result = new Dex();
 
             using (FileStream filestream = new FileStream(filename, FileMode.Open))
             {
                 Stream sourcestream = filestream; 
-                if (preload)
+                if (bufferize)
                 {
                     MemoryStream memorystream = new MemoryStream();
                     filestream.CopyTo(memorystream);
@@ -68,6 +73,34 @@ namespace Dexer.Core
                     reader.ReadFrom(binaryReader);
                     return result;
                 }
+            }
+        }
+
+        public void Write(string filename, bool bufferize)
+        {
+            using (FileStream filestream = new FileStream(filename, FileMode.Create))
+            {
+                Stream deststream = filestream;
+                MemoryStream memorystream = null;
+
+                if (bufferize)
+                {
+                    memorystream = new MemoryStream();
+                    deststream = memorystream;
+                }
+
+                using (BinaryWriter binaryWriter = new BinaryWriter(deststream))
+                {
+                    DexWriter writer = new DexWriter(this);
+                    writer.WriteTo(binaryWriter);
+
+                    if (bufferize)
+                    {
+                        memorystream.Position = 0;
+                        memorystream.CopyTo(filestream);
+                    }
+                }
+
             }
         }
 

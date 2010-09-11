@@ -60,6 +60,13 @@
     <Compile Include="Instructions\SparseSwitch.cs" />
     <Compile Include="Instructions\PackedSwitch.cs" />
     <Compile Include="Instructions\Catch.cs" />
+    <Compile Include="IO\SignatureMarker.cs" />
+    <Compile Include="IO\UintMarker.cs" />
+    <Compile Include="IO\SizeOffset.cs" />
+    <Compile Include="IO\SizeOffsetMarker.cs" />
+    <Compile Include="IO\DexWriter.cs" />
+    <Compile Include="IO\IBinaryWriteable.cs" />
+    <Compile Include="IO\Marker.cs" />
     <Compile Include="IO\StringReader.cs" />
     <Compile Include="IO\MapReader.cs" />
     <Compile Include="IO\DexConsts.cs" />

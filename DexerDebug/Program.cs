@@ -11,8 +11,10 @@ namespace Dexer.Debug
             Stopwatch sw = Stopwatch.StartNew();
             Dex dex = Dex.Load("classes.dex");
             sw.Stop();
-
             Console.WriteLine(sw.ElapsedMilliseconds);
+
+            dex.Write("output.dex");
+
             Console.ReadLine();
         }
     }
