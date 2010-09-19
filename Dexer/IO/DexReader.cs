@@ -30,7 +30,7 @@ using Dexer.Metadata;
 
 namespace Dexer.IO
 {
-    public class DexReader : IBinaryReadable
+    public class DexReader
     {
         private Dex Dex { get; set; }
 
@@ -276,7 +276,7 @@ namespace Dexer.IO
                 if (annotatedMethodsSize > 0)
                     (Dex.MethodReferences[reader.ReadInt32()] as MethodDefinition).Annotations = ReadAnnotationSet(reader, reader.ReadUInt32());
 
-                if (annotatedParametersSize > 0)
+                for (int j=0; j<annotatedParametersSize; j++)
                 {
                     int methodIndex = reader.ReadInt32();
                     uint offset = reader.ReadUInt32();
@@ -294,9 +294,9 @@ namespace Dexer.IO
             });
         }
 
-        private IList<IList<Annotation>> ReadAnnotationSetRefList(BinaryReader reader, uint annotationOffset)
+        private List<List<Annotation>> ReadAnnotationSetRefList(BinaryReader reader, uint annotationOffset)
         {
-            var result = new List<IList<Annotation>>();
+            var result = new List<List<Annotation>>();
             reader.PreserveCurrentPosition(annotationOffset, () =>
             {
                 uint size = reader.ReadUInt32();
@@ -309,7 +309,7 @@ namespace Dexer.IO
             return result;
         }
 
-        private IList<Annotation> ReadAnnotationSet(BinaryReader reader, uint annotationOffset)
+        private List<Annotation> ReadAnnotationSet(BinaryReader reader, uint annotationOffset)
         {
             var result = new List<Annotation>();
             reader.PreserveCurrentPosition(annotationOffset, () =>
@@ -493,103 +493,106 @@ namespace Dexer.IO
 
         private void ReadDebugInfo(BinaryReader reader, MethodDefinition methodDefinition, InstructionReader instructionReader, uint debugOffset)
         {
-            DebugInfo debugInfo = new DebugInfo();
-            methodDefinition.Body.DebugInfo = debugInfo;
-
-            uint lineStart = reader.ReadULEB128();
-            debugInfo.LineStart = lineStart;
-
-            uint parametersSize = reader.ReadULEB128();
-            for (int i = 0; i < parametersSize; i++)
+            reader.PreserveCurrentPosition(debugOffset, () =>
             {
-                long index = reader.ReadULEB128p1();
-                string name = null;
-                if (index != DexConsts.NoIndex && index >= 0)
-                    name = Dex.Strings[(int)index];
-                debugInfo.Parameters.Add(name);
-            }
+                DebugInfo debugInfo = new DebugInfo();
+                methodDefinition.Body.DebugInfo = debugInfo;
 
-            while (true)
-            {
-                DebugInstruction ins = new DebugInstruction();
-                ins.OpCode = (DebugOpCodes)reader.ReadByte();
-                debugInfo.DebugInstructions.Add(ins);
+                uint lineStart = reader.ReadULEB128();
+                debugInfo.LineStart = lineStart;
 
-                uint registerIndex;
-                uint addrDiff;
-                long nameIndex;
-                long typeIndex;
-                long signatureIndex;
-                int lineDiff;
-                string name;
-
-                switch (ins.OpCode)
+                uint parametersSize = reader.ReadULEB128();
+                for (int i = 0; i < parametersSize; i++)
                 {
-                    case DebugOpCodes.AdvancePc:
-                        // uleb128 addr_diff
-                        addrDiff = reader.ReadULEB128();
-                        ins.Operands.Add(addrDiff);
-                        break;
-                    case DebugOpCodes.AdvanceLine:
-                        // sleb128 line_diff
-                        lineDiff = reader.ReadSLEB128();
-                        ins.Operands.Add(lineDiff);
-                        break;
-                    case DebugOpCodes.EndLocal:
-                    case DebugOpCodes.RestartLocal:
-                        // uleb128 register_num
-                        registerIndex = reader.ReadULEB128();
-                        ins.Operands.Add(methodDefinition.Body.Registers[(int)registerIndex]);
-                        break;
-                    case DebugOpCodes.SetFile:
-                        // uleb128p1 name_idx
-                        nameIndex = reader.ReadULEB128p1();
-                        name = null;
-                        if (nameIndex != DexConsts.NoIndex && nameIndex >= 0)
-                            name = Dex.Strings[(int)nameIndex];
-                        ins.Operands.Add(name);
-                        break;
-                    case DebugOpCodes.StartLocalExtended:
-                    case DebugOpCodes.StartLocal:
-                        // StartLocalExtended : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx, uleb128p1 sig_idx
-                        // StartLocal : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx
-                        Boolean isExtended = ins.OpCode == DebugOpCodes.StartLocalExtended;
-
-                        registerIndex = reader.ReadULEB128();
-                        ins.Operands.Add(methodDefinition.Body.Registers[(int)registerIndex]);
-
-                        nameIndex = reader.ReadULEB128p1();
-                        name = null;
-                        if (nameIndex != DexConsts.NoIndex && nameIndex >= 0)
-                            name = Dex.Strings[(int)nameIndex];
-                        ins.Operands.Add(name);
-
-                        typeIndex = reader.ReadULEB128p1();
-                        TypeReference type = null;
-                        if (typeIndex != DexConsts.NoIndex && typeIndex >= 0)
-                            type = Dex.TypeReferences[(int)typeIndex];
-                        ins.Operands.Add(type);
-
-                        if (isExtended)
-                        {
-                            signatureIndex = reader.ReadULEB128p1();
-                            string signature = null;
-                            if (signatureIndex != DexConsts.NoIndex && signatureIndex >= 0)
-                                signature = Dex.Strings[(int)signatureIndex];
-                            ins.Operands.Add(signature);
-                        }
-
-                        break;
-                    case DebugOpCodes.EndSequence:
-                        return;
-                    case DebugOpCodes.Special:
-                        // between 0x0a and 0xff (inclusive)
-                    case DebugOpCodes.SetPrologueEnd:
-                    case DebugOpCodes.SetEpilogueBegin:
-                    default:
-                        break;
+                    long index = reader.ReadULEB128p1();
+                    string name = null;
+                    if (index != DexConsts.NoIndex && index >= 0)
+                        name = Dex.Strings[(int)index];
+                    debugInfo.Parameters.Add(name);
                 }
-            }
+
+                while (true)
+                {
+                    DebugInstruction ins = new DebugInstruction();
+                    ins.OpCode = (DebugOpCodes)reader.ReadByte();
+                    debugInfo.DebugInstructions.Add(ins);
+
+                    uint registerIndex;
+                    uint addrDiff;
+                    long nameIndex;
+                    long typeIndex;
+                    long signatureIndex;
+                    int lineDiff;
+                    string name;
+
+                    switch (ins.OpCode)
+                    {
+                        case DebugOpCodes.AdvancePc:
+                            // uleb128 addr_diff
+                            addrDiff = reader.ReadULEB128();
+                            ins.Operands.Add(addrDiff);
+                            break;
+                        case DebugOpCodes.AdvanceLine:
+                            // sleb128 line_diff
+                            lineDiff = reader.ReadSLEB128();
+                            ins.Operands.Add(lineDiff);
+                            break;
+                        case DebugOpCodes.EndLocal:
+                        case DebugOpCodes.RestartLocal:
+                            // uleb128 register_num
+                            registerIndex = reader.ReadULEB128();
+                            ins.Operands.Add(methodDefinition.Body.Registers[(int)registerIndex]);
+                            break;
+                        case DebugOpCodes.SetFile:
+                            // uleb128p1 name_idx
+                            nameIndex = reader.ReadULEB128p1();
+                            name = null;
+                            if (nameIndex != DexConsts.NoIndex && nameIndex >= 0)
+                                name = Dex.Strings[(int)nameIndex];
+                            ins.Operands.Add(name);
+                            break;
+                        case DebugOpCodes.StartLocalExtended:
+                        case DebugOpCodes.StartLocal:
+                            // StartLocalExtended : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx, uleb128p1 sig_idx
+                            // StartLocal : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx
+                            Boolean isExtended = ins.OpCode == DebugOpCodes.StartLocalExtended;
+
+                            registerIndex = reader.ReadULEB128();
+                            ins.Operands.Add(methodDefinition.Body.Registers[(int)registerIndex]);
+
+                            nameIndex = reader.ReadULEB128p1();
+                            name = null;
+                            if (nameIndex != DexConsts.NoIndex && nameIndex >= 0)
+                                name = Dex.Strings[(int)nameIndex];
+                            ins.Operands.Add(name);
+
+                            typeIndex = reader.ReadULEB128p1();
+                            TypeReference type = null;
+                            if (typeIndex != DexConsts.NoIndex && typeIndex >= 0)
+                                type = Dex.TypeReferences[(int)typeIndex];
+                            ins.Operands.Add(type);
+
+                            if (isExtended)
+                            {
+                                signatureIndex = reader.ReadULEB128p1();
+                                string signature = null;
+                                if (signatureIndex != DexConsts.NoIndex && signatureIndex >= 0)
+                                    signature = Dex.Strings[(int)signatureIndex];
+                                ins.Operands.Add(signature);
+                            }
+
+                            break;
+                        case DebugOpCodes.EndSequence:
+                            return;
+                        case DebugOpCodes.Special:
+                        // between 0x0a and 0xff (inclusive)
+                        case DebugOpCodes.SetPrologueEnd:
+                        case DebugOpCodes.SetEpilogueBegin:
+                        default:
+                            break;
+                    }
+                }
+            });
         }
 
         private void ReadExceptionHandlers(BinaryReader reader, MethodDefinition methodDefinition, InstructionReader instructionReader, ushort triesSize)
@@ -710,6 +713,7 @@ namespace Dexer.IO
             {
                 for (int i = 0; i < Dex.Header.PrototypesSize; i++)
                 {
+                    long thisOffset = reader.BaseStream.Position;
                     int shortyIndex = reader.ReadInt32();
                     int returnTypeIndex = reader.ReadInt32();
                     uint parametersOffset = reader.ReadUInt32();
@@ -732,10 +736,12 @@ namespace Dexer.IO
             reader.PreserveCurrentPosition(parametersOffset, () =>
             {
                 uint typecount = reader.ReadUInt32();
+                //Debug.Print("Read uint {0}", typecount);
                 for (int j = 0; j < typecount; j++)
                 {
                     Parameter parameter = new Parameter();
                     int typeIndex = reader.ReadUInt16();
+                    //Debug.Print("Read ushort {0}", typeIndex);
                     parameter.Type = Dex.TypeReferences[typeIndex];
                     prototype.Parameters.Add(parameter);
                 }

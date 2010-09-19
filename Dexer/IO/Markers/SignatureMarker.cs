@@ -19,18 +19,21 @@
 using System.IO;
 using Dexer.Extensions;
 
-namespace Dexer.IO
+namespace Dexer.IO.Markers
 {
 
-    public class SignatureMarker : Marker<byte[]>
+    internal class SignatureMarker : Marker<byte[]>
     {
         public override byte[] Value
         {
             set {
-                Writer.PreserveCurrentPosition(Position, () =>
+                foreach (uint position in Positions)
                 {
-                    Writer.Write(value);
-                });
+                    Writer.PreserveCurrentPosition(position, () =>
+                    {
+                        Writer.Write(value);
+                    });
+                }
             }
         }
 

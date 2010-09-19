@@ -23,10 +23,11 @@ using System.IO;
 using Dexer.Core;
 using Dexer.Extensions;
 using Dexer.Metadata;
+using System.Collections.Generic;
 
 namespace Dexer.IO
 {
-    internal class StringReader : IBinaryReadable
+    internal class StringReader
     {
 
         private Dex Dex { get; set; }
@@ -48,5 +49,6 @@ namespace Dexer.IO
                 }
             });
         }
+
     }
 }

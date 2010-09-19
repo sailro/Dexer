@@ -16,27 +16,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.IO;
-using Dexer.Extensions;
+using System.Collections.Generic;
+using Dexer.Core;
+using Dexer.Metadata;
 
-namespace Dexer.IO
+namespace Dexer.IO.Collector
 {
-
-    public abstract class Marker<T>
+    internal class ClassDefinitionComparer : IComparer<ClassDefinition>
     {
-        public BinaryWriter Writer { get; set; }
-        public uint Position { get; set; }
-
-        public abstract T Value { set; }
-
-        public abstract void Allocate();
-
-        public Marker(BinaryWriter writer)
+        public int Compare(ClassDefinition x, ClassDefinition y)
         {
-            Writer = writer;
-            Position = (uint) writer.BaseStream.Position;
-            Allocate();
+            return string.CompareOrdinal(TypeDescriptor.Encode(x), TypeDescriptor.Encode(y));
         }
     }
-
 }

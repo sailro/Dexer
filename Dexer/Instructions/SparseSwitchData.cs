@@ -19,12 +19,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.IO;
+using System.Collections.Generic;
 
-namespace Dexer.IO
+namespace Dexer.Instructions
 {
-	interface IBinaryReadable
-	{
-        void ReadFrom(BinaryReader reader);
-	}
+    public class SparseSwitchData
+    {
+        public IDictionary<int, Instruction> Targets { get; set; }
+
+        public SparseSwitchData()
+        {
+            Targets = new Dictionary<int, Instruction>();
+        }
+    }
 }

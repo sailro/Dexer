@@ -28,7 +28,7 @@ using Dexer.Metadata;
 
 namespace Dexer.IO
 {
-    internal class InstructionReader : IBinaryReadable
+    internal class InstructionReader
     {
         private MethodDefinition MethodDefinition { get; set; }
         private List<Action> LazyInstructionsSetters { get; set; }
@@ -585,10 +585,10 @@ namespace Dexer.IO
                 throw new MalformedException("Unexpected Pseudo-code identifier");
         }
 
-        private SparseSwitch ExtractSparseSwitch(Instruction ins, int offset)
+        private SparseSwitchData ExtractSparseSwitch(Instruction ins, int offset)
         {
             int baseOffset = offset;
-            SparseSwitch result = new SparseSwitch();
+            SparseSwitchData result = new SparseSwitchData();
             ProcessPseudoCode(PseudoOpCodes.Sparse_switch, ref offset);
 
             int targetcount = ReadShort(ref offset);
@@ -610,10 +610,10 @@ namespace Dexer.IO
             return result;
         }
 
-        private PackedSwitch ExtractPackedSwitch(Instruction ins, int offset)
+        private PackedSwitchData ExtractPackedSwitch(Instruction ins, int offset)
         {
             int baseOffset = offset;
-            PackedSwitch result = new PackedSwitch();
+            PackedSwitchData result = new PackedSwitchData();
             ProcessPseudoCode(PseudoOpCodes.Packed_switch, ref offset);
 
             int targetcount = ReadShort(ref offset);

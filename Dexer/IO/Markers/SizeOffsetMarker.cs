@@ -19,19 +19,22 @@
 using System.IO;
 using Dexer.Extensions;
 
-namespace Dexer.IO
+namespace Dexer.IO.Markers
 {
 
-    public class SizeOffsetMarker : Marker<SizeOffset>
+    internal class SizeOffsetMarker : Marker<SizeOffset>
     {
         public override SizeOffset Value
         {
             set {
-                Writer.PreserveCurrentPosition(Position, () =>
+                foreach (uint position in Positions)
                 {
-                    Writer.Write(value.Size);
-                    Writer.Write(value.Offset);
-                });
+                    Writer.PreserveCurrentPosition(position, () =>
+                    {
+                        Writer.Write(value.Size);
+                        Writer.Write(value.Offset);
+                    });
+                }
             }
         }
 

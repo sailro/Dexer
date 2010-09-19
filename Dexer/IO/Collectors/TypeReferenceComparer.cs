@@ -16,22 +16,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.IO;
-using Dexer.Extensions;
+using System.Collections.Generic;
+using Dexer.Core;
+using Dexer.Metadata;
 
-namespace Dexer.IO
+namespace Dexer.IO.Collector
 {
-
-    public class SizeOffset
+    internal class TypeReferenceComparer : IComparer<TypeReference>
     {
-        public uint Size { get; set; }
-        public uint Offset { get; set; }
-
-        public SizeOffset(uint size, uint offset)
+        public int Compare(TypeReference x, TypeReference y)
         {
-            Size = size;
-            Offset = offset;
+            return string.CompareOrdinal(TypeDescriptor.Encode(x), TypeDescriptor.Encode(y));
         }
     }
-
 }

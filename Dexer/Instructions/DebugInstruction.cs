@@ -28,7 +28,7 @@ namespace Dexer.Instructions
     public class DebugInstruction
     {
         public DebugOpCodes OpCode { get; set; }
-        public IList<object> Operands { get; set; }
+        public List<object> Operands { get; set; }
 
         public DebugInstruction()
         {

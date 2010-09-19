@@ -76,7 +76,14 @@ namespace Dexer.Metadata
                         TypeReference elementType = Allocate(tdString.Substring(1));
                         Fill(tdString.Substring(1), elementType, context);
 
-                        atype.ElementType = context.Import(elementType);
+                        /* All types are already allocated
+                         * We want to reuse object reference if already in type repository
+                         * BUT if not, we don't want to add a new reference to this type:
+                         * it's a 'transient' type only used in the Dexer object model but
+                         * not persisted in dex file.
+                         */
+                        atype.ElementType = context.Import(elementType, false);
+
                         break;
                     case TypeDescriptors.FullyQualifiedName:
                         ClassReference cref = (ClassReference)item;
@@ -90,17 +97,49 @@ namespace Dexer.Metadata
             return (td != TypeDescriptors.Array) && (td != TypeDescriptors.FullyQualifiedName);
         }
 
+        public static string Encode(Prototype prototype)
+        {
+            StringBuilder result = new StringBuilder();
+            result.Append(Encode(prototype.ReturnType,true));
+
+            foreach (Parameter parameter in prototype.Parameters)
+                result.Append(Encode(parameter.Type, true));
+
+            return result.ToString();
+        }
+
         public static string Encode(TypeReference tref)
+        {
+            return Encode(tref, false);
+        }
+
+        public static string Encode(TypeReference tref, bool shorty)
         {
             StringBuilder result = new StringBuilder();
 
-            result.Append((char) tref.TypeDescriptor);
+            char td = (char)tref.TypeDescriptor;
 
-            if (tref is ArrayType)
-                result.Append((tref as ArrayType).ElementType);
+            if (!shorty)
+            {
+                result.Append(td);
 
-            if (tref is ClassReference)
-                result.Append(string.Concat((tref as ClassReference).Fullname.Replace(ClassReference.NamespaceSeparator, ClassReference.InternalNamespaceSeparator), ";"));
+                if (tref is ArrayType)
+                    result.Append(Encode((tref as ArrayType).ElementType, false));
+
+                if (tref is ClassReference)
+                    result.Append(string.Concat((tref as ClassReference).Fullname.Replace(ClassReference.NamespaceSeparator, ClassReference.InternalNamespaceSeparator), ";"));
+            }
+            else
+            {
+                /* A ShortyDescriptor is the short form representation of a method prototype, 
+                 * including return and parameter types, except that there is no distinction
+                 * between various reference (class or array) types. Instead, all reference
+                 * types are represented by a single 'L' character. */
+                if (td == (char)TypeDescriptors.Array)
+                    td = (char)TypeDescriptors.FullyQualifiedName;
+
+                result.Append(td);
+            }
 
             return result.ToString();
         }

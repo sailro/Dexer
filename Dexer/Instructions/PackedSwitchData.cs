@@ -23,12 +23,12 @@ using System.Collections.Generic;
 
 namespace Dexer.Instructions
 {
-    public class PackedSwitch
+    public class PackedSwitchData
     {
         public int FirstKey { get; set; }
-        public IList<Instruction> Targets { get; set; }
+        public List<Instruction> Targets { get; set; }
 
-        public PackedSwitch()
+        public PackedSwitchData()
         {
             Targets = new List<Instruction>();
         }

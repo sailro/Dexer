@@ -26,8 +26,8 @@ namespace Dexer.Instructions
 {
     public class DebugInfo
     {
-        public IList<string> Parameters { get; set; }
-        public IList<DebugInstruction> DebugInstructions { get; set; }
+        public List<string> Parameters { get; set; }
+        public List<DebugInstruction> DebugInstructions { get; set; }
         public uint LineStart { get; set; }
 
         public DebugInfo()

@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.IO;
 using Dexer.IO;
+using Dexer.IO.Markers;
 
 namespace Dexer.Extensions
 {
@@ -38,17 +39,17 @@ namespace Dexer.Extensions
             writer.BaseStream.Seek(position, SeekOrigin.Begin);
         }
 
-        public static UintMarker MarkUint(this BinaryWriter writer)
+        internal static UintMarker MarkUint(this BinaryWriter writer)
         {
             return new UintMarker(writer); ;
         }
 
-        public static SizeOffsetMarker MarkSizeOffset(this BinaryWriter writer)
+        internal static SizeOffsetMarker MarkSizeOffset(this BinaryWriter writer)
         {
             return new SizeOffsetMarker(writer);
         }
 
-        public static SignatureMarker MarkSignature(this BinaryWriter writer)
+        internal static SignatureMarker MarkSignature(this BinaryWriter writer)
         {
             return new SignatureMarker(writer);
         }
@@ -99,6 +100,8 @@ namespace Dexer.Extensions
 
         public static void WriteMUTF8String(this BinaryWriter writer, String value)
         {
+            writer.WriteULEB128((uint)value.Length);
+
             for (int i = 0; i < value.Length; i++)
             {
                 char c = value[i];
@@ -114,13 +117,21 @@ namespace Dexer.Extensions
                 else
                 {
                     writer.Write((byte)(((c >> 12) & 0x0f) | 0xe0));
-                    writer.Write((byte)(((c >> 6) & 0x3f) | 0x80));
+                    writer.Write((byte)(((c >> 6) & 0x3f) | 0xc0));
                     writer.Write((byte)((c & 0x3f) | 0x80));
                 }
             }
 
             writer.Write((byte) 0); // 0 padded;
         }
+
+
+
+
+
+
+
+
 
     }
 }

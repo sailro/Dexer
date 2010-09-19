@@ -16,31 +16,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.IO;
-using Dexer.Extensions;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Dexer.Core;
+using Dexer.Instructions;
+using Dexer.Metadata;
 
-namespace Dexer.IO
+namespace Dexer.IO.Collector
 {
-
-    public class UintMarker : Marker<uint>
+    internal class PrototypeCollector : BaseCollector<Prototype>
     {
-        public override uint Value
+        public override void Collect(Prototype prototype)
         {
-            set {
-                Writer.PreserveCurrentPosition(Position, () =>
-                {
-                    Writer.Write(value);
-                });
-            }
-        }
+            base.Collect(prototype);
 
-        public override void Allocate()
-        {
-            Writer.Write((uint) 0);
-        }
+            // Override: Prototype .Equals & .GetHashCode 
+            if (!Items.ContainsKey(prototype))
+                Items[prototype.Clone()] = 0;
 
-        public UintMarker(BinaryWriter writer) : base(writer) { }
+            Items[prototype]++;
+        }
 
     }
-
 }

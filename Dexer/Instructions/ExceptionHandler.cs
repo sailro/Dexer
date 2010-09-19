@@ -28,7 +28,7 @@ namespace Dexer.Instructions
         public Instruction TryStart { get; set; }
         public Instruction TryEnd { get; set; }
         public Instruction CatchAll { get; set; }
-        public IList<Catch> Catches { get; set; }
+        public List<Catch> Catches { get; set; }
 
         public ExceptionHandler()
         {

@@ -29,7 +29,7 @@ namespace Dexer.Instructions
     {
         public OpCodes OpCode { get; set; }
         public int Offset { get; set; }
-        public IList<Register> Registers { get; set; }
+        public List<Register> Registers { get; set; }
         public object Operand { get; set; }
 
         public Instruction()

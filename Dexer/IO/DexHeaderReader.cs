@@ -25,7 +25,7 @@ using Dexer.Extensions;
 
 namespace Dexer.IO
 {
-    internal class DexHeaderReader : IBinaryReadable
+    internal class DexHeaderReader
     {
 
         private DexHeader Item { get; set; }

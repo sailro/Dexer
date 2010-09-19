@@ -26,9 +26,9 @@ namespace Dexer.Instructions
 	public class MethodBody
 	{
         public DebugInfo DebugInfo { get; set; }
-        public IList<Register> Registers { get; set; }
-        public IList<Instruction> Instructions { get; set; }
-        public IList<ExceptionHandler> Exceptions { get; set; }
+        public List<Register> Registers { get; set; }
+        public List<Instruction> Instructions { get; set; }
+        public List<ExceptionHandler> Exceptions { get; set; }
         public ushort IncomingArguments { get; set; }
         public ushort OutgoingArguments { get; set; }
 

@@ -26,7 +26,7 @@ using Dexer.Metadata;
 
 namespace Dexer.IO
 {
-    internal class MapReader : IBinaryReadable
+    internal class MapReader
     {
 
         private Dex Dex { get; set; }
