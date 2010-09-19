@@ -45,7 +45,17 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseTest.cs" />
+    <Compile Include="CollectorTest.cs" />
+    <Compile Include="BaseCollectorTest.cs" />
+    <Compile Include="SortTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Dexer\Dexer.csproj">
+      <Project>{1151AF14-63F7-470D-9BD7-62BF0FF065D3}</Project>
+      <Name>Dexer</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
