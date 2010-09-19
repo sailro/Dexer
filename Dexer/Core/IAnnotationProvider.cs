@@ -25,6 +25,6 @@ namespace Dexer.Core
 {
     public interface IAnnotationProvider
     {
-        IList<Annotation> Annotations { get; set; }
+        List<Annotation> Annotations { get; set; }
     }
 }

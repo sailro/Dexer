@@ -32,7 +32,7 @@ namespace Dexer.Core
             set { base.Owner = value; }
         }
 
-        public IList<Annotation> Annotations { get; set; }
+        public List<Annotation> Annotations { get; set; }
         public object Value { get; set; }
 
         internal FieldDefinition()

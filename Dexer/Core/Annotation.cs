@@ -28,7 +28,7 @@ namespace Dexer.Core
     public class Annotation
     {
         public ClassReference Type { get; set; }
-        public IList<AnnotationArgument> Arguments { get; set; }
+        public List<AnnotationArgument> Arguments { get; set; }
         public AnnotationVisibility Visibility { get; set; }
 
         public Annotation()

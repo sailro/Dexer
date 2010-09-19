@@ -22,13 +22,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using System.Text;
 using System;
+using Dexer.Metadata;
 
 namespace Dexer.Core
 {
     public class Prototype : ICloneable, IEquatable<Prototype>
 	{
         public TypeReference ReturnType { get; set; }
-        public IList<Parameter> Parameters { get; set; }
+        public List<Parameter> Parameters { get; set; }
 
         public Prototype()
         {
@@ -40,6 +41,16 @@ namespace Dexer.Core
         {
             ReturnType = returntype;
             Parameters = new List<Parameter>(parameters);
+        }
+
+        public bool ContainsAnnotation()
+        {
+            foreach (Parameter parameter in Parameters)
+            {
+                if (parameter.Annotations.Count > 0)
+                    return true;
+            }
+            return false;
         }
 
         public override string ToString()
@@ -89,6 +100,27 @@ namespace Dexer.Core
                     result = result && Parameters[i].Equals(other.Parameters[i]);
             }
             return result;
+        }
+        #endregion
+
+        #region " Object "
+        public override bool Equals(object obj)
+        {
+            if (obj is Prototype)
+                return Equals(obj as Prototype);
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(TypeDescriptor.Encode(ReturnType));
+
+            foreach (Parameter parameter in Parameters)
+                builder.AppendLine(TypeDescriptor.Encode(parameter.Type));
+
+            return builder.ToString().GetHashCode();
         }
         #endregion
 

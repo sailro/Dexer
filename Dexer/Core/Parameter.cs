@@ -26,7 +26,7 @@ namespace Dexer.Core
 {
     public class Parameter : IAnnotationProvider, ICloneable, IEquatable<Parameter>
     {
-        public IList<Annotation> Annotations { get; set; }
+        public List<Annotation> Annotations { get; set; }
         public TypeReference Type { get; set; }
 
         public Parameter()
@@ -54,12 +54,6 @@ namespace Dexer.Core
         {
             Parameter result = new Parameter();
             result.Type = this.Type;
-
-            if (Annotations.Count > 0)
-            {
-                // Cloning is here to properly annotate parameters
-                throw new ArgumentException();
-            }
 
             return result;
         }

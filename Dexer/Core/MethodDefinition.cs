@@ -32,7 +32,7 @@ namespace Dexer.Core
             get { return base.Owner as ClassDefinition; }
             set { base.Owner = value; }
         }
-        public IList<Annotation> Annotations { get; set; }
+        public List<Annotation> Annotations { get; set; }
         public MethodBody Body { get; set; }
 
         internal MethodDefinition()

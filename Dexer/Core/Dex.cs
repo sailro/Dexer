@@ -31,15 +31,15 @@ namespace Dexer.Core
 {
     public class Dex
     {
-        public IList<ClassDefinition> Classes { get; internal set; }
+        public List<ClassDefinition> Classes { get; internal set; }
 
-        internal IList<TypeReference> TypeReferences { get; set; }
-        internal IList<FieldReference> FieldReferences { get; set; }
-        internal IList<MethodReference> MethodReferences { get; set; }
+        internal List<TypeReference> TypeReferences { get; set; }
+        internal List<FieldReference> FieldReferences { get; set; }
+        internal List<MethodReference> MethodReferences { get; set; }
 
         internal DexHeader Header { get; set; }
-        internal IList<string> Strings { get; set; }
-        internal IList<Prototype> Prototypes { get; set; }
+        internal List<string> Strings { get; set; }
+        internal List<Prototype> Prototypes { get; set; }
         internal Map Map { get; set; }
 
         public static Dex Load(string filename)
@@ -122,7 +122,7 @@ namespace Dexer.Core
             return GetClass(fullname, Classes);
         }
 
-        internal ClassDefinition GetClass(string fullname, IList<ClassDefinition> container)
+        internal ClassDefinition GetClass(string fullname, List<ClassDefinition> container)
         {
             foreach (ClassDefinition item in container)
             {
@@ -136,7 +136,8 @@ namespace Dexer.Core
             return null;
         }
 
-        public TypeReference Import(TypeReference tref) {
+        internal TypeReference Import(TypeReference tref, bool add)
+        {
             foreach (TypeReference item in TypeReferences)
             {
                 if (tref.Equals(item))
@@ -144,8 +145,16 @@ namespace Dexer.Core
                     return item;
                 }
             }
-            TypeReferences.Add(tref);
+            if (add)
+            {
+                // if !add see TypeDescriptor comment 
+                TypeReferences.Add(tref);
+            }
             return tref;
+        }
+
+        public TypeReference Import(TypeReference tref) {
+            return Import(tref, true);
         }
 
         public MethodReference Import(MethodReference mref)

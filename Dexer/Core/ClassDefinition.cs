@@ -29,12 +29,12 @@ namespace Dexer.Core
 	{
         public AccessFlags AccessFlags { get; set; }
         public ClassReference SuperClass { get; set; }
-        public IList<ClassDefinition> InnerClasses { get; set; }
-        public IList<ClassReference> Interfaces { get; set; }
+        public List<ClassDefinition> InnerClasses { get; set; }
+        public List<ClassReference> Interfaces { get; set; }
         public string SourceFile { get; set; }
-        public IList<Annotation> Annotations { get; set; }
-        public IList<FieldDefinition> Fields { get; set; }
-        public IList<MethodDefinition> Methods { get; set; }
+        public List<Annotation> Annotations { get; set; }
+        public List<FieldDefinition> Fields { get; set; }
+        public List<MethodDefinition> Methods { get; set; }
         public ClassDefinition Owner { get; set; }
 
         internal ClassDefinition()
