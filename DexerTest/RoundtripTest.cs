@@ -26,57 +26,43 @@ using Dexer.Core;
 using Dexer.Extensions;
 using Dexer.IO.Collector;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Dexer.IO;
+using Dexer.Metadata;
 
 namespace Dexer.Test
 {
     [TestClass]
-    public class SortTest : BaseCollectorTest
+    public class RoundtripTest : BaseTest
     {
-        public void TestSort<T>(Func<Dex, List<T>> provider, IComparer<T> comparer)
+
+        [TestMethod]
+        public void TestMap()
         {
             foreach (string file in Directory.GetFiles(FilesDirectory))
             {
                 TestContext.WriteLine("Testing {0}", file);
 
-                Dex dex = Dex.Load(file);
-                List<T> items = new List<T>(provider(dex));
-                items.Shuffle();
-                items.Sort(comparer);
+                Dex dex = new Dex();
+                DexReader dexreader = new DexReader(dex);
 
-                for (int i = 0; i < items.Count; i++)
-                    Assert.AreEqual(items[i], provider(dex)[i]);
+                using (Stream fs = new FileStream(file, FileMode.Open))
+                    using (BinaryReader reader = new BinaryReader(fs))
+                        dexreader.ReadFrom(reader);
+
+                DexWriter dexwriter = new DexWriter(dex);
+                dexwriter.WriteTo(new BinaryWriter(new MemoryStream()));
+
+                foreach (TypeCodes tc in dexwriter.Map.Keys)
+                {
+                    if (dexreader.Map.ContainsKey(tc))
+                    {
+                        Assert.AreEqual(dexwriter.Map[tc].Offset, dexreader.Map[tc].Offset, "{0} Offset", tc);
+                        Assert.AreEqual(dexwriter.Map[tc].Size, dexreader.Map[tc].Size, "{0} Offset", tc);
+                    }
+                }
 
             }
         }
 
-        [TestMethod]
-        public void TestMethodSort()
-        {
-            TestSort<MethodReference>((dex) => dex.MethodReferences, new MethodReferenceComparer());
-        }
-
-        [TestMethod]
-        public void TestFieldSort()
-        {
-            TestSort<FieldReference>((dex) => dex.FieldReferences, new FieldReferenceComparer());
-        }
-
-        [TestMethod]
-        public void TestTypeSort()
-        {
-            TestSort<TypeReference>((dex) => dex.TypeReferences, new TypeReferenceComparer());
-        }
-
-        [TestMethod]
-        public void TestStringSort()
-        {
-            TestSort<string>((dex) => dex.Strings, new Dexer.IO.Collector.StringComparer());
-        }
-
-        [TestMethod]
-        public void TestPrototypeSort()
-        {
-            TestSort<Prototype>((dex) => dex.Prototypes, new PrototypeComparer());
-        }
     }
 }

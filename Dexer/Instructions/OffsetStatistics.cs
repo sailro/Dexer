@@ -19,21 +19,14 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-namespace Dexer.Metadata
+using Dexer.Core;
+using System;
+
+namespace Dexer.Instructions
 {
-	public class MapItem
-	{
-        public TypeCodes Type { get; set; }
-        public uint Size { get; set; }
-        public uint Offset { get; set; }
-
-        public MapItem() { }
-
-        public MapItem(TypeCodes type, uint size, uint offset)
-        {
-            Type = type;
-            Size = size;
-            Offset = offset;
-        }
-	}
+    public class OffsetStatistics
+    {
+        public int CodeUnits { get; set; }
+        public int ExtraCodeUnits { get; set; }
+    }
 }

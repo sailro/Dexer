@@ -47,6 +47,12 @@ namespace Dexer.Core
             this.Prototype = mref.Prototype;
         }
 
+        public bool IsVirtual
+        {
+            get;
+            set;
+        }
+
         #region " AccessFlags "
         public bool IsPublic {
             get { return (AccessFlags & AccessFlags.Public) != 0; }

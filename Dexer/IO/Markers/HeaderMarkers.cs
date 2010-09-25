@@ -21,11 +21,11 @@ namespace Dexer.IO.Markers
 
     internal class HeaderMarkers
     {
-        public UintMarker CheckSumMarker { get; set; }
-        public UintMarker FileSizeMarker { get; set; }
+        public UIntMarker CheckSumMarker { get; set; }
+        public UIntMarker FileSizeMarker { get; set; }
         public SignatureMarker SignatureMarker { get; set; }
         public SizeOffsetMarker LinkMarker { get; set; }
-        public UintMarker MapMarker { get; set; }
+        public UIntMarker MapMarker { get; set; }
         public SizeOffsetMarker StringsMarker { get; set; }
         public SizeOffsetMarker TypeReferencesMarker { get; set; }
         public SizeOffsetMarker PrototypesMarker { get; set; }

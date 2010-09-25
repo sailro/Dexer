@@ -19,36 +19,47 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.IO;
-using Dexer.Core;
-using Dexer.Extensions;
-using Dexer.Metadata;
+using System;
 using System.Collections.Generic;
+using Dexer.Core;
+using System.Text;
 
 namespace Dexer.IO
 {
-    internal class StringReader
+    internal class AnnotationSet : List<Annotation>, IEquatable<AnnotationSet>
     {
-
-        private Dex Dex { get; set; }
-
-        public StringReader(Dex dex)
+        public AnnotationSet(IAnnotationProvider provider)
         {
-            Dex = dex;
+            AddRange(provider.Annotations);
         }
 
-        public void ReadFrom(BinaryReader reader)
+        public override bool Equals(object obj)
         {
-            reader.PreserveCurrentPosition(Dex.Header.StringsOffset, () =>
+            if (obj is AnnotationSet)
+                return Equals(obj as AnnotationSet);
+            
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            StringBuilder builder = new StringBuilder();
+            foreach (Annotation annotation in this)
+                builder.AppendLine(annotation.GetHashCode().ToString());
+            return builder.ToString().GetHashCode();
+        }
+
+        public bool Equals(AnnotationSet other)
+        {
+            bool result = Count == other.Count;
+
+            if (result)
             {
-                uint StringsDataOffset = reader.ReadUInt32();
-                reader.BaseStream.Seek(StringsDataOffset, SeekOrigin.Begin);
-                for (int i = 0; i < Dex.Header.StringsSize; i++)
-                {
-                    Dex.Strings.Add(reader.ReadMUTF8String());
-                }
-            });
-        }
+                for (int i = 0; i < Count; i++)
+                    result &= this[i].Equals(other[i]);
+            }
 
+            return result;
+        }
     }
 }

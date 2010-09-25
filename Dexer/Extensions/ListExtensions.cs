@@ -19,21 +19,31 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-namespace Dexer.Metadata
+using System;
+using System.IO;
+using System.Collections.Generic;
+
+namespace Dexer.Extensions
 {
-	public class MapItem
-	{
-        public TypeCodes Type { get; set; }
-        public uint Size { get; set; }
-        public uint Offset { get; set; }
+    public static class ListExtensions
+    {
 
-        public MapItem() { }
+        private static Random rnd = new Random();
 
-        public MapItem(TypeCodes type, uint size, uint offset)
+        public static void Shuffle<T>(this List<T> list)
         {
-            Type = type;
-            Size = size;
-            Offset = offset;
+            if (list.Count > 1)
+            {
+                for (int i = list.Count - 1; i >= 0; i--)
+                {
+                    T item = list[i];
+                    int index = rnd.Next(i + 1);
+
+                    list[i] = list[index];
+                    list[index] = item;
+                }
+            }
         }
-	}
+
+    }
 }

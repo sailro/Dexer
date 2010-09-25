@@ -111,12 +111,7 @@ namespace Dexer.Extensions
             return new String(chars);
         }
 
-        public static long ReadValueByTypeArgument(this BinaryReader reader, int typeArgument)
-        {
-            return ReadSigned(reader, typeArgument + 1);
-        }
-
-        public static long ReadSigned(this BinaryReader reader, int byteLength)
+        public static long ReadByByteLength(this BinaryReader reader, int byteLength)
         {
             long value = 0;
             for (int i = 0; i < byteLength; i++)

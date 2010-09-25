@@ -16,34 +16,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.IO;
-using Dexer.Extensions;
+using System.Collections.Generic;
+using Dexer.Core;
+using Dexer.Metadata;
 
-namespace Dexer.IO.Markers
+namespace Dexer.IO.Collector
 {
-
-    internal class UIntMarker : Marker<uint>
+    internal class PureMemberReferenceComparer : IComparer<PureMemberReference>
     {
-        public override uint Value
+        private TypeReferenceComparer typeReferenceComparer = new TypeReferenceComparer();
+        private StringComparer stringComparer = new StringComparer();
+
+        public int Compare(PureMemberReference x, PureMemberReference y)
         {
-            set {
-                foreach (uint position in Positions)
-                {
-                    Writer.PreserveCurrentPosition(position, () =>
-                    {
-                        Writer.Write(value);
-                    });
-                }
-            }
+            int result = typeReferenceComparer.Compare(x.Owner, y.Owner);
+            if (result == 0)
+                result = stringComparer.Compare(x.Name, y.Name);
+            return result;
         }
-
-        public override void Allocate()
-        {
-            Writer.Write((uint) 0);
-        }
-
-        public UIntMarker(BinaryWriter writer) : base(writer) { }
-
     }
-
 }

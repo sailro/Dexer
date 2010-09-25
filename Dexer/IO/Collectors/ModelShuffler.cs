@@ -18,15 +18,42 @@
 
 using System.Collections.Generic;
 using Dexer.Core;
-using Dexer.Metadata;
+using Dexer.Extensions;
+using Dexer.Instructions;
 
 namespace Dexer.IO.Collector
 {
-    internal class ClassDefinitionComparer : ClassReferenceComparer, IComparer<ClassDefinition>
+    internal class ModelShuffler : BaseCollector<object>
     {
-        public int Compare(ClassDefinition x, ClassDefinition y)
+        public override void Collect(List<ClassDefinition> classes)
         {
-            return base.Compare(x, y);
+            classes.Shuffle();
+            base.Collect(classes);
         }
+
+        public override void Collect(List<ClassReference> classes)
+        {
+            classes.Shuffle(); 
+            base.Collect(classes);
+        }
+
+        public override void Collect(List<MethodDefinition> methods)
+        {
+            methods.Shuffle(); 
+            base.Collect(methods);
+        }
+
+        public override void Collect(List<FieldDefinition> fields)
+        {
+            fields.Shuffle();
+            base.Collect(fields);
+        }
+
+        public override void Collect(List<Annotation> annotations)
+        {
+            annotations.Shuffle();
+            base.Collect(annotations);
+        }
+
     }
 }

@@ -33,32 +33,99 @@ namespace Dexer.IO
     public class DexReader
     {
         private Dex Dex { get; set; }
+        internal Map Map { get; set; }
+        internal DexHeader Header { get; set; }
 
         public DexReader(Dex dex)
         {
             Dex = dex;
+            Map = new Map();
+            Header = new DexHeader();
         }
 
-        public void ReadFrom(BinaryReader reader)
+        #region " Header "
+        private void ReadHeader(BinaryReader reader)
         {
-            new DexHeaderReader(Dex.Header).ReadFrom(reader);
-            new MapReader(Dex).ReadFrom(reader);
-            new StringReader(Dex).ReadFrom(reader);
+            Header.Magic = reader.ReadBytes(DexConsts.FileMagic.Length);
 
-            PrefetchTypeReferences(reader);
-            PrefetchClassDefinitions(reader, false);
+            if (!Header.Magic.Match(DexConsts.FileMagic, 0))
+                throw new MalformedException("Unexpected Magic number");
 
-            ReadTypesReferences(reader);
-            ReadPrototypes(reader);
-            ReadFieldReferences(reader);
-            ReadMethodReferences(reader);
 
-            PrefetchClassDefinitions(reader, true);
-            ReadClassDefinitions(reader);
+            Header.CheckSum = reader.ReadUInt32();
+            Header.Signature = reader.ReadBytes(DexConsts.SignatureSize);
 
-            Hierarchicalize();
+            Header.FileSize = reader.ReadUInt32();
+            Header.HeaderSize = reader.ReadUInt32();
+            Header.EndianTag = reader.ReadUInt32();
+
+            if (Header.EndianTag != DexConsts.Endian)
+                throw new MalformedException("Only Endian-encoded files are supported");
+
+            Header.LinkSize = reader.ReadUInt32();
+            Header.LinkOffset = reader.ReadUInt32();
+
+            Header.MapOffset = reader.ReadUInt32();
+
+            Header.StringsSize = reader.ReadUInt32();
+            Header.StringsOffset = reader.ReadUInt32();
+
+            Header.TypeReferencesSize = reader.ReadUInt32();
+            Header.TypeReferencesOffset = reader.ReadUInt32();
+
+            Header.PrototypesSize = reader.ReadUInt32();
+            Header.PrototypesOffset = reader.ReadUInt32();
+
+            Header.FieldReferencesSize = reader.ReadUInt32();
+            Header.FieldReferencesOffset = reader.ReadUInt32();
+
+            Header.MethodReferencesSize = reader.ReadUInt32();
+            Header.MethodReferencesOffset = reader.ReadUInt32();
+
+            Header.ClassDefinitionsSize = reader.ReadUInt32();
+            Header.ClassDefinitionsOffset = reader.ReadUInt32();
+
+            Header.DataSize = reader.ReadUInt32();
+            Header.DataOffset = reader.ReadUInt32();
+        }
+        #endregion
+
+        #region " Map "
+        private void ReadMap(BinaryReader reader)
+        {
+            reader.PreserveCurrentPosition(Header.MapOffset, () =>
+            {
+                uint mapsize = reader.ReadUInt32();
+                for (int i = 0; i < mapsize; i++)
+                {
+                    MapItem item = new MapItem();
+                    item.Type = (TypeCodes)reader.ReadUInt16();
+                    reader.ReadUInt16(); // unused
+                    item.Size = reader.ReadUInt32();
+                    item.Offset = reader.ReadUInt32();
+                    Map.Add(item.Type, item);
+                }
+            });
         }
 
+        #endregion
+
+        #region " Strings "
+        private void ReadStrings(BinaryReader reader)
+        {
+            reader.PreserveCurrentPosition(Header.StringsOffset, () =>
+            {
+                uint StringsDataOffset = reader.ReadUInt32();
+                reader.BaseStream.Seek(StringsDataOffset, SeekOrigin.Begin);
+                for (int i = 0; i < Header.StringsSize; i++)
+                {
+                    Dex.Strings.Add(reader.ReadMUTF8String());
+                }
+            });
+        }
+        #endregion
+
+        #region " Collect and sort "
         private void Hierarchicalize()
         {
             var TopClasses = new List<ClassDefinition>();
@@ -83,15 +150,16 @@ namespace Dexer.IO
             }
             Dex.Classes = TopClasses;
         }
+        #endregion
 
         #region " Prefetch "
         private void PrefetchTypeReferences(BinaryReader reader)
         {
-            reader.PreserveCurrentPosition(Dex.Header.TypeReferencesOffset, () =>
+            reader.PreserveCurrentPosition(Header.TypeReferencesOffset, () =>
             {
-                reader.BaseStream.Seek(Dex.Header.TypeReferencesOffset, SeekOrigin.Begin);
+                reader.BaseStream.Seek(Header.TypeReferencesOffset, SeekOrigin.Begin);
 
-                for (int i = 0; i < Dex.Header.TypeReferencesSize; i++)
+                for (int i = 0; i < Header.TypeReferencesSize; i++)
                 {
                     int descriptorIndex = reader.ReadInt32();
                     string descriptor = Dex.Strings[descriptorIndex];
@@ -158,9 +226,9 @@ namespace Dexer.IO
 
         private void PrefetchClassDefinitions(BinaryReader reader, bool prefetchMembers)
         {
-            reader.PreserveCurrentPosition(Dex.Header.ClassDefinitionsOffset, () =>
+            reader.PreserveCurrentPosition(Header.ClassDefinitionsOffset, () =>
             {
-                for (int i = 0; i < Dex.Header.ClassDefinitionsSize; i++)
+                for (int i = 0; i < Header.ClassDefinitionsSize; i++)
                 {
                     int classIndex = reader.ReadInt32();
 
@@ -194,70 +262,7 @@ namespace Dexer.IO
         }
         #endregion
 
-        #region " Read "
-        private void ReadClassDefinitions(BinaryReader reader)
-        {
-            reader.PreserveCurrentPosition(Dex.Header.ClassDefinitionsOffset, () =>
-            {
-                for (int i = 0; i < Dex.Header.ClassDefinitionsSize; i++)
-                {
-                    uint classIndex = reader.ReadUInt32();
-
-                    ClassDefinition cdef = (ClassDefinition)Dex.TypeReferences[(int)classIndex];
-                    cdef.AccessFlags = (AccessFlags)reader.ReadUInt32();
-
-                    uint superClassIndex = reader.ReadUInt32();
-                    if (superClassIndex != DexConsts.NoIndex)
-                        cdef.SuperClass = (ClassReference)Dex.TypeReferences[(int)superClassIndex];
-
-                    uint interfaceOffset = reader.ReadUInt32();
-                    uint sourceFileIndex = reader.ReadUInt32();
-                    uint annotationOffset = reader.ReadUInt32();
-                    uint classDataOffset = reader.ReadUInt32();
-                    uint staticValuesOffset = reader.ReadUInt32();
-
-                    if (interfaceOffset > 0)
-                        ReadInterfaces(reader, cdef, interfaceOffset);
-
-                    if (sourceFileIndex != DexConsts.NoIndex)
-                        cdef.SourceFile = Dex.Strings[(int)sourceFileIndex];
-
-                    if (classDataOffset > 0)
-                        ReadClassDefinition(reader, cdef, classDataOffset);
-
-                    if (annotationOffset > 0)
-                        ReadAnnotationDirectory(reader, cdef, annotationOffset);
-
-                    if (staticValuesOffset > 0)
-                    {
-                        ReadStaticValues(reader, cdef, staticValuesOffset);
-                    }
-                }
-            });
-        }
-
-        private void ReadStaticValues(BinaryReader reader, ClassDefinition classDefinition, uint staticValuesOffset)
-        {
-            reader.PreserveCurrentPosition(staticValuesOffset, () =>
-            {
-                object[] values = ReadValues(reader);
-                for (int j = 0; j < values.Length; j++)
-                {
-                    classDefinition.Fields[j].Value = values[j];
-                }
-            });
-        }
-
-        private void ReadInterfaces(BinaryReader reader, ClassDefinition classDefinition, uint interfaceOffset)
-        {
-            reader.PreserveCurrentPosition(interfaceOffset, () =>
-            {
-                int size = reader.ReadInt32();
-                ushort index = reader.ReadUInt16();
-                classDefinition.Interfaces.Add((ClassReference)Dex.TypeReferences[index]);
-            });
-        }
-
+        #region " Annotations "
         private void ReadAnnotationDirectory(BinaryReader reader, ClassDefinition classDefinition, uint annotationOffset)
         {
             reader.PreserveCurrentPosition(annotationOffset, () =>
@@ -270,13 +275,13 @@ namespace Dexer.IO
                 if (classAnnotationOffset > 0)
                     classDefinition.Annotations = ReadAnnotationSet(reader, classAnnotationOffset);
 
-                if (annotatedFieldsSize > 0)
+                for (int j = 0; j < annotatedFieldsSize; j++)
                     (Dex.FieldReferences[reader.ReadInt32()] as FieldDefinition).Annotations = ReadAnnotationSet(reader, reader.ReadUInt32());
 
-                if (annotatedMethodsSize > 0)
+                for (int j = 0; j < annotatedMethodsSize; j++)
                     (Dex.MethodReferences[reader.ReadInt32()] as MethodDefinition).Annotations = ReadAnnotationSet(reader, reader.ReadUInt32());
 
-                for (int j=0; j<annotatedParametersSize; j++)
+                for (int j = 0; j < annotatedParametersSize; j++)
                 {
                     int methodIndex = reader.ReadInt32();
                     uint offset = reader.ReadUInt32();
@@ -338,21 +343,128 @@ namespace Dexer.IO
 
         private Annotation ReadEncodedAnnotation(BinaryReader reader)
         {
-            int typeIndex = (int) reader.ReadULEB128();
-            int elementSize = (int) reader.ReadULEB128();
+            int typeIndex = (int)reader.ReadULEB128();
+            int elementSize = (int)reader.ReadULEB128();
 
             Annotation annotation = new Annotation();
-            annotation.Type = (ClassReference) Dex.TypeReferences[typeIndex];
+            annotation.Type = (ClassReference)Dex.TypeReferences[typeIndex];
 
-            for (int i=0; i<elementSize; i++) {
+            for (int i = 0; i < elementSize; i++)
+            {
                 AnnotationArgument argument = new AnnotationArgument();
-                int nameIndex = (int) reader.ReadULEB128();
+                int nameIndex = (int)reader.ReadULEB128();
                 argument.Name = Dex.Strings[nameIndex];
                 argument.Value = ReadValue(reader);
                 annotation.Arguments.Add(argument);
             }
 
             return annotation;
+        }
+        #endregion
+
+        #region " Prototypes "
+        private void ReadPrototypes(BinaryReader reader)
+        {
+            reader.PreserveCurrentPosition(Header.PrototypesOffset, () =>
+            {
+                for (int i = 0; i < Header.PrototypesSize; i++)
+                {
+                    long thisOffset = reader.BaseStream.Position;
+                    int shortyIndex = reader.ReadInt32();
+                    int returnTypeIndex = reader.ReadInt32();
+                    uint parametersOffset = reader.ReadUInt32();
+
+                    Prototype prototype = new Prototype();
+                    prototype.ReturnType = Dex.TypeReferences[returnTypeIndex];
+
+                    if (parametersOffset > 0)
+                    {
+                        ReadParameters(reader, prototype, parametersOffset);
+                    }
+
+                    Dex.Prototypes.Add(prototype);
+                }
+            });
+        }
+
+        private void ReadParameters(BinaryReader reader, Prototype prototype, uint parametersOffset)
+        {
+            reader.PreserveCurrentPosition(parametersOffset, () =>
+            {
+                uint typecount = reader.ReadUInt32();
+                for (int j = 0; j < typecount; j++)
+                {
+                    Parameter parameter = new Parameter();
+                    int typeIndex = reader.ReadUInt16();
+                    parameter.Type = Dex.TypeReferences[typeIndex];
+                    prototype.Parameters.Add(parameter);
+                }
+            });
+        }
+        #endregion
+
+        #region " Definitions "
+        private void ReadClassDefinitions(BinaryReader reader)
+        {
+            reader.PreserveCurrentPosition(Header.ClassDefinitionsOffset, () =>
+            {
+                for (int i = 0; i < Header.ClassDefinitionsSize; i++)
+                {
+                    uint classIndex = reader.ReadUInt32();
+
+                    ClassDefinition cdef = (ClassDefinition)Dex.TypeReferences[(int)classIndex];
+                    cdef.AccessFlags = (AccessFlags)reader.ReadUInt32();
+
+                    uint superClassIndex = reader.ReadUInt32();
+                    if (superClassIndex != DexConsts.NoIndex)
+                        cdef.SuperClass = (ClassReference)Dex.TypeReferences[(int)superClassIndex];
+
+                    uint interfaceOffset = reader.ReadUInt32();
+                    uint sourceFileIndex = reader.ReadUInt32();
+                    uint annotationOffset = reader.ReadUInt32();
+                    uint classDataOffset = reader.ReadUInt32();
+                    uint staticValuesOffset = reader.ReadUInt32();
+
+                    if (interfaceOffset > 0)
+                        ReadInterfaces(reader, cdef, interfaceOffset);
+
+                    if (sourceFileIndex != DexConsts.NoIndex)
+                        cdef.SourceFile = Dex.Strings[(int)sourceFileIndex];
+
+                    if (classDataOffset > 0)
+                        ReadClassDefinition(reader, cdef, classDataOffset);
+
+                    if (annotationOffset > 0)
+                        ReadAnnotationDirectory(reader, cdef, annotationOffset);
+
+                    if (staticValuesOffset > 0)
+                    {
+                        ReadStaticValues(reader, cdef, staticValuesOffset);
+                    }
+                }
+            });
+        }
+
+        private void ReadStaticValues(BinaryReader reader, ClassDefinition classDefinition, uint staticValuesOffset)
+        {
+            reader.PreserveCurrentPosition(staticValuesOffset, () =>
+            {
+                object[] values = ReadValues(reader);
+                for (int j = 0; j < values.Length; j++)
+                {
+                    classDefinition.Fields[j].Value = values[j];
+                }
+            });
+        }
+
+        private void ReadInterfaces(BinaryReader reader, ClassDefinition classDefinition, uint interfaceOffset)
+        {
+            reader.PreserveCurrentPosition(interfaceOffset, () =>
+            {
+                int size = reader.ReadInt32();
+                ushort index = reader.ReadUInt16();
+                classDefinition.Interfaces.Add((ClassReference)Dex.TypeReferences[index]);
+            });
         }
 
         private object[] ReadValues(BinaryReader reader)
@@ -377,26 +489,26 @@ namespace Dexer.IO
                 case ValueFormats.Byte:
                     return reader.ReadSByte();
                 case ValueFormats.Short:
-                    return (short) reader.ReadValueByTypeArgument(valueArgument);
+                    return (short)reader.ReadByByteLength(valueArgument + 1);
                 case ValueFormats.Char:
-                    return (char)reader.ReadValueByTypeArgument(valueArgument);
+                    return (char)reader.ReadByByteLength(valueArgument + 1);
                 case ValueFormats.Int:
-                    return (int)reader.ReadValueByTypeArgument(valueArgument);
+                    return (int)reader.ReadByByteLength(valueArgument + 1);
                 case ValueFormats.Long:
-                    return (long)reader.ReadValueByTypeArgument(valueArgument);
+                    return (long)reader.ReadByByteLength(valueArgument + 1);
                 case ValueFormats.Float:
                     return reader.ReadSingle();
                 case ValueFormats.Double:
                     return reader.ReadDouble();
                 case ValueFormats.String:
-                    return Dex.Strings[(int)reader.ReadValueByTypeArgument(valueArgument)];
+                    return Dex.Strings[(int)reader.ReadByByteLength(valueArgument + 1)];
                 case ValueFormats.Type:
-                    return Dex.TypeReferences[(int)reader.ReadValueByTypeArgument(valueArgument)];
+                    return Dex.TypeReferences[(int)reader.ReadByByteLength(valueArgument + 1)];
                 case ValueFormats.Field:
-                case ValueFormats.Enum:       
-                    return Dex.FieldReferences[(int)reader.ReadValueByTypeArgument(valueArgument)];
+                case ValueFormats.Enum:
+                    return Dex.FieldReferences[(int)reader.ReadByByteLength(valueArgument + 1)];
                 case ValueFormats.Method:
-                    return Dex.MethodReferences[(int)reader.ReadValueByTypeArgument(valueArgument)];
+                    return Dex.MethodReferences[(int)reader.ReadByByteLength(valueArgument + 1)];
                 case ValueFormats.Array:
                     return ReadValues(reader);
                 case ValueFormats.Annotation:
@@ -412,21 +524,13 @@ namespace Dexer.IO
 
         private void ReadFieldDefinitions(BinaryReader reader, ClassDefinition classDefinition, uint fieldcount)
         {
-            int fieldIndex=0;
+            uint fieldIndex = 0;
             for (int i = 0; i < fieldcount; i++)
             {
-                if (i == 0)
-                {
-                    fieldIndex = (int)reader.ReadULEB128();
-                }
-                else
-                {
-                    fieldIndex += (int)reader.ReadULEB128();
-                }
-
+                fieldIndex += reader.ReadULEB128();
                 uint accessFlags = reader.ReadULEB128();
 
-                FieldDefinition fdef = (FieldDefinition)Dex.FieldReferences[fieldIndex];
+                FieldDefinition fdef = (FieldDefinition)Dex.FieldReferences[(int)fieldIndex];
                 fdef.AccessFlags = (AccessFlags)accessFlags;
                 fdef.Owner = classDefinition;
 
@@ -434,26 +538,19 @@ namespace Dexer.IO
             }
         }
 
-        private void ReadMethodDefinitions(BinaryReader reader, ClassDefinition classDefinition, uint methodcount)
+        private void ReadMethodDefinitions(BinaryReader reader, ClassDefinition classDefinition, uint methodcount, bool isVirtual)
         {
-            int methodIndex = 0;
+            uint methodIndex = 0;
             for (int i = 0; i < methodcount; i++)
             {
-                if (i == 0)
-                {
-                    methodIndex = (int)reader.ReadULEB128();
-                }
-                else
-                {
-                    methodIndex += (int)reader.ReadULEB128();
-                }
-
+                methodIndex += reader.ReadULEB128();
                 uint accessFlags = reader.ReadULEB128();
                 uint codeOffset = reader.ReadULEB128();
 
-                MethodDefinition mdef = (MethodDefinition)Dex.MethodReferences[methodIndex];
+                MethodDefinition mdef = (MethodDefinition)Dex.MethodReferences[(int)methodIndex];
                 mdef.AccessFlags = (AccessFlags)accessFlags;
                 mdef.Owner = classDefinition;
+                mdef.IsVirtual = isVirtual;
 
                 classDefinition.Methods.Add(mdef);
 
@@ -634,7 +731,7 @@ namespace Dexer.IO
                     @catch.Type = Dex.TypeReferences[(int)typeIndex];
                     @catch.Instruction = instructionReader.Lookup[(int)offset];
 
-                    // As catch handler can be used in several tries, let's clone him
+                    // As catch handler can be used in several tries, let's clone the catch
                     foreach (ExceptionHandler ehandler in exceptionLookup[(uint)itemoffset])
                         ehandler.Catches.Add(@catch.Clone());
                 }
@@ -660,16 +757,18 @@ namespace Dexer.IO
 
                 ReadFieldDefinitions(reader, classDefinition, staticFieldSize);
                 ReadFieldDefinitions(reader, classDefinition, instanceFieldSize);
-                ReadMethodDefinitions(reader, classDefinition, directMethodSize);
-                ReadMethodDefinitions(reader, classDefinition, virtualMethodSize);
+                ReadMethodDefinitions(reader, classDefinition, directMethodSize, false);
+                ReadMethodDefinitions(reader, classDefinition, virtualMethodSize, true);
             });
         }
+        #endregion
 
+        #region " References "
         private void ReadMethodReferences(BinaryReader reader)
         {
-            reader.PreserveCurrentPosition(Dex.Header.MethodReferencesOffset, () =>
+            reader.PreserveCurrentPosition(Header.MethodReferencesOffset, () =>
             {
-                for (int i = 0; i < Dex.Header.MethodReferencesSize; i++)
+                for (int i = 0; i < Header.MethodReferencesSize; i++)
                 {
                     int classIndex = reader.ReadUInt16();
                     int prototypeIndex = reader.ReadUInt16();
@@ -688,9 +787,9 @@ namespace Dexer.IO
 
         private void ReadFieldReferences(BinaryReader reader)
         {
-            reader.PreserveCurrentPosition(Dex.Header.FieldReferencesOffset, () =>
+            reader.PreserveCurrentPosition(Header.FieldReferencesOffset, () =>
             {
-                for (int i = 0; i < Dex.Header.FieldReferencesSize; i++)
+                for (int i = 0; i < Header.FieldReferencesSize; i++)
                 {
                     int classIndex = reader.ReadUInt16();
                     int typeIndex = reader.ReadUInt16();
@@ -707,52 +806,11 @@ namespace Dexer.IO
             });
         }
 
-        private void ReadPrototypes(BinaryReader reader)
-        {
-            reader.PreserveCurrentPosition(Dex.Header.PrototypesOffset, () =>
-            {
-                for (int i = 0; i < Dex.Header.PrototypesSize; i++)
-                {
-                    long thisOffset = reader.BaseStream.Position;
-                    int shortyIndex = reader.ReadInt32();
-                    int returnTypeIndex = reader.ReadInt32();
-                    uint parametersOffset = reader.ReadUInt32();
-
-                    Prototype prototype = new Prototype();
-                    prototype.ReturnType = Dex.TypeReferences[returnTypeIndex];
-
-                    if (parametersOffset > 0)
-                    {
-                        ReadParameters(reader, prototype, parametersOffset);
-                    }
-
-                    Dex.Prototypes.Add(prototype);
-                }
-            });
-        }
-
-        private void ReadParameters(BinaryReader reader, Prototype prototype, uint parametersOffset)
-        {
-            reader.PreserveCurrentPosition(parametersOffset, () =>
-            {
-                uint typecount = reader.ReadUInt32();
-                //Debug.Print("Read uint {0}", typecount);
-                for (int j = 0; j < typecount; j++)
-                {
-                    Parameter parameter = new Parameter();
-                    int typeIndex = reader.ReadUInt16();
-                    //Debug.Print("Read ushort {0}", typeIndex);
-                    parameter.Type = Dex.TypeReferences[typeIndex];
-                    prototype.Parameters.Add(parameter);
-                }
-            });
-        }
-        
         private void ReadTypesReferences(BinaryReader reader)
         {
-            reader.PreserveCurrentPosition(Dex.Header.TypeReferencesOffset, () =>
+            reader.PreserveCurrentPosition(Header.TypeReferencesOffset, () =>
             {
-                for (int i = 0; i < Dex.Header.TypeReferencesSize; i++)
+                for (int i = 0; i < Header.TypeReferencesSize; i++)
                 {
                     int descriptorIndex = reader.ReadInt32();
                     string descriptor = Dex.Strings[descriptorIndex];
@@ -761,6 +819,26 @@ namespace Dexer.IO
             });
         }
         #endregion
+
+        public void ReadFrom(BinaryReader reader)
+        {
+            ReadHeader(reader);
+            ReadMap(reader);
+            ReadStrings(reader);
+
+            PrefetchTypeReferences(reader);
+            PrefetchClassDefinitions(reader, false);
+
+            ReadTypesReferences(reader);
+            ReadPrototypes(reader);
+            ReadFieldReferences(reader);
+            ReadMethodReferences(reader);
+
+            PrefetchClassDefinitions(reader, true);
+            ReadClassDefinitions(reader);
+
+            Hierarchicalize();
+        }
 
     }
 }

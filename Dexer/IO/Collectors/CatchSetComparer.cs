@@ -16,34 +16,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.IO;
-using Dexer.Extensions;
+using System;
+using System.Collections.Generic;
 
-namespace Dexer.IO.Markers
+namespace Dexer.IO.Collector
 {
-
-    internal class UIntMarker : Marker<uint>
+    internal class CatchSetComparer : IComparer<CatchSet>
     {
-        public override uint Value
+        public int Compare(CatchSet x, CatchSet y)
         {
-            set {
-                foreach (uint position in Positions)
-                {
-                    Writer.PreserveCurrentPosition(position, () =>
-                    {
-                        Writer.Write(value);
-                    });
-                }
+            int minp = Math.Min(x.Count, y.Count);
+            for (int i = 0; i < minp; i++)
+            {
+                int cp = x[i].Instruction.Offset.CompareTo(y[i].Instruction.Offset);
+                if (cp != 0)
+                    return cp;
             }
+            return 0;
         }
-
-        public override void Allocate()
-        {
-            Writer.Write((uint) 0);
-        }
-
-        public UIntMarker(BinaryWriter writer) : base(writer) { }
-
     }
-
 }

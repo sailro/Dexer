@@ -37,10 +37,8 @@ namespace Dexer.Core
         internal List<FieldReference> FieldReferences { get; set; }
         internal List<MethodReference> MethodReferences { get; set; }
 
-        internal DexHeader Header { get; set; }
         internal List<string> Strings { get; set; }
         internal List<Prototype> Prototypes { get; set; }
-        internal Map Map { get; set; }
 
         public static Dex Load(string filename)
         {
@@ -111,8 +109,6 @@ namespace Dexer.Core
             FieldReferences = new List<FieldReference>();
             MethodReferences = new List<MethodReference>();
 
-            Header = new DexHeader();
-            Map = new Map();
             Prototypes = new List<Prototype>();
             Strings = new List<string>();
         }

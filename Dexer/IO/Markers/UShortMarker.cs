@@ -22,9 +22,9 @@ using Dexer.Extensions;
 namespace Dexer.IO.Markers
 {
 
-    internal class UIntMarker : Marker<uint>
+    internal class UShortMarker : Marker<ushort>
     {
-        public override uint Value
+        public override ushort Value
         {
             set {
                 foreach (uint position in Positions)
@@ -39,10 +39,10 @@ namespace Dexer.IO.Markers
 
         public override void Allocate()
         {
-            Writer.Write((uint) 0);
+            Writer.Write((ushort) 0);
         }
 
-        public UIntMarker(BinaryWriter writer) : base(writer) { }
+        public UShortMarker(BinaryWriter writer) : base(writer) { }
 
     }
 

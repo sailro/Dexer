@@ -27,8 +27,13 @@ namespace Dexer.Test
     [TestClass]
     public abstract class BaseTest
     {
-        protected TestContext testContextInstance;
-        protected string filesDirectory;
+        private TestContext testContextInstance;
+        private string filesDirectory;
+
+        public string FilesDirectory
+        {
+            get { return filesDirectory; }
+        }
 
         /// <summary>
         ///Gets or sets the test context which provides

@@ -22,10 +22,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using Dexer.Core;
 using System.Collections.Generic;
 using System.Text;
+using System;
 
 namespace Dexer.Instructions
 {
-    public class Instruction
+    public class Instruction : IEquatable<Instruction>
     {
         public OpCodes OpCode { get; set; }
         public int Offset { get; set; }
@@ -75,5 +76,13 @@ namespace Dexer.Instructions
             return builder.ToString();
         }
 
+        #region " IEquatable "
+        public bool Equals(Instruction other)
+        {
+            // Should be OK because we only use this after proper computation of offsets.
+            // Mainly used by CatchSet to detect dupe lists.
+            return Offset == other.Offset;
+        }
+        #endregion
     }
 }

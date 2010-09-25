@@ -25,7 +25,7 @@ using System;
 
 namespace Dexer.Core
 {
-    public class AnnotationArgument
+    public class AnnotationArgument : IEquatable<AnnotationArgument>
     {
         public string Name { get; set; }
         public object Value { get; set; }
@@ -39,50 +39,15 @@ namespace Dexer.Core
             return builder.ToString();
         }
 
-        internal ValueFormats Format
+        #region " IEquatable "
+        public bool Equals(AnnotationArgument other)
         {
-            get
-            {
-                if (Value is byte)
-                    return ValueFormats.Byte;
-                else if (Value is short)
-                    return ValueFormats.Short;
-                else if (Value is char)
-                    return ValueFormats.Char;
-                else if (Value is int)
-                    return ValueFormats.Int;
-                else if (Value is long)
-                    return ValueFormats.Long;
-                else if (Value is float)
-                    return ValueFormats.Float;
-                else if (Value is double)
-                    return ValueFormats.Double;
-                else if (Value is bool)
-                    return ValueFormats.Boolean;
-                else if (Value is string)
-                    return ValueFormats.String;
-                else if (Value is TypeReference)
-                    return ValueFormats.Type;
-                else if (Value is FieldReference)
-                {
-                    if (Value is FieldDefinition && (Value as FieldDefinition).IsEnum)
-                        return ValueFormats.Enum;
-
-                    return ValueFormats.Field;
-                }
-                else if (Value is MethodReference)
-                    return ValueFormats.Method;
-                else if (Value is ArrayType)
-                    return ValueFormats.Array;
-                else if (Value is Annotation)
-                    return ValueFormats.Annotation;
-                else if (Value == null)
-                    return ValueFormats.Null;
-                else
-                    throw new ArgumentException("Unexpected annotation value type");
-
-            }
+            return Name.Equals(other.Name)
+                && ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
+                && object.Equals(Value, other.Value);
         }
+        #endregion
+
     }
 }
 

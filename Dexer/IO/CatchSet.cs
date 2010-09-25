@@ -21,39 +21,49 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Dexer.Core;
-using Dexer.IO.Collector;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Text;
+using Dexer.Instructions;
 
-namespace Dexer.Test
+namespace Dexer.IO
 {
-    [TestClass]
-    public class BaseCollectorTest : BaseTest
+    internal class CatchSet : List<Catch>, IEquatable<CatchSet>
     {
-        internal void TestCollector<C,T>(Func<Dex, List<T>> provider) where C : BaseCollector<T>, new()
+        public Instruction CatchAll { get; set; }
+
+        public CatchSet(ExceptionHandler handler)
         {
-            foreach (string file in Directory.GetFiles(FilesDirectory))
+            AddRange(handler.Catches);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is CatchSet)
+                return Equals(obj as CatchSet);
+            
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(CatchAll == null ? null : CatchAll.Offset.ToString());
+            foreach (Catch @catch in this)
+                builder.AppendLine(@catch.GetHashCode().ToString());
+            return builder.ToString().GetHashCode();
+        }
+
+        public bool Equals(CatchSet other)
+        {
+            bool result = Count == other.Count && object.Equals(this.CatchAll, other.CatchAll);
+
+            if (result)
             {
-                TestCollector<C, T>(provider, file);
+                for (int i = 0; i < Count; i++)
+                    result &= this[i].Equals(other[i]);
             }
+
+            return result;
         }
-
-        internal C TestCollector<C, T>(Func<Dex, List<T>> provider, string file) where C : BaseCollector<T>, new()
-        {
-            TestContext.WriteLine("Testing {0}", file);
-            Dex dex = Dex.Load(file);
-
-            C collector = new C();
-            collector.Collect(dex);
-
-            foreach (T key in provider(dex))
-                Assert.IsTrue(collector.Items.ContainsKey(key), "Item '{0}' not collected", key);
-
-            Assert.AreEqual(provider(dex).Count, collector.Items.Count);
-
-            return collector;
-        }
-
     }
 }

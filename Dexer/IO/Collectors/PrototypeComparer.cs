@@ -25,21 +25,17 @@ namespace Dexer.IO.Collector
 {
     internal class PrototypeComparer : IComparer<Prototype>
     {
-        private Dictionary<TypeReference, int> typeLookup;
+        private TypeReferenceComparer typeReferenceComparer = new TypeReferenceComparer();
 
-        public PrototypeComparer(Dictionary<TypeReference, int> TypeLookup)
-        {
-            this.typeLookup = TypeLookup;
-        }
         public int Compare(Prototype x, Prototype y)
         {
-            int crt = typeLookup[x.ReturnType].CompareTo(typeLookup[y.ReturnType]);
+            int crt = typeReferenceComparer.Compare(x.ReturnType, y.ReturnType);
             if (crt == 0)
             {
                 int minp = Math.Min(x.Parameters.Count, y.Parameters.Count);
                 for (int i = 0; i < minp; i++)
                 {
-                    int cp = typeLookup[x.Parameters[i].Type].CompareTo(typeLookup[y.Parameters[i].Type]);
+                    int cp = typeReferenceComparer.Compare(x.Parameters[i].Type,y.Parameters[i].Type);
                     if (cp != 0)
                         return cp;
                 }

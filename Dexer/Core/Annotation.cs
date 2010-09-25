@@ -22,10 +22,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using System.Text;
 using Dexer.Metadata;
+using System;
 
 namespace Dexer.Core
 {
-    public class Annotation
+    public class Annotation : IEquatable<Annotation>
     {
         public ClassReference Type { get; set; }
         public List<AnnotationArgument> Arguments { get; set; }
@@ -51,6 +52,40 @@ namespace Dexer.Core
             builder.Append(")");
             return builder.ToString();
         }
+
+        #region " IEquatable "
+        public bool Equals(Annotation other)
+        {
+            bool result = Type.Equals(other.Type) && Arguments.Count.Equals(other.Arguments.Count);
+            if (result)
+            {
+                for (int i = 0; i < Arguments.Count; i++)
+                    result = result && Arguments[i].Equals(other.Arguments[i]);
+            }
+            return result;
+        }
+        #endregion
+
+        #region " Object "
+        public override bool Equals(object obj)
+        {
+            if (obj is Annotation)
+                return Equals(obj as Annotation);
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(TypeDescriptor.Encode(Type));
+
+            foreach (AnnotationArgument argument in Arguments)
+                builder.AppendLine(String.Format("{0}={1}",argument.Name, argument.Value));
+
+            return builder.ToString().GetHashCode();
+        }
+        #endregion
 
     }
 }

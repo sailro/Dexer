@@ -19,134 +19,48 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
-using System.Collections.Generic;
 using System.IO;
 using Dexer.Core;
 using Dexer.Instructions;
+using System.Collections.Generic;
+using System;
+using System.Runtime.InteropServices;
 using Dexer.Metadata;
 
 namespace Dexer.IO
 {
-    internal class InstructionReader
+    internal class InstructionWriter
     {
+        private DexWriter DexWriter { get; set; }
         private MethodDefinition MethodDefinition { get; set; }
-        private List<Action> LazyInstructionsSetters { get; set; }
-        private Dex Dex { get; set; }
-
-        internal int[] Codes { get; set; }
-        private int[] Lower { get; set; }
-        private int[] Upper { get; set; }
+        internal ushort[] Codes { get; set; }
         private int Ip;
-        private uint InstructionsSize { get; set; }
+        private int ExtraOffset;
 
-        internal Dictionary<int, Instruction> Lookup;     // instructions by starting offset
-        internal Dictionary<int, Instruction> LookupLast; // instructions by ending offset
+        internal Dictionary<Instruction, int> LookupLast; // ending offsets by instruction
 
-        public InstructionReader(Dex dex, MethodDefinition methodDefinition)
+        public InstructionWriter(DexWriter dexWriter, MethodDefinition method)
         {
-            Dex = dex;
-            MethodDefinition = methodDefinition;
-            Lookup = new Dictionary<int, Instruction>();
-            LookupLast = new Dictionary<int, Instruction>();
-            LazyInstructionsSetters = new List<Action>();
+            DexWriter = dexWriter;
+            MethodDefinition = method;
+            LookupLast = new Dictionary<Instruction, int>();
             Ip = 0;
+            ExtraOffset = 0;
         }
 
-        private void ReadvA(Instruction ins)
+        public void WriteTo(BinaryWriter writer)
         {
-            ins.Registers.Add(MethodDefinition.Body.Registers[Upper[Ip] & 0xF]);
-        }
+            OffsetStatistics stats = MethodDefinition.Body.UpdateInstructionOffsets();
+            ExtraOffset = stats.CodeUnits;
+            Codes = new ushort[stats.CodeUnits + stats.ExtraCodeUnits];
+            int registerMask = 0;
 
-        private void ReadvAA(Instruction ins) {
-            ins.Registers.Add(MethodDefinition.Body.Registers[Upper[Ip++]]);
-        }
-
-        private void ReadvAAAA(Instruction ins) {
-            Ip++;
-            ins.Registers.Add(MethodDefinition.Body.Registers[Codes[Ip++]]);
-        }
-
-        private void ReadvB(Instruction ins)
-        {
-            ins.Registers.Add(MethodDefinition.Body.Registers[Upper[Ip++] >> 4]);
-        }
-
-        private void ReadvBB(Instruction ins)
-        {
-            ins.Registers.Add(MethodDefinition.Body.Registers[Lower[Ip]]);
-        }
-
-        private void ReadvBBBB(Instruction ins) {
-            ins.Registers.Add(MethodDefinition.Body.Registers[Codes[Ip++]]);
-        }
-
-        private void ReadvCC(Instruction ins) {
-            ReadvAA(ins);
-        }
-
-        private sbyte ReadNibble()
-        {
-            return (sbyte)((Upper[Ip++] << 24) >> 28);
-        }
-
-        private short ReadShort(ref int codeUnitOffset)
-        {
-            return (short)Codes[codeUnitOffset++];
-        }
-
-        private int ReadInt(ref int codeUnitOffset)
-        {
-            // don't reuse ReadShort to keep bit sign
-            int result = Codes[codeUnitOffset++];
-            result |= Codes[codeUnitOffset++] << 16;
-            return result;
-        }
-
-        private long ReadLong(ref int codeUnitOffset)
-        {
-            // don't reuse ReadShort to keep bit sign
-            long result = Codes[codeUnitOffset++];
-            result |= ((long)Codes[codeUnitOffset++]) << 16;
-            result |= ((long)Codes[codeUnitOffset++]) << 32;
-            result |= ((long)Codes[codeUnitOffset++]) << 48;
-            return result;
-        }
-
-        private sbyte ReadSByte(ref int codeUnitOffset)
-        {
-            return (sbyte)Upper[Ip++];
-        }
-
-        public void ReadFrom(BinaryReader reader)
-        {
-            var registers = MethodDefinition.Body.Registers;
-            InstructionsSize = reader.ReadUInt32();
-
-            Codes = new int[InstructionsSize];
-            Lower = new int[InstructionsSize];
-            Upper = new int[InstructionsSize];
-
-            for (int i = 0; i < InstructionsSize; i++)
+            foreach (Instruction ins in MethodDefinition.Body.Instructions)
             {
-                Codes[i] = reader.ReadUInt16();
-                Lower[i] = Codes[i] & 0xFF;
-                Upper[i] = Codes[i] >> 8;
-            }
+                if (Ip != ins.Offset)
+                    throw new InstructionException(ins, "Instruction pointer do not match");
 
-            while (Ip < InstructionsSize)
-            {
-                int offset;
-                int registerCount;
-                int registerMask;
-
-                Instruction ins = new Instruction();
-                ins.OpCode = (OpCodes)Lower[Ip];
-                ins.Offset = Ip;
-
-                Lookup.Add(Ip, ins);
-                MethodDefinition.Body.Instructions.Add(ins);
-
+                Codes[Ip] = (ushort)ins.OpCode; 
                 switch (ins.OpCode)
                 {
 
@@ -165,7 +79,7 @@ namespace Dexer.IO
                     case OpCodes.Monitor_exit:
                     case OpCodes.Throw:
                         // vAA
-                        ReadvAA(ins);
+                        WritevAA(ins);
                         break;
                     case OpCodes.Move_object:
                     case OpCodes.Move_wide:
@@ -225,137 +139,125 @@ namespace Dexer.IO
                     case OpCodes.Div_double_2addr:
                     case OpCodes.Rem_double_2addr:
                         // vA, vB
-                        ReadvA(ins);
-                        ReadvB(ins);
+                        WritevA(ins);
+                        WritevB(ins);
                         break;
                     case OpCodes.Move_wide_from16:
                     case OpCodes.Move_from16:
                     case OpCodes.Move_object_from16:
                         // vAA, vBBBB
-                        ReadvAA(ins);
-                        ReadvBBBB(ins);
+                        WritevAA(ins);
+                        WritevBBBB(ins);
                         break;
                     case OpCodes.Move_16:
                     case OpCodes.Move_object_16:
                         // vAAAA, vBBBB
-                        ReadvAAAA(ins);
-                        ReadvBBBB(ins);
+                        WritevAAAA(ins);
+                        WritevBBBB(ins);
                         break;
                     case OpCodes.Const_4:
                         // vA, #+B
-                        ReadvA(ins);
-                        ins.Operand = (int) ReadNibble();
+                        WritevA(ins);
+                        WriteNibble(ins);
                         break;
                     case OpCodes.Const_16:
-                        // vAA, #+BBBB
-                        ReadvAA(ins);
-                        ins.Operand = (int)ReadShort(ref Ip);
-                        break;
                     case OpCodes.Const_wide_16:
                         // vAA, #+BBBB
-                        ReadvAA(ins);
-                        ins.Operand = (long)ReadShort(ref Ip);
+                        WritevAA(ins);
+                        WriteShort(ins);
                         break;
                     case OpCodes.Const:
-                        // vAA, #+BBBBBBBB
-                        ReadvAA(ins);
-                        ins.Operand = (uint)ReadInt(ref Ip);
-                        break;
                     case OpCodes.Const_wide_32:
                         // vAA, #+BBBBBBBB
-                        ReadvAA(ins);
-                        ins.Operand = (long)ReadInt(ref Ip);
+                        WritevAA(ins);
+                        WriteInt(ins);
                         break;
                     case OpCodes.Fill_array_data:
                         // vAA, #+BBBBBBBB
-                        ReadvAA(ins);
-                        offset = ReadInt(ref Ip);
-                        ins.Operand = ExtractArrayData(ins.Offset + offset);
+                        WritevAA(ins);
+                        WriteInt(ExtraOffset - ins.Offset, ref Ip);
+                        WriteArrayData(ins);
                         break;
                     case OpCodes.Const_high16:
                         // vAA, #+BBBB0000
-                        ReadvAA(ins);
-                        ins.Operand = ((long)ReadShort(ref Ip)) << 16;
+                        WritevAA(ins);
+                        WriteShort(ins, 16);
                         break;
                     case OpCodes.Const_wide:
                         // vAA, #+BBBBBBBBBBBBBBBB
-                        ReadvAA(ins);
-                        ins.Operand = ReadLong(ref Ip);
+                        WritevAA(ins);
+                        WriteLong(ins);
                         break;
                     case OpCodes.Const_wide_high16:
                         // vAA, #+BBBB000000000000
-                        ReadvAA(ins);
-                        ins.Operand = ((long)ReadShort(ref Ip)) << 48;
+                        WritevAA(ins);
+                        WriteShort(ins, 48);
                         break;
                     case OpCodes.Const_string:
                         // vAA, string@BBBB
-                        ReadvAA(ins);
-                        ins.Operand = Dex.Strings[ReadShort(ref Ip)];
+                        WritevAA(ins);
+                        WriteShortStringIndex(ins);
                         break;
                     case OpCodes.Const_string_jumbo:
                         // vAA, string@BBBBBBBB
-                        ReadvAA(ins);
-                        ins.Operand = Dex.Strings[ReadInt(ref Ip)];
+                        WritevAA(ins);
+                        WriteIntStringIndex(ins);
                         break;
                     case OpCodes.Const_class:
                     case OpCodes.New_instance:
                     case OpCodes.Check_cast:
                         // vAA, type@BBBB
-                        ReadvAA(ins);
-                        ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
+                        WritevAA(ins);
+                        WriteShortTypeIndex(ins); 
                         break;
                     case OpCodes.Instance_of:
                     case OpCodes.New_array:
                         // vA, vB, type@CCCC
-                        ReadvA(ins);
-                        ReadvB(ins);
-                        ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
+                        WritevA(ins);
+                        WritevB(ins);
+                        WriteShortTypeIndex(ins); 
                         break;
                     case OpCodes.Filled_new_array:
                         // {vD, vE, vF, vG, vA}, type@CCCC
-                        registerMask = Upper[Ip++] << 16;
+                        /*registerMask = Upper[Ip++] << 16;
                         ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
                         registerMask |= Codes[Ip++];
                         registerCount = registerMask >> 20;
-                        for (int i=0; i<registerCount; i++)
-                            ins.Registers.Add(registers[(registerCount >> (i * 4)) & 0xF]);
-                        break;
+                        for (int i = 0; i < registerCount; i++)
+                            ins.Registers.Add(registers[(registerCount >> (i * 4)) & 0xF]);*/
+                        throw new NotImplementedException();
                     case OpCodes.Filled_new_array_range:
                         // {vCCCC .. vNNNN}, type@BBBB
-                        registerCount = Upper[Ip++] << 16;
+                        /*registerCount = Upper[Ip++] << 16;
                         ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
                         ReadvBBBB(ins);
                         for (int i = 1; i < registerCount; i++)
-                            ins.Registers.Add(registers[i + ins.Registers[0].Index]);
-                        break;
+                            ins.Registers.Add(registers[i + ins.Registers[0].Index]);*/
+                        throw new NotImplementedException();
                     case OpCodes.Goto:
                         // +AA
-                        offset = (sbyte)ReadSByte(ref Ip);
-                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
+                        WriteSbyteInstructionOffset(ins);
                         break;
                     case OpCodes.Goto_16:
                         // +AAAA
                         Ip++;
-                        offset = (short)ReadShort(ref Ip);
-                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
+                        WriteShortInstructionOffset(ins);
                         break;
                     case OpCodes.Goto_32:
                         // +AAAAAAAA
                         Ip++;
-                        offset = ReadInt(ref Ip);
-                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
+                        WriteIntInstructionOffset(ins);
                         break;
                     case OpCodes.Packed_switch:
                         // vAA, +BBBBBBBB
-                        ReadvAA(ins);
-                        offset = ReadInt(ref Ip);
-                        ins.Operand = ExtractPackedSwitch(ins, ins.Offset + offset);
+                        WritevAA(ins);
+                        WriteInt(ExtraOffset - ins.Offset, ref Ip);
+                        WritePackedSwitch(ins);
                         break;
                     case OpCodes.Sparse_switch:
                         // vAA, +BBBBBBBB
-                        ReadvAA(ins);
-                        offset = ReadInt(ref Ip);
-                        ins.Operand = ExtractSparseSwitch(ins, ins.Offset + offset);
+                        WritevAA(ins);
+                        WriteSparseSwitch(ins);
                         break;
                     case OpCodes.Cmpl_float:
                     case OpCodes.Cmpg_float:
@@ -409,9 +311,9 @@ namespace Dexer.IO
                     case OpCodes.Div_double:
                     case OpCodes.Rem_double:
                         // vAA, vBB, vCC
-                        ReadvAA(ins);
-                        ReadvBB(ins);
-                        ReadvCC(ins);
+                        WritevAA(ins);
+                        WritevBB(ins);
+                        WritevCC(ins);
                         break;
                     case OpCodes.If_eq:
                     case OpCodes.If_ne:
@@ -420,10 +322,9 @@ namespace Dexer.IO
                     case OpCodes.If_gt:
                     case OpCodes.If_le:
                         // vA, vB, +CCCC
-                        ReadvA(ins);
-                        ReadvB(ins);
-                        offset = (short)ReadShort(ref Ip);
-                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
+                        WritevA(ins);
+                        WritevB(ins);
+                        WriteShortInstructionOffset(ins);
                         break;
                     case OpCodes.If_eqz:
                     case OpCodes.If_nez:
@@ -432,9 +333,8 @@ namespace Dexer.IO
                     case OpCodes.If_gtz:
                     case OpCodes.If_lez:
                         // vAA, +BBBB
-                        ReadvAA(ins);
-                        offset = (short)ReadShort(ref Ip);
-                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
+                        WritevAA(ins);
+                        WriteShortInstructionOffset(ins);
                         break;
                     case OpCodes.Iget:
                     case OpCodes.Iget_wide:
@@ -451,9 +351,9 @@ namespace Dexer.IO
                     case OpCodes.Iput_char:
                     case OpCodes.Iput_short:
                         // vA, vB, field@CCCC
-                        ReadvA(ins);
-                        ReadvB(ins);
-                        ins.Operand = Dex.FieldReferences[ReadShort(ref Ip)];
+                        WritevA(ins);
+                        WritevB(ins);
+                        WriteShortFieldIndex(ins);
                         break;
                     case OpCodes.Sget:
                     case OpCodes.Sget_wide:
@@ -470,8 +370,8 @@ namespace Dexer.IO
                     case OpCodes.Sput_char:
                     case OpCodes.Sput_short:
                         // vAA, field@BBBB
-                        ReadvAA(ins);
-                        ins.Operand = Dex.FieldReferences[ReadShort(ref Ip)];
+                        WritevAA(ins);
+                        WriteShortFieldIndex(ins);
                         break;
                     case OpCodes.Invoke_virtual:
                     case OpCodes.Invoke_super:
@@ -479,10 +379,11 @@ namespace Dexer.IO
                     case OpCodes.Invoke_static:
                     case OpCodes.Invoke_interface:
                         // {vD, vE, vF, vG, vA}, meth@CCCC
-                        registerMask = Upper[Ip++] << 16;
-                        ins.Operand = Dex.MethodReferences[ReadShort(ref Ip)];
-                        registerMask |= Codes[Ip++];
-                        SetRegisters(ins.OpCode != OpCodes.Invoke_static, ins, registerMask);
+                        registerMask = ins.Registers.Count << 20;
+                        registerMask |= GetRegisterMask(ins.OpCode != OpCodes.Invoke_static, ins);
+                        Codes[Ip++] |= (ushort) (registerMask >> 16 << 8);
+                        WriteShortMethodIndex(ins);
+                        Codes[Ip++] |= (ushort) (registerMask << 12 >> 12);
                         break;
                     case OpCodes.Invoke_virtual_range:
                     case OpCodes.Invoke_super_range:
@@ -490,11 +391,9 @@ namespace Dexer.IO
                     case OpCodes.Invoke_static_range:
                     case OpCodes.Invoke_interface_range:
                         // {vCCCC .. vNNNN}, meth@BBBB
-                        registerCount = ReadSByte(ref Ip);
-                        ins.Operand = Dex.MethodReferences[ReadShort(ref Ip)];
-                        ReadvBBBB(ins);
-                        for (int i = 1; i < registerCount; i++)
-                            ins.Registers.Add(registers[i + ins.Registers[0].Index]);
+                        WriteSByte(ins.Registers.Count, ref Ip);
+                        WriteShortMethodIndex(ins);
+                        WritevBBBB(ins); // TODO check? WriteCCCC ?
                         break;
                     case OpCodes.Add_int_lit16:
                     case OpCodes.Rsub_int:
@@ -505,9 +404,9 @@ namespace Dexer.IO
                     case OpCodes.Or_int_lit16:
                     case OpCodes.Xor_int_lit16:
                         // vA, vB, #+CCCC
-                        ReadvA(ins);
-                        ReadvB(ins);
-                        ins.Operand = (int)ReadShort(ref Ip);
+                        WritevA(ins);
+                        WritevB(ins);
+                        WriteShort(ins);
                         break;
                     case OpCodes.Add_int_lit8:
                     case OpCodes.Rsub_int_lit8:
@@ -521,39 +420,48 @@ namespace Dexer.IO
                     case OpCodes.Shr_int_lit8:
                     case OpCodes.Ushr_int_lit8:
                         // vAA, vBB, #+CC
-                        ReadvAA(ins);
-                        ReadvBB(ins);
-                        ins.Operand = ReadSByte(ref Ip);
+                        WritevAA(ins);
+                        WritevBB(ins);
+                        WriteSByte(ins);
                         break;
 
                     default:
                         throw new NotImplementedException(string.Concat("Unknown opcode:", ins.OpCode));
                 }
 
-                LookupLast.Add(Ip-1, ins);
+                LookupLast.Add(ins, Ip-1);
             }
-            
-            if (Ip != InstructionsSize)
+
+            if (Ip != stats.CodeUnits)
                 throw new MalformedException("Instruction pointer out of range");
 
-            foreach (Action action in LazyInstructionsSetters)
-                action();
+            if (ExtraOffset != stats.CodeUnits + stats.ExtraCodeUnits)
+                throw new MalformedException("Data pointer out of range");
+
+            writer.Write(ExtraOffset);
+            for (int i = 0; i < ExtraOffset; i++)
+                writer.Write(Codes[i]);
         }
 
-        private void SetRegisters(bool isVirtual, Instruction ins, int registerMask)
+        private int GetRegisterMask(bool isVirtual, Instruction ins)
         {
+            if (!(ins.Operand is MethodReference))
+                throw new InstructionException(ins, "Expecting MethodReference");
+
             MethodReference mref = (MethodReference)ins.Operand;
+            int registerMask = 0;
 
             int argumentPosition = 0;
             if (isVirtual)
             {
-                ins.Registers.Add(MethodDefinition.Body.Registers[registerMask & 0xF]);
-                argumentPosition++;
+                registerMask |= CheckRegister(ins, argumentPosition++, 0xF);
             }
 
-            foreach(Parameter prm in mref.Prototype.Parameters) {
-    			int registerIndex = (registerMask >> (argumentPosition * 4)) & 0xF;
-                switch(prm.Type.TypeDescriptor) {
+            foreach (Parameter prm in mref.Prototype.Parameters)
+            {
+                registerMask |= CheckRegister(ins, argumentPosition, 0xF) << (argumentPosition * 4);
+                switch (prm.Type.TypeDescriptor)
+                {
                     case TypeDescriptors.Char:
                     case TypeDescriptors.Byte:
                     case TypeDescriptors.Short:
@@ -566,111 +474,249 @@ namespace Dexer.IO
                         break;
                     case TypeDescriptors.Long:
                     case TypeDescriptors.Double:
-                        argumentPosition+=2;
+                        argumentPosition += 2;
                         break;
                     default:
                         throw new ArgumentException();
                 }
-                ins.Registers.Add(MethodDefinition.Body.Registers[registerIndex]);
-            }
-        }
-
-        private void ProcessPseudoCode(PseudoOpCodes expected, ref int offset)
-        {
-            // auto reduce scope (PseudoCode data at the end)
-            InstructionsSize = (uint)Math.Min(InstructionsSize, offset);
-            PseudoOpCodes poc = (PseudoOpCodes)ReadShort(ref offset);
-            
-            if (poc != expected)
-                throw new MalformedException("Unexpected Pseudo-code identifier");
-        }
-
-        private SparseSwitchData ExtractSparseSwitch(Instruction ins, int offset)
-        {
-            int baseOffset = offset;
-            SparseSwitchData result = new SparseSwitchData();
-            ProcessPseudoCode(PseudoOpCodes.Sparse_switch, ref offset);
-
-            int targetcount = ReadShort(ref offset);
-
-            int[] keys = new int[targetcount];
-            for (int i = 0; i < targetcount; i++)
-                keys[i] = ReadInt(ref offset);
-
-            for (int i = 0; i < targetcount; i++)
-            {
-                int index = i; // used for closure
-                int target = ReadInt(ref offset);
-                LazyInstructionsSetters.Add(() => result.Targets.Add(keys[index], Lookup[ins.Offset + target]));
             }
 
-            if (offset - baseOffset != targetcount * 4 + 2)
-                throw new MalformedException("Unexpected Sparse switch blocksize");
-
-            return result;
+            return registerMask;
         }
 
-        private PackedSwitchData ExtractPackedSwitch(Instruction ins, int offset)
+        #region " Nibble "
+        private void WriteNibble(Instruction ins)
         {
-            int baseOffset = offset;
-            PackedSwitchData result = new PackedSwitchData();
-            ProcessPseudoCode(PseudoOpCodes.Packed_switch, ref offset);
+            Codes[Ip++] |= (ushort)((int)ins.Operand << 12);
+        }
+        #endregion
 
-            int targetcount = ReadShort(ref offset);
-            result.FirstKey = ReadInt(ref offset);
-
-            for (int i=0; i<targetcount; i++) {
-                int target = ReadInt(ref offset);
-                LazyInstructionsSetters.Add( () => result.Targets.Add(Lookup[ins.Offset + target]));
-            }
-
-            if (offset - baseOffset != targetcount * 2 + 4)
-                throw new MalformedException("Unexpected Packed switch blocksize");
-
-            return result;
+        #region " SByte "
+        private void WriteSByte(object value, ref int codeUnitOffset)
+        {
+            Codes[Ip++] |= (ushort)(Convert.ToSByte(value) << 8);
         }
 
-        private object[] ExtractArrayData(int offset)
+        private void WriteSbyteInstructionOffset(Instruction ins)
         {
-            int baseOffset = offset;
-            ProcessPseudoCode(PseudoOpCodes.Fill_array_data, ref offset);
+            if (!(ins.Operand is Instruction))
+                throw new InstructionException(ins, "Expecting Instruction");
 
-            int elementsize = ReadShort(ref offset);
-            int elementcount = ReadInt(ref offset);
-            List<object> items = new List<object>();
+            WriteSByte((ins.Operand as Instruction).Offset - ins.Offset, ref Ip);
+        }
+
+        private void WriteSByte(Instruction ins)
+        {
+            WriteSByte(ins.Operand, ref Ip);
+        }
+        #endregion
+
+        #region " Short "
+        private void WriteShortInstructionOffset(Instruction ins)
+        {
+            if (!(ins.Operand is Instruction))
+                throw new InstructionException(ins, "Expecting Instruction");
+
+            WriteShort((ins.Operand as Instruction).Offset - ins.Offset, ref Ip);
+        }
+
+        private void WriteShortFieldIndex(Instruction ins)
+        {
+            if (!(ins.Operand is FieldReference))
+                throw new InstructionException(ins, "Expecting FieldReference");
+
+            WriteShort(DexWriter.FieldLookup[ins.Operand as FieldReference], ref Ip);
+        }
+
+        private void WriteShortMethodIndex(Instruction ins)
+        {
+            if (!(ins.Operand is MethodReference))
+                throw new InstructionException(ins, "Expecting MethodReference");
+
+            WriteShort(DexWriter.MethodLookup[ins.Operand as MethodReference], ref Ip);
+        }
+
+        private void WriteShortStringIndex(Instruction ins)
+        {
+            if (!(ins.Operand is String))
+                throw new InstructionException(ins, "Expecting String");
+
+            WriteShort(DexWriter.StringLookup[ins.Operand as String], ref Ip);
+        }
+
+        private void WriteShortTypeIndex(Instruction ins)
+        {
+            if (!(ins.Operand is TypeReference))
+                throw new InstructionException(ins, "Expecting TypeReference");
+
+            WriteShort(DexWriter.TypeLookup[ins.Operand as TypeReference], ref Ip);
+        }
+
+        private void WriteShort(Instruction ins, int shift)
+        {
+            long value = Convert.ToInt64(ins.Operand) >> shift;
+            WriteShort(value, ref Ip);
+        }
+
+        private void WriteShort(Instruction ins)
+        {
+            WriteShort(ins.Operand, ref Ip);
+        }
+
+        private void WriteShort(object value, ref int codeUnitOffset)
+        {
+            Codes[codeUnitOffset++] = (ushort) Convert.ToInt16(value);
+        }
+        #endregion
+
+        #region " Int "
+        private void WriteIntInstructionOffset(Instruction ins)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void WriteIntStringIndex(Instruction ins)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void WriteInt(object value, ref int codeUnitOffset)
+        {
+            int result = Convert.ToInt32(value);
+            Codes[codeUnitOffset++] = (ushort) (result << 16 >> 16); 
+            Codes[codeUnitOffset++] = (ushort) (result >> 16);
+        }
+
+        private void WriteInt(Instruction ins, ref int codeUnitOffset)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void WriteInt(Instruction ins)
+        {
+            WriteInt(ins.Operand, ref Ip);
+        }
+        #endregion
+
+        #region " Long "
+        private void WriteLong(object value, ref int Ip)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void WriteLong(Instruction ins)
+        {
+            throw new System.NotImplementedException();
+        }
+        #endregion
+
+        #region " Pseudo OpCodes "
+        private void WriteSparseSwitch(Instruction ins)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void WritePackedSwitch(Instruction ins)
+        {
+            if (!(ins.Operand is PackedSwitchData))
+                throw new InstructionException(ins, "Expecting PackedSwitchData");
+            PackedSwitchData data = ins.Operand as PackedSwitchData;
+ 
+            WriteShort((short)PseudoOpCodes.Packed_switch, ref ExtraOffset);
+            WriteShort(data.Targets.Count, ref ExtraOffset);
+            WriteInt(data.FirstKey, ref ExtraOffset);
+
+            foreach(Instruction target in data.Targets)
+                WriteInt(target.Offset - ins.Offset, ref ExtraOffset);
+        }
+
+        private void WriteArrayData(Instruction ins)
+        {
+            Array elements;
+            Type elementtype;
+            int elementsize;
+            MethodBody.CheckArrayData(ins, out elements, out elementtype, out elementsize);
+
+            WriteShort(PseudoOpCodes.Fill_array_data, ref ExtraOffset);
+            WriteShort(elementsize, ref ExtraOffset);
+            WriteInt(elements.Length, ref ExtraOffset);
 
             bool next = false;
-            for (int i = 0; i < elementcount; i++)
+            foreach (object element in elements)
             {
                 switch (elementsize)
                 {
                     case 1:
-                        items.Add(next ? (sbyte)((Codes[offset++] >> 8) & 0xff) : (sbyte)(Codes[offset] & 0xff));
+                        if (next)
+                            Codes[ExtraOffset++] |= (ushort)(Convert.ToSByte(element) << 8);
+                        else
+                            Codes[ExtraOffset] |= (ushort)Convert.ToSByte(element);
                         next = !next;
                         break;
                     case 2:
-                        items.Add(ReadShort(ref offset));
+                        WriteShort(element, ref ExtraOffset);
                         break;
                     case 4:
-                        items.Add(ReadInt(ref offset));
+                        WriteInt(element, ref ExtraOffset);
                         break;
                     case 8:
-                        items.Add(ReadLong(ref offset));
+                        WriteLong(element, ref ExtraOffset);
                         break;
                     default:
-                        throw new MalformedException("Unexpected Fill-array-data element size");
+                        throw new InstructionException(ins, "Unexpected Fill-array-data element size");
                 }
             }
-
-            if ((elementcount % 2 != 0) && (elementsize == 1))
-                offset++;
-
-            if (offset - baseOffset != (elementsize * elementcount + 1) / 2 + 4)
-                throw new MalformedException("Unexpected Fill-array-data blocksize");
-
-            return items.ToArray();
+        }
+        #endregion
+        
+        #region " Registers "
+        private void WritevA(Instruction ins)
+        {
+            Codes[Ip] |= (ushort)(CheckRegister(ins, 0, 0xF) << 8);
         }
 
-    }
+        private void WritevAA(Instruction ins)
+        {
+            Codes[Ip++] |= (ushort)(CheckRegister(ins, 0, 0xFF) << 8);
+        }
 
+        private void WritevAAAA(Instruction ins)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void WritevB(Instruction ins)
+        {
+            Codes[Ip++] |= (ushort)(CheckRegister(ins, 1, 0xF) << 12);
+        }
+
+        private void WritevBB(Instruction ins)
+        {
+            Codes[Ip] |= (ushort) CheckRegister(ins, 1, 0xFF);
+        }
+
+        private void WritevBBBB(Instruction ins)
+        {
+            Codes[Ip++] |= (ushort)CheckRegister(ins, 1, 0xFFFF);
+        }
+
+        private void WritevCC(Instruction ins)
+        {
+            Codes[Ip++] |= (ushort)(CheckRegister(ins, 2, 0xFF) << 8);
+        }
+
+        private int CheckRegister(Instruction ins, int position, int maxIndex)
+        {
+            if (ins.Registers.Count <= position)
+                throw new InstructionException(ins, string.Format("Expecting register at position {0}", position));
+
+            int index = ins.Registers[position].Index;
+            if (index < 0 || index > maxIndex)
+                throw new InstructionException(ins, string.Format("Register index out of range [0..{0}]", maxIndex));
+
+            return index;
+        }
+        #endregion
+
+    }
 }

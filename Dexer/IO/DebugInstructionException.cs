@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010 Sebastien LEBRETON
+/* Dexer Copyright (c) 2010 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,21 +19,20 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-namespace Dexer.Metadata
+using System;
+using Dexer.Instructions;
+
+namespace Dexer.IO
 {
-	public class MapItem
-	{
-        public TypeCodes Type { get; set; }
-        public uint Size { get; set; }
-        public uint Offset { get; set; }
+    public class DebugInstructionException : MalformedException
+    {
+        public DebugInstruction Instruction { get; set; }
 
-        public MapItem() { }
-
-        public MapItem(TypeCodes type, uint size, uint offset)
+        public DebugInstructionException(DebugInstruction instruction, String message)
+            : base(message)
         {
-            Type = type;
-            Size = size;
-            Offset = offset;
+            Instruction = instruction;
         }
-	}
+
+    }
 }

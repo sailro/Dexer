@@ -28,6 +28,15 @@ namespace Dexer.Extensions
 {
     public static class BinaryWriterExtensions
     {
+        public static void EnsureAlignment(this BinaryWriter writer, int alignment, Action action)
+        {
+            long position = writer.BaseStream.Position;
+
+            action();
+
+            while ((writer.BaseStream.Position - position) % alignment != 0)
+                writer.Write((byte)0);
+        }
 
         public static void PreserveCurrentPosition(this BinaryWriter writer, uint newPosition, Action action)
         {
@@ -39,9 +48,14 @@ namespace Dexer.Extensions
             writer.BaseStream.Seek(position, SeekOrigin.Begin);
         }
 
-        internal static UintMarker MarkUint(this BinaryWriter writer)
+        internal static UShortMarker MarkUShort(this BinaryWriter writer)
         {
-            return new UintMarker(writer); ;
+            return new UShortMarker(writer); ;
+        }
+
+        internal static UIntMarker MarkUInt(this BinaryWriter writer)
+        {
+            return new UIntMarker(writer); ;
         }
 
         internal static SizeOffsetMarker MarkSizeOffset(this BinaryWriter writer)
@@ -69,9 +83,6 @@ namespace Dexer.Extensions
 
         public static void WriteULEB128p1(this BinaryWriter writer, long value)
         {
-            if (value < -1 || value >= uint.MaxValue)
-                throw new ArgumentException("Allowed ULEB128p1 range is [-1, uint.MaxValue[");
-
             WriteULEB128(writer, (uint)(value + 1));
         }
 
@@ -125,13 +136,14 @@ namespace Dexer.Extensions
             writer.Write((byte) 0); // 0 padded;
         }
 
-
-
-
-
-
-
-
+        public static void WriteByByteLength(this BinaryWriter writer, long value, int byteLength)
+        {
+            for (int i = 0; i < byteLength; i++)
+            {
+                writer.Write((byte)(value & 0xFF));
+                value >>= 8;
+            }
+        }
 
     }
 }

@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010 Sebastien LEBRETON
+/* Dexer Copyright (c) 2010 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,38 +19,20 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.IO;
-using Dexer.Core;
-using Dexer.Extensions;
-using Dexer.Metadata;
+using System;
+using Dexer.Instructions;
 
 namespace Dexer.IO
 {
-    internal class MapReader
+    public class InstructionException : MalformedException
     {
+        public Instruction Instruction { get; set; }
 
-        private Dex Dex { get; set; }
-
-        public MapReader(Dex dex)
+        public InstructionException(Instruction instruction, String message)
+            : base(message)
         {
-            Dex = dex;
+            Instruction = instruction;
         }
 
-        public void ReadFrom(BinaryReader reader)
-        {
-            reader.PreserveCurrentPosition(Dex.Header.MapOffset, () =>
-            {
-                uint mapsize = reader.ReadUInt32();
-                for (int i = 0; i < mapsize; i++)
-                {
-                    MapItem item = new MapItem();
-                    item.Type = (TypeCodes)reader.ReadUInt16();
-                    reader.ReadUInt16(); // unused
-                    item.Size = reader.ReadUInt32();
-                    item.Offset = reader.ReadUInt32();
-                    Dex.Map.Add(item.Type, item);
-                }
-            });
-        }
     }
 }

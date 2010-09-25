@@ -48,6 +48,9 @@
     <Compile Include="BaseTest.cs" />
     <Compile Include="CollectorTest.cs" />
     <Compile Include="BaseCollectorTest.cs" />
+    <Compile Include="RoundtripTest.cs" />
+    <Compile Include="InstructionTest.cs" />
+    <Compile Include="LEB128Test.cs" />
     <Compile Include="SortTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
