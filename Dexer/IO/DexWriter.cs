@@ -596,6 +596,8 @@ namespace Dexer.IO
             uint offset = (uint) writer.BaseStream.Position;
             uint count = 0;
 
+            Dictionary<AnnotationSet, uint> classAnnotationSets = new Dictionary<AnnotationSet, uint>();
+
             for (int i = 0; i < FlatClasses.Count; i++ )
             {
                 ClassDefinition @class = FlatClasses[i];
@@ -617,11 +619,22 @@ namespace Dexer.IO
                             annotatedParametersList.Add(method);
                     }
 
-                    if (@class.Annotations.Count
-                        + annotatedFields.Count
-                        + annotatedMethods.Count
-                        + annotatedParametersList.Count > 0)
+                    int total = @class.Annotations.Count + annotatedFields.Count + annotatedMethods.Count + annotatedParametersList.Count;
+                    if (total > 0)
                     {
+                        // all datas except class annotations are specific.
+                        if (total == @class.Annotations.Count)
+                        {
+                            AnnotationSet set = new AnnotationSet(@class);
+                            if (classAnnotationSets.ContainsKey(set))
+                            {
+                                ClassDefinitionsMarkers[i].AnnotationsMarker.Value = classAnnotationSets[set];
+                                return;
+                            }
+                            else
+                                classAnnotationSets.Add(set, (uint)writer.BaseStream.Position);
+                        }
+
                         ClassDefinitionsMarkers[i].AnnotationsMarker.Value = (uint)writer.BaseStream.Position;
                         count++;
 
@@ -658,6 +671,91 @@ namespace Dexer.IO
 
             if (count > 0)
                 Map.Add(TypeCodes.AnnotationDirectory, new MapItem(TypeCodes.AnnotationDirectory, count, offset));
+        }
+        #endregion
+
+        #region " Code "
+        private void WriteCode(BinaryWriter writer)
+        {
+            uint offset = (uint)writer.BaseStream.Position;
+            uint count = 0;
+
+            foreach (ClassDefinition @class in FlatClasses)
+            {
+                foreach (MethodDefinition method in @class.Methods)
+                {
+                    Codes.Add(method, 0);
+                    MethodBody body = method.Body;
+                    if (body != null)
+                    {
+                        writer.EnsureAlignment(4, () => 
+                        {
+                            Codes[method] = (uint)writer.BaseStream.Position;
+                            count++;
+
+                            writer.Write((ushort)body.Registers.Count);
+                            writer.Write(body.IncomingArguments);
+                            writer.Write(body.OutgoingArguments);
+                            writer.Write((ushort)body.Exceptions.Count);
+                            DebugMarkers.Add(method, writer.MarkUInt());
+
+                            InstructionWriter iwriter = new InstructionWriter(this, method);
+                            iwriter.WriteTo(writer);
+
+                            if ((body.Exceptions.Count != 0) && (iwriter.Codes.Length % 2 != 0))
+                                writer.Write((ushort)0); // padding (tries 4-byte alignment)
+
+                            Dictionary<CatchSet, List<ExceptionHandler>> catchHandlers = new Dictionary<CatchSet, List<ExceptionHandler>>();
+                            Dictionary<ExceptionHandler, UShortMarker> ExceptionsMarkers = new Dictionary<ExceptionHandler, UShortMarker>();
+                            foreach (ExceptionHandler handler in body.Exceptions)
+                            {
+                                writer.Write(handler.TryStart.Offset);
+                                writer.Write((ushort)(iwriter.LookupLast[handler.TryEnd] - handler.TryStart.Offset + 1));
+                                ExceptionsMarkers.Add(handler, writer.MarkUShort());
+
+                                CatchSet set = new CatchSet(handler);
+                                if (!catchHandlers.ContainsKey(set))
+                                    catchHandlers.Add(set, new List<ExceptionHandler>());
+
+                                catchHandlers[set].Add(handler);
+                            }
+
+                            List<CatchSet> catchSets = catchHandlers.Keys.ToList();
+                            catchSets.Sort(new CatchSetComparer());
+
+                            if (catchSets.Count > 0)
+                            {
+                                long baseOffset = writer.BaseStream.Position;
+                                writer.WriteULEB128((uint)catchSets.Count);
+                                foreach (CatchSet set in catchSets)
+                                {
+                                    long itemoffset = writer.BaseStream.Position - baseOffset;
+
+                                    if (set.CatchAll != null)
+                                        writer.WriteSLEB128(-set.Count);
+                                    else
+                                        writer.WriteSLEB128(set.Count);
+
+                                    foreach (ExceptionHandler handler in catchHandlers[set])
+                                        ExceptionsMarkers[handler].Value = (ushort)itemoffset;
+
+                                    foreach (Catch @catch in set)
+                                    {
+                                        writer.WriteULEB128((uint)TypeLookup[@catch.Type]);
+                                        writer.WriteULEB128((uint)@catch.Instruction.Offset);
+                                    }
+
+                                    if (set.CatchAll != null)
+                                        writer.WriteULEB128((uint)set.CatchAll.Offset);
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
+            if (Codes.Count > 0)
+                Map.Add(TypeCodes.Code, new MapItem(TypeCodes.Code, count, offset));
         }
         #endregion
 
@@ -873,10 +971,10 @@ namespace Dexer.IO
             {
                 ClassDefinition @class = FlatClasses[i];
 
-                var staticFields = (@class.Fields.Where((field) => field.IsStatic)).ToList();
-                var instanceFields = (@class.Fields.Except(staticFields)).ToList();
-                var virtualMethods = (@class.Methods.Where((method) => method.IsVirtual)).ToList();
-                var directMethods = (@class.Methods.Except(virtualMethods)).ToList();
+                var staticFields = (@class.Fields.Where((field) => field.IsStatic).OrderBy((field) => FieldLookup[field])).ToList();
+                var instanceFields = (@class.Fields.Except(staticFields).OrderBy((field) => FieldLookup[field])).ToList();
+                var virtualMethods = (@class.Methods.Where((method) => method.IsVirtual).OrderBy((method) => MethodLookup[method])).ToList();
+                var directMethods = (@class.Methods.Except(virtualMethods).OrderBy((method) => MethodLookup[method])).ToList();
 
                 if ((staticFields.Count + instanceFields.Count + virtualMethods.Count + directMethods.Count) > 0)
                 {
@@ -894,6 +992,10 @@ namespace Dexer.IO
                     WriteMethods(writer, virtualMethods);
                 }
             }
+
+            // File "global" alignment (EnsureAlignment is used for local alignment)
+            while((writer.BaseStream.Position % 4) != 0)
+                writer.Write((byte) 0);
 
             if (count > 0)
                 Map.Add(TypeCodes.ClassData, new MapItem(TypeCodes.ClassData, count, offset));
@@ -1007,6 +1109,7 @@ namespace Dexer.IO
             WriteFieldId(writer);
             WriteMethodId(writer);
             WriteClassDef(writer);
+            
             WriteAnnotationSetRefList(writer);
             WriteAnnotationSet(writer);
             WriteCode(writer);
@@ -1018,98 +1121,11 @@ namespace Dexer.IO
             WriteEncodedArray(writer);
             WriteClassData(writer);
 
-            writer.Write((ushort)0);
-
             WriteMapList(writer);
 
             ComputeSHA1Signature(writer);
             ComputeAdlerCheckSum(writer);
         }
-
-        #region " Code " 
-        private void WriteCode(BinaryWriter writer)
-        {
-            uint offset = (uint)writer.BaseStream.Position;
-            uint count = 0;
-
-            foreach (ClassDefinition @class in FlatClasses)
-            {
-                foreach (MethodDefinition method in @class.Methods)
-                {
-                    Codes.Add(method, 0);
-                    MethodBody body = method.Body;
-                    if (body != null)
-                    {
-                        writer.EnsureAlignment(4, () =>
-                        {
-                            Codes[method] = (uint) writer.BaseStream.Position;
-                            count++;
-
-                            writer.Write((ushort)body.Registers.Count);
-                            writer.Write(body.IncomingArguments);
-                            writer.Write(body.OutgoingArguments);
-                            writer.Write((ushort)body.Exceptions.Count);
-                            DebugMarkers.Add(method, writer.MarkUInt());
-
-                            InstructionWriter iwriter = new InstructionWriter(this, method);
-                            iwriter.WriteTo(writer);
-
-                            if ((body.Exceptions.Count != 0) && (iwriter.Codes.Length % 2 != 0))
-                                writer.Write((ushort)0); // padding (tries 4-byte alignment)
-
-                            Dictionary<CatchSet, List<ExceptionHandler>> catchHandlers = new Dictionary<CatchSet, List<ExceptionHandler>>();
-                            Dictionary<ExceptionHandler, UShortMarker> ExceptionsMarkers = new Dictionary<ExceptionHandler, UShortMarker>();
-                            foreach (ExceptionHandler handler in body.Exceptions)
-                            {
-                                writer.Write(handler.TryStart.Offset);
-                                writer.Write((ushort)(iwriter.LookupLast[handler.TryEnd] - handler.TryStart.Offset + 1));
-                                ExceptionsMarkers.Add(handler, writer.MarkUShort());
-
-                                CatchSet set = new CatchSet(handler);
-                                if (!catchHandlers.ContainsKey(set))
-                                    catchHandlers.Add(set, new List<ExceptionHandler>());
-
-                                catchHandlers[set].Add(handler);
-                            }
-
-                            List<CatchSet> catchSets = catchHandlers.Keys.ToList();
-                            catchSets.Sort(new CatchSetComparer());
-
-                            if (catchSets.Count > 0)
-                            {
-                                long baseOffset = writer.BaseStream.Position;
-                                writer.WriteULEB128((uint)catchSets.Count);
-                                foreach (CatchSet set in catchSets)
-                                {
-                                    long itemoffset = writer.BaseStream.Position - baseOffset;
-
-                                    if (set.CatchAll != null)
-                                        writer.WriteSLEB128(-set.Count);
-                                    else
-                                        writer.WriteSLEB128(set.Count);
-
-                                    foreach (ExceptionHandler handler in catchHandlers[set])
-                                        ExceptionsMarkers[handler].Value = (ushort)itemoffset;
-
-                                    foreach (Catch @catch in set)
-                                    {
-                                        writer.WriteULEB128((uint)TypeLookup[@catch.Type]);
-                                        writer.WriteULEB128((uint)@catch.Instruction.Offset);
-                                    }
-
-                                    if (set.CatchAll != null)
-                                        writer.WriteULEB128((uint)set.CatchAll.Offset);
-                                }
-                            }
-                        });
-                    }
-                }
-            }
-
-            if (Codes.Count > 0)
-                Map.Add(TypeCodes.Code, new MapItem(TypeCodes.Code, count, offset));
-        }
-        #endregion
-        
+      
     }
 }

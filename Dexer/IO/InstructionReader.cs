@@ -43,10 +43,10 @@ namespace Dexer.IO
         internal Dictionary<int, Instruction> Lookup;     // instructions by starting offset
         internal Dictionary<int, Instruction> LookupLast; // instructions by ending offset
 
-        public InstructionReader(Dex dex, MethodDefinition methodDefinition)
+        public InstructionReader(Dex dex, MethodDefinition mdef)
         {
             Dex = dex;
-            MethodDefinition = methodDefinition;
+            MethodDefinition = mdef;
             Lookup = new Dictionary<int, Instruction>();
             LookupLast = new Dictionary<int, Instruction>();
             LazyInstructionsSetters = new List<Action>();
@@ -259,7 +259,7 @@ namespace Dexer.IO
                     case OpCodes.Const:
                         // vAA, #+BBBBBBBB
                         ReadvAA(ins);
-                        ins.Operand = (uint)ReadInt(ref Ip);
+                        ins.Operand = (int)ReadInt(ref Ip);
                         break;
                     case OpCodes.Const_wide_32:
                         // vAA, #+BBBBBBBB
@@ -316,9 +316,7 @@ namespace Dexer.IO
                         registerMask = Upper[Ip++] << 16;
                         ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
                         registerMask |= Codes[Ip++];
-                        registerCount = registerMask >> 20;
-                        for (int i=0; i<registerCount; i++)
-                            ins.Registers.Add(registers[(registerCount >> (i * 4)) & 0xF]);
+                        SetRegistersByMask(ins, registerMask);
                         break;
                     case OpCodes.Filled_new_array_range:
                         // {vCCCC .. vNNNN}, type@BBBB
@@ -482,7 +480,7 @@ namespace Dexer.IO
                         registerMask = Upper[Ip++] << 16;
                         ins.Operand = Dex.MethodReferences[ReadShort(ref Ip)];
                         registerMask |= Codes[Ip++];
-                        SetRegisters(ins.OpCode != OpCodes.Invoke_static, ins, registerMask);
+                        SetRegistersByMask(ins, registerMask);
                         break;
                     case OpCodes.Invoke_virtual_range:
                     case OpCodes.Invoke_super_range:
@@ -540,39 +538,11 @@ namespace Dexer.IO
                 action();
         }
 
-        private void SetRegisters(bool isVirtual, Instruction ins, int registerMask)
+        private void SetRegistersByMask(Instruction ins, int registerMask)
         {
-            MethodReference mref = (MethodReference)ins.Operand;
-
-            int argumentPosition = 0;
-            if (isVirtual)
-            {
-                ins.Registers.Add(MethodDefinition.Body.Registers[registerMask & 0xF]);
-                argumentPosition++;
-            }
-
-            foreach(Parameter prm in mref.Prototype.Parameters) {
-    			int registerIndex = (registerMask >> (argumentPosition * 4)) & 0xF;
-                switch(prm.Type.TypeDescriptor) {
-                    case TypeDescriptors.Char:
-                    case TypeDescriptors.Byte:
-                    case TypeDescriptors.Short:
-                    case TypeDescriptors.Int:
-                    case TypeDescriptors.Boolean:
-                    case TypeDescriptors.Float:
-                    case TypeDescriptors.FullyQualifiedName:
-                    case TypeDescriptors.Array:
-                        argumentPosition++;
-                        break;
-                    case TypeDescriptors.Long:
-                    case TypeDescriptors.Double:
-                        argumentPosition+=2;
-                        break;
-                    default:
-                        throw new ArgumentException();
-                }
-                ins.Registers.Add(MethodDefinition.Body.Registers[registerIndex]);
-            }
+            int registerCount = registerMask >> 20;
+            for (int i = 0; i < registerCount; i++)
+                ins.Registers.Add(MethodDefinition.Body.Registers[(registerMask >> (i * 4)) & 0xF]);
         }
 
         private void ProcessPseudoCode(PseudoOpCodes expected, ref int offset)

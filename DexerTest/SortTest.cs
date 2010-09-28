@@ -26,13 +26,15 @@ using Dexer.Core;
 using Dexer.Extensions;
 using Dexer.IO.Collector;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Dexer.IO;
 
 namespace Dexer.Test
 {
     [TestClass]
     public class SortTest : BaseCollectorTest
     {
-        public void TestSort<T>(Func<Dex, List<T>> provider, IComparer<T> comparer)
+
+        public void TestGlobalSort<T>(Func<Dex, List<T>> provider, IComparer<T> comparer)
         {
             foreach (string file in Directory.GetFiles(FilesDirectory))
             {
@@ -50,33 +52,76 @@ namespace Dexer.Test
         }
 
         [TestMethod]
-        public void TestMethodSort()
+        public void TestMethodReferenceSort()
         {
-            TestSort<MethodReference>((dex) => dex.MethodReferences, new MethodReferenceComparer());
+            TestGlobalSort<MethodReference>((dex) => dex.MethodReferences, new MethodReferenceComparer());
         }
 
         [TestMethod]
-        public void TestFieldSort()
+        public void TestMethodDefinitionSort()
         {
-            TestSort<FieldReference>((dex) => dex.FieldReferences, new FieldReferenceComparer());
+            foreach (string file in Directory.GetFiles(FilesDirectory))
+            {
+                TestContext.WriteLine("Testing {0}", file);
+                Dex dex = Dex.Load(file);
+                MethodDefinitionComparer comparer = new MethodDefinitionComparer();
+
+                foreach (ClassDefinition @class in dex.Classes)
+                {
+                    List<MethodDefinition> items = new List<MethodDefinition>(@class.Methods);
+                    items.Shuffle();
+                    items.Sort(comparer);
+
+                    for (int i = 0; i < items.Count; i++)
+                        Assert.AreEqual(items[i], @class.Methods[i]);
+                }
+            }
+        }
+
+
+        [TestMethod]
+        public void TestFieldReferenceSort()
+        {
+            TestGlobalSort<FieldReference>((dex) => dex.FieldReferences, new FieldReferenceComparer());
         }
 
         [TestMethod]
-        public void TestTypeSort()
+        public void TestFieldDefinitionSort()
         {
-            TestSort<TypeReference>((dex) => dex.TypeReferences, new TypeReferenceComparer());
+            foreach (string file in Directory.GetFiles(FilesDirectory))
+            {
+                TestContext.WriteLine("Testing {0}", file);
+                Dex dex = Dex.Load(file);
+                FieldDefinitionComparer comparer = new FieldDefinitionComparer();
+
+                foreach (ClassDefinition @class in dex.Classes)
+                {
+                    List<FieldDefinition> items = new List<FieldDefinition>(@class.Fields);
+                    items.Shuffle();
+                    items.Sort(comparer);
+
+                    for (int i = 0; i < items.Count; i++)
+                        Assert.AreEqual(items[i], @class.Fields[i]);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestTypeReferenceSort()
+        {
+            TestGlobalSort<TypeReference>((dex) => dex.TypeReferences, new TypeReferenceComparer());
         }
 
         [TestMethod]
         public void TestStringSort()
         {
-            TestSort<string>((dex) => dex.Strings, new Dexer.IO.Collector.StringComparer());
+            TestGlobalSort<string>((dex) => dex.Strings, new Dexer.IO.Collector.StringComparer());
         }
 
         [TestMethod]
         public void TestPrototypeSort()
         {
-            TestSort<Prototype>((dex) => dex.Prototypes, new PrototypeComparer());
+            TestGlobalSort<Prototype>((dex) => dex.Prototypes, new PrototypeComparer());
         }
     }
 }

@@ -34,6 +34,7 @@ namespace Dexer.IO
         public CatchSet(ExceptionHandler handler)
         {
             AddRange(handler.Catches);
+            CatchAll = handler.CatchAll;
         }
 
         public override bool Equals(object obj)
@@ -47,7 +48,7 @@ namespace Dexer.IO
         public override int GetHashCode()
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine(CatchAll == null ? null : CatchAll.Offset.ToString());
+            builder.AppendLine(CatchAll == null ? "0" : CatchAll.Offset.ToString());
             foreach (Catch @catch in this)
                 builder.AppendLine(@catch.GetHashCode().ToString());
             return builder.ToString().GetHashCode();

@@ -24,11 +24,20 @@ namespace Dexer.IO.Collector
 {
     internal class ModelSorter : BaseCollector<object>
     {
-        private ClassDefinitionComparer cdefc = new ClassDefinitionComparer();
-        private ClassReferenceComparer crefc = new ClassReferenceComparer();
-        private MethodDefinitionComparer mdefc = new MethodDefinitionComparer();
-        private FieldDefinitionComparer fdefc = new FieldDefinitionComparer();
-        private AnnotationComparer ac = new AnnotationComparer();
+        private ClassDefinitionComparer cdefc;
+        private ClassReferenceComparer crefc;
+        private MethodDefinitionComparer mdefc;
+        private FieldDefinitionComparer fdefc;
+        private AnnotationComparer ac;
+
+        public ModelSorter()
+        {
+            cdefc = new ClassDefinitionComparer();
+            crefc = new ClassReferenceComparer();
+            mdefc = new MethodDefinitionComparer();
+            fdefc = new FieldDefinitionComparer();
+            ac = new AnnotationComparer();
+        }
 
         public override void Collect(List<ClassDefinition> classes)
         {

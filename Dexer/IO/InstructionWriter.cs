@@ -219,13 +219,11 @@ namespace Dexer.IO
                         break;
                     case OpCodes.Filled_new_array:
                         // {vD, vE, vF, vG, vA}, type@CCCC
-                        /*registerMask = Upper[Ip++] << 16;
-                        ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
-                        registerMask |= Codes[Ip++];
-                        registerCount = registerMask >> 20;
-                        for (int i = 0; i < registerCount; i++)
-                            ins.Registers.Add(registers[(registerCount >> (i * 4)) & 0xF]);*/
-                        throw new NotImplementedException();
+                        registerMask = GetRegisterMask(ins);
+                        Codes[Ip++] |= (ushort)(registerMask >> 16 << 8);
+                        WriteShortTypeIndex(ins);
+                        Codes[Ip++] |= (ushort)(registerMask << 12 >> 12);
+                        break;
                     case OpCodes.Filled_new_array_range:
                         // {vCCCC .. vNNNN}, type@BBBB
                         /*registerCount = Upper[Ip++] << 16;
@@ -257,6 +255,7 @@ namespace Dexer.IO
                     case OpCodes.Sparse_switch:
                         // vAA, +BBBBBBBB
                         WritevAA(ins);
+                        WriteInt(ExtraOffset - ins.Offset, ref Ip);
                         WriteSparseSwitch(ins);
                         break;
                     case OpCodes.Cmpl_float:
@@ -379,8 +378,7 @@ namespace Dexer.IO
                     case OpCodes.Invoke_static:
                     case OpCodes.Invoke_interface:
                         // {vD, vE, vF, vG, vA}, meth@CCCC
-                        registerMask = ins.Registers.Count << 20;
-                        registerMask |= GetRegisterMask(ins.OpCode != OpCodes.Invoke_static, ins);
+                        registerMask = GetRegisterMask(ins);
                         Codes[Ip++] |= (ushort) (registerMask >> 16 << 8);
                         WriteShortMethodIndex(ins);
                         Codes[Ip++] |= (ushort) (registerMask << 12 >> 12);
@@ -393,7 +391,7 @@ namespace Dexer.IO
                         // {vCCCC .. vNNNN}, meth@BBBB
                         WriteSByte(ins.Registers.Count, ref Ip);
                         WriteShortMethodIndex(ins);
-                        WritevBBBB(ins); // TODO check? WriteCCCC ?
+                        Codes[Ip++] |= (ushort)CheckRegister(ins, 0, 0xFFFF);
                         break;
                     case OpCodes.Add_int_lit16:
                     case OpCodes.Rsub_int:
@@ -443,43 +441,13 @@ namespace Dexer.IO
                 writer.Write(Codes[i]);
         }
 
-        private int GetRegisterMask(bool isVirtual, Instruction ins)
+        private int GetRegisterMask(Instruction ins)
         {
-            if (!(ins.Operand is MethodReference))
-                throw new InstructionException(ins, "Expecting MethodReference");
+            int registerCount = ins.Registers.Count;
+            int registerMask = registerCount << 20;
 
-            MethodReference mref = (MethodReference)ins.Operand;
-            int registerMask = 0;
-
-            int argumentPosition = 0;
-            if (isVirtual)
-            {
-                registerMask |= CheckRegister(ins, argumentPosition++, 0xF);
-            }
-
-            foreach (Parameter prm in mref.Prototype.Parameters)
-            {
-                registerMask |= CheckRegister(ins, argumentPosition, 0xF) << (argumentPosition * 4);
-                switch (prm.Type.TypeDescriptor)
-                {
-                    case TypeDescriptors.Char:
-                    case TypeDescriptors.Byte:
-                    case TypeDescriptors.Short:
-                    case TypeDescriptors.Int:
-                    case TypeDescriptors.Boolean:
-                    case TypeDescriptors.Float:
-                    case TypeDescriptors.FullyQualifiedName:
-                    case TypeDescriptors.Array:
-                        argumentPosition++;
-                        break;
-                    case TypeDescriptors.Long:
-                    case TypeDescriptors.Double:
-                        argumentPosition += 2;
-                        break;
-                    default:
-                        throw new ArgumentException();
-                }
-            }
+            for (int i = 0; i < registerCount; i++)
+                registerMask |= CheckRegister(ins, i, 0xF) << (i * 4);
 
             return registerMask;
         }
@@ -583,13 +551,8 @@ namespace Dexer.IO
         private void WriteInt(object value, ref int codeUnitOffset)
         {
             int result = Convert.ToInt32(value);
-            Codes[codeUnitOffset++] = (ushort) (result << 16 >> 16); 
+            Codes[codeUnitOffset++] = (ushort) (result & 0xffff); 
             Codes[codeUnitOffset++] = (ushort) (result >> 16);
-        }
-
-        private void WriteInt(Instruction ins, ref int codeUnitOffset)
-        {
-            throw new System.NotImplementedException();
         }
 
         private void WriteInt(Instruction ins)
@@ -599,21 +562,36 @@ namespace Dexer.IO
         #endregion
 
         #region " Long "
-        private void WriteLong(object value, ref int Ip)
+        private void WriteLong(object value, ref int codeUnitOffset)
         {
-            throw new System.NotImplementedException();
+            long result = Convert.ToInt64(value);
+            Codes[codeUnitOffset++] = (ushort)(result & 0xffff);
+            Codes[codeUnitOffset++] = (ushort)((result >> 16) & 0xffff);
+            Codes[codeUnitOffset++] = (ushort)((result >> 32) & 0xffff);
+            Codes[codeUnitOffset++] = (ushort)(result >> 48);
         }
 
         private void WriteLong(Instruction ins)
         {
-            throw new System.NotImplementedException();
+            WriteLong(ins.Operand, ref Ip);
         }
         #endregion
 
         #region " Pseudo OpCodes "
         private void WriteSparseSwitch(Instruction ins)
         {
-            throw new NotImplementedException();
+            if (!(ins.Operand is SparseSwitchData))
+                throw new InstructionException(ins, "Expecting SparseSwitchData");
+            SparseSwitchData data = ins.Operand as SparseSwitchData;
+
+            WriteShort((short)PseudoOpCodes.Sparse_switch, ref ExtraOffset);
+            WriteShort(data.Targets.Count, ref ExtraOffset);
+
+            foreach(int key in data.Targets.Keys)
+                WriteInt(key, ref ExtraOffset);
+
+            foreach(int key in data.Targets.Keys)
+                WriteInt(data.Targets[key].Offset, ref ExtraOffset);
         }
 
         private void WritePackedSwitch(Instruction ins)
@@ -666,6 +644,9 @@ namespace Dexer.IO
                         throw new InstructionException(ins, "Unexpected Fill-array-data element size");
                 }
             }
+
+            if ((elements.Length % 2 != 0) && (elementsize == 1))
+                ExtraOffset++;
         }
         #endregion
         

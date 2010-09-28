@@ -25,11 +25,11 @@ namespace Dexer.Instructions
 {
     public class SparseSwitchData
     {
-        public IDictionary<int, Instruction> Targets { get; set; }
+        public SortedDictionary<int, Instruction> Targets { get; set; }
 
         public SparseSwitchData()
         {
-            Targets = new Dictionary<int, Instruction>();
+            Targets = new SortedDictionary<int, Instruction>();
         }
     }
 }

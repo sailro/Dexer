@@ -90,8 +90,8 @@ namespace Dexer.IO
         }
         #endregion
 
-        #region " Map "
-        private void ReadMap(BinaryReader reader)
+        #region " MapList "
+        private void ReadMapList(BinaryReader reader)
         {
             reader.PreserveCurrentPosition(Header.MapOffset, () =>
             {
@@ -559,7 +559,7 @@ namespace Dexer.IO
             }
         }
 
-        private void ReadMethodBody(BinaryReader reader, MethodDefinition methodDefinition, uint codeOffset)
+        private void ReadMethodBody(BinaryReader reader, MethodDefinition mdef, uint codeOffset)
         {
             reader.PreserveCurrentPosition(codeOffset, () =>
             {
@@ -569,31 +569,31 @@ namespace Dexer.IO
                 ushort triesSize = reader.ReadUInt16();
                 uint debugOffset = reader.ReadUInt32();
 
-                methodDefinition.Body = new MethodBody(registersSize);
-                methodDefinition.Body.IncomingArguments = incomingArgsSize;
-                methodDefinition.Body.OutgoingArguments = outgoingArgsSize;
+                mdef.Body = new MethodBody(registersSize);
+                mdef.Body.IncomingArguments = incomingArgsSize;
+                mdef.Body.OutgoingArguments = outgoingArgsSize;
 
-                InstructionReader ireader = new InstructionReader(Dex, methodDefinition);
+                InstructionReader ireader = new InstructionReader(Dex, mdef);
                 ireader.ReadFrom(reader);
 
                 if ((triesSize != 0) && (ireader.Codes.Length % 2 != 0))
                     reader.ReadUInt16(); // padding (4-byte alignment)
 
                 if (triesSize != 0)
-                    ReadExceptionHandlers(reader, methodDefinition, ireader, triesSize);
+                    ReadExceptionHandlers(reader, mdef, ireader, triesSize);
 
                 if (debugOffset != 0)
-                    ReadDebugInfo(reader, methodDefinition, ireader, debugOffset);
+                    ReadDebugInfo(reader, mdef, ireader, debugOffset);
             });
 
         }
 
-        private void ReadDebugInfo(BinaryReader reader, MethodDefinition methodDefinition, InstructionReader instructionReader, uint debugOffset)
+        private void ReadDebugInfo(BinaryReader reader, MethodDefinition mdef, InstructionReader instructionReader, uint debugOffset)
         {
             reader.PreserveCurrentPosition(debugOffset, () =>
             {
                 DebugInfo debugInfo = new DebugInfo();
-                methodDefinition.Body.DebugInfo = debugInfo;
+                mdef.Body.DebugInfo = debugInfo;
 
                 uint lineStart = reader.ReadULEB128();
                 debugInfo.LineStart = lineStart;
@@ -638,7 +638,7 @@ namespace Dexer.IO
                         case DebugOpCodes.RestartLocal:
                             // uleb128 register_num
                             registerIndex = reader.ReadULEB128();
-                            ins.Operands.Add(methodDefinition.Body.Registers[(int)registerIndex]);
+                            ins.Operands.Add(mdef.Body.Registers[(int)registerIndex]);
                             break;
                         case DebugOpCodes.SetFile:
                             // uleb128p1 name_idx
@@ -655,7 +655,7 @@ namespace Dexer.IO
                             Boolean isExtended = ins.OpCode == DebugOpCodes.StartLocalExtended;
 
                             registerIndex = reader.ReadULEB128();
-                            ins.Operands.Add(methodDefinition.Body.Registers[(int)registerIndex]);
+                            ins.Operands.Add(mdef.Body.Registers[(int)registerIndex]);
 
                             nameIndex = reader.ReadULEB128p1();
                             name = null;
@@ -692,7 +692,7 @@ namespace Dexer.IO
             });
         }
 
-        private void ReadExceptionHandlers(BinaryReader reader, MethodDefinition methodDefinition, InstructionReader instructionReader, ushort triesSize)
+        private void ReadExceptionHandlers(BinaryReader reader, MethodDefinition mdef, InstructionReader instructionReader, ushort triesSize)
         {
             var exceptionLookup = new Dictionary<uint, List<ExceptionHandler>>();
             for (int i = 0; i < triesSize; i++)
@@ -703,7 +703,7 @@ namespace Dexer.IO
                 uint handlerOffset = reader.ReadUInt16();
 
                 ExceptionHandler ehandler = new ExceptionHandler();
-                methodDefinition.Body.Exceptions.Add(ehandler);
+                mdef.Body.Exceptions.Add(ehandler);
                 if (!exceptionLookup.ContainsKey(handlerOffset))
                 {
                     exceptionLookup.Add(handlerOffset, new List<ExceptionHandler>());
@@ -823,7 +823,7 @@ namespace Dexer.IO
         public void ReadFrom(BinaryReader reader)
         {
             ReadHeader(reader);
-            ReadMap(reader);
+            ReadMapList(reader);
             ReadStrings(reader);
 
             PrefetchTypeReferences(reader);

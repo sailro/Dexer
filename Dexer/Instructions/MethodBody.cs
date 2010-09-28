@@ -219,7 +219,7 @@ namespace Dexer.Instructions
                         break;
                     case OpCodes.Filled_new_array:
                         // {vD, vE, vF, vG, vA}, type@CCCC
-                        ip += 4;
+                        ip += 3;
                         break;
                     case OpCodes.Filled_new_array_range:
                         // {vCCCC .. vNNNN}, type@BBBB
@@ -241,14 +241,19 @@ namespace Dexer.Instructions
                         // vAA, +BBBBBBBB
                         if (!(ins.Operand is PackedSwitchData))
                             throw new InstructionException(ins, "Expecting PackedSwitchData");
-                        PackedSwitchData data = ins.Operand as PackedSwitchData;
+                        PackedSwitchData pdata = ins.Operand as PackedSwitchData;
 
                         ip += 3;
-                        extra += (data.Targets.Count * 2) + 4;
+                        extra += (pdata.Targets.Count * 2) + 4;
                         break;
                     case OpCodes.Sparse_switch:
                         // vAA, +BBBBBBBB
+                        if (!(ins.Operand is SparseSwitchData))
+                            throw new InstructionException(ins, "Expecting SparseSwitchData");
+                        SparseSwitchData sdata = ins.Operand as SparseSwitchData;
+
                         ip += 3;
+                        extra += (sdata.Targets.Count * 4) + 2;
                         break;
                     case OpCodes.Cmpl_float:
                     case OpCodes.Cmpg_float:

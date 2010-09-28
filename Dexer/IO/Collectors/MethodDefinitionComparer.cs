@@ -26,7 +26,12 @@ namespace Dexer.IO.Collector
     {
         public int Compare(MethodDefinition x, MethodDefinition y)
         {
-            return base.Compare(x, y);
+            int result = x.IsVirtual.CompareTo(y.IsVirtual);
+
+            if (result == 0)
+                result = base.Compare(x, y);
+
+            return result;
         }
     }
 }

@@ -26,7 +26,12 @@ namespace Dexer.IO.Collector
     {
         public int Compare(FieldDefinition x, FieldDefinition y)
         {
-            return base.Compare(x, y);
+            int result = y.IsStatic.CompareTo(x.IsStatic);
+
+            if (result == 0)
+                result = base.Compare(x, y);
+
+            return result;
         }
     }
 }

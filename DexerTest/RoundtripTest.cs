@@ -53,13 +53,12 @@ namespace Dexer.Test
                 dexwriter.WriteTo(new BinaryWriter(new MemoryStream()));
 
                 foreach (TypeCodes tc in dexwriter.Map.Keys)
-                {
                     if (dexreader.Map.ContainsKey(tc))
-                    {
-                        Assert.AreEqual(dexwriter.Map[tc].Offset, dexreader.Map[tc].Offset, "{0} Offset", tc);
-                        Assert.AreEqual(dexwriter.Map[tc].Size, dexreader.Map[tc].Size, "{0} Offset", tc);
-                    }
-                }
+                        Assert.AreEqual(dexreader.Map[tc].Size, dexwriter.Map[tc].Size, "{0} Size", tc);
+
+                foreach (TypeCodes tc in dexwriter.Map.Keys)
+                    if (dexreader.Map.ContainsKey(tc))
+                        Assert.AreEqual(dexreader.Map[tc].Offset, dexwriter.Map[tc].Offset, "{0} Offset", tc);
 
             }
         }
