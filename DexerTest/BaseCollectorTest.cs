@@ -50,6 +50,9 @@ namespace Dexer.Test
             foreach (T key in provider(dex))
                 Assert.IsTrue(collector.Items.ContainsKey(key), "Item '{0}' not collected", key);
 
+            foreach (T key in collector.Items.Keys)
+                Assert.IsTrue(provider(dex).Contains(key), "Item '{0}' is 'over' collected", key);
+
             Assert.AreEqual(provider(dex).Count, collector.Items.Count);
 
             return collector;

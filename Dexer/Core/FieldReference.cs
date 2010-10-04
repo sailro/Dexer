@@ -23,9 +23,15 @@ using System.Text;
 
 namespace Dexer.Core
 {
-    public class FieldReference : PureMemberReference
+    public class FieldReference : IMemberReference
     {
+        public ClassReference Owner { get; set; }
+        public string Name { get; set; }
         public TypeReference Type { get; set; }
+
+        internal FieldReference()
+        {
+        }
 
         public override string ToString()
         {
@@ -41,11 +47,12 @@ namespace Dexer.Core
         #region " IEquatable "
         public bool Equals(FieldReference other)
         {
-            return base.Equals(other)
-                && Type.Equals(other.Type);
+            return Owner.Equals(other.Owner)
+                && Name.Equals(other.Name)
+				&& Type.Equals(other.Type);
         }
 
-        public override bool Equals(IMemberReference other)
+        public virtual bool Equals(IMemberReference other)
         {
             return (other is FieldReference)
                 && this.Equals(other as FieldReference);

@@ -27,15 +27,15 @@ namespace Dexer.Metadata
     {
         public static ValueFormats GetFormat(object value)
         {
-            if (value is byte)
+            if (value is byte || value is sbyte)
                 return ValueFormats.Byte;
-            else if (value is short)
+            else if (value is short || value is ushort)
                 return ValueFormats.Short;
             else if (value is char)
                 return ValueFormats.Char;
-            else if (value is int)
+            else if (value is int || value is uint)
                 return ValueFormats.Int;
-            else if (value is long)
+            else if (value is long || value is ulong)
                 return ValueFormats.Long;
             else if (value is float)
                 return ValueFormats.Float;

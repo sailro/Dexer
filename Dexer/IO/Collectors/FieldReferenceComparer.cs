@@ -18,15 +18,20 @@
 
 using System.Collections.Generic;
 using Dexer.Core;
-using Dexer.Metadata;
 
 namespace Dexer.IO.Collector
 {
-    internal class FieldReferenceComparer : PureMemberReferenceComparer, IComparer<FieldReference>
+    internal class FieldReferenceComparer : IComparer<FieldReference>
     {
+        private TypeReferenceComparer typeReferenceComparer = new TypeReferenceComparer();
+        private StringComparer stringComparer = new StringComparer();
+
         public int Compare(FieldReference x, FieldReference y)
         {
-            return base.Compare(x, y);
+            int result = typeReferenceComparer.Compare(x.Owner, y.Owner);
+            if (result == 0)
+                result = stringComparer.Compare(x.Name, y.Name);
+            return result;
         }
     }
 }

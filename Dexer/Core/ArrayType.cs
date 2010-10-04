@@ -23,7 +23,7 @@ using Dexer.Metadata;
 
 namespace Dexer.Core
 {
-    public class ArrayType : TypeReference
+    public class ArrayType : CompositeType
     {
         public TypeReference ElementType { get; set; }
 

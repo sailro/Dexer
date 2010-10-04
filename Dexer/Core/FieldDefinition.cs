@@ -35,11 +35,12 @@ namespace Dexer.Core
         public List<Annotation> Annotations { get; set; }
         public object Value { get; set; }
 
-        internal FieldDefinition()
+        public FieldDefinition()
         {
             Annotations = new List<Annotation>();
         }
 
+        // for prefetching
         internal FieldDefinition(FieldReference fref) : this()
         {
             this.Owner = fref.Owner as ClassDefinition;

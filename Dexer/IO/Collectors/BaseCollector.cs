@@ -16,17 +16,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Instructions;
-using System.Collections;
-using System;
 
 namespace Dexer.IO.Collector
 {
     internal class BaseCollector<T>
     {
         public Dictionary<T, int> Items { get; set; }
+
         public BaseCollector()
         {
             Items = new Dictionary<T, int>();
@@ -178,8 +179,27 @@ namespace Dexer.IO.Collector
         public virtual void Collect(IMemberReference member)
         {
             Collect(member.Name);
-            if (member is PureMemberReference)
-                Collect((member as PureMemberReference).Owner);
+            
+            if (member is FieldReference)
+                Collect((member as FieldReference).Owner);
+
+            if (member is MethodReference)
+                Collect((member as MethodReference).Owner);
+        }
+
+        public virtual void Collect(ArrayType array)
+        {
+            Collect(array as TypeReference);
+            Collect(array.ElementType);
+        }
+
+        public virtual void Collect(CompositeType composite)
+        {
+            if (composite is ClassReference)
+                Collect(composite as ClassReference);
+
+            if (composite is ArrayType)
+                Collect(composite as ArrayType);
         }
 
         public virtual void Collect(Annotation annotation)
@@ -232,17 +252,22 @@ namespace Dexer.IO.Collector
         {
             if (obj != null)
             {
-                if (obj is TypeReference)
-                    Collect(obj as TypeReference);
+                if (obj is CompositeType)
+                    Collect(obj as CompositeType);
                 else if (obj is FieldReference)
                     Collect(obj as FieldReference);
                 else if (obj is MethodReference)
                     Collect(obj as MethodReference);
+                else if (obj is TypeReference)
+                    Collect(obj as TypeReference);
+
                 else if (obj is string)
                     Collect(obj as string);
+                
                 else if (obj is IEnumerable)
                     foreach (object iobj in (obj as IEnumerable))
                         Collect(iobj);
+                
                 else if (obj is ValueType) return;
                 else if (obj is Register) return;
                 else if (obj is Instruction) return;

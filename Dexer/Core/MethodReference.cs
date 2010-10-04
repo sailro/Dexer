@@ -24,16 +24,20 @@ using System;
 
 namespace Dexer.Core
 {
-    public class MethodReference : PureMemberReference
+    public class MethodReference : IMemberReference
     {
+        public CompositeType Owner { get; set; }
+        public string Name { get; set; }
         public Prototype Prototype { get; set; }
 
         public MethodReference() : base()
         {
         }
 
-        public MethodReference(ClassReference owner, string name, Prototype prototype) : base(owner, name)
+        public MethodReference(CompositeType owner, string name, Prototype prototype) : this()
         {
+            Owner = owner;
+            Name = name;
             Prototype = prototype;
         }
 
@@ -50,11 +54,12 @@ namespace Dexer.Core
         #region " IEquatable "
         public bool Equals(MethodReference other)
         {
-            return base.Equals(other)
-                && other.Prototype.Equals(Prototype);
+            return Owner.Equals(other.Owner)
+                && Name.Equals(other.Name)
+                && Prototype.Equals(other.Prototype);
         }
 
-        public override bool Equals(IMemberReference other)
+        public virtual bool Equals(IMemberReference other)
         {
             return (other is MethodReference)
                 && this.Equals(other as MethodReference);

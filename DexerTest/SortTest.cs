@@ -22,11 +22,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Dexer.Core;
 using Dexer.Extensions;
 using Dexer.IO.Collector;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Dexer.IO;
+using Dexer.Instructions;
 
 namespace Dexer.Test
 {
@@ -123,5 +125,6 @@ namespace Dexer.Test
         {
             TestGlobalSort<Prototype>((dex) => dex.Prototypes, new PrototypeComparer());
         }
+
     }
 }

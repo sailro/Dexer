@@ -25,7 +25,7 @@ using Dexer.Metadata;
 
 namespace Dexer.Core
 {
-    public class ClassReference : TypeReference, IMemberReference
+    public class ClassReference : CompositeType, IMemberReference
     {
         public const char NamespaceSeparator = '.';
         public const char InternalNamespaceSeparator = '/';

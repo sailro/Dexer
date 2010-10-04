@@ -25,6 +25,12 @@ namespace Dexer.IO.Collector
     {
         public int Compare(CatchSet x, CatchSet y)
         {
+            if (x.Count == 0 && y.Count != 0)
+                return -1;
+
+            if (y.Count == 0 && x.Count != 0)
+                return 1;
+
             int minp = Math.Min(x.Count, y.Count);
             for (int i = 0; i < minp; i++)
             {

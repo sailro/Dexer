@@ -32,6 +32,12 @@ namespace Dexer.IO.Collector
             int crt = typeReferenceComparer.Compare(x.ReturnType, y.ReturnType);
             if (crt == 0)
             {
+                if (x.Parameters.Count == 0 && y.Parameters.Count != 0)
+                    return -1;
+
+                if (y.Parameters.Count == 0 && x.Parameters.Count != 0)
+                    return 1;
+
                 int minp = Math.Min(x.Parameters.Count, y.Parameters.Count);
                 for (int i = 0; i < minp; i++)
                 {

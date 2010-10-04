@@ -29,9 +29,11 @@ namespace Dexer.Instructions
         public List<string> Parameters { get; set; }
         public List<DebugInstruction> DebugInstructions { get; set; }
         public uint LineStart { get; set; }
+        public MethodBody Owner { get; set; }
 
-        public DebugInfo()
+        public DebugInfo(MethodBody body)
         {
+            Owner = body;
             Parameters = new List<string>();
             DebugInstructions = new List<DebugInstruction>();
         }

@@ -35,11 +35,12 @@ namespace Dexer.Core
         public List<Annotation> Annotations { get; set; }
         public MethodBody Body { get; set; }
 
-        internal MethodDefinition()
+        public MethodDefinition()
         {
             Annotations = new List<Annotation>();
         }
 
+        // for prefetching
         internal MethodDefinition(MethodReference mref) : this()
         {
             this.Owner = mref.Owner as ClassDefinition;

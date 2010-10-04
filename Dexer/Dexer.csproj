@@ -43,6 +43,7 @@
     <Compile Include="Core\Annotation.cs" />
     <Compile Include="Core\AnnotationArgument.cs" />
     <Compile Include="Core\AnnotationVisibility.cs" />
+    <Compile Include="Core\CompositeType.cs" />
     <Compile Include="Core\IMemberDefinition.cs" />
     <Compile Include="Core\IMemberReference.cs" />
     <Compile Include="Extensions\BinaryWriterExtensions.cs" />
@@ -52,9 +53,8 @@
     <Compile Include="Instructions\DebugInstruction.cs" />
     <Compile Include="Instructions\DebugOpCodes.cs" />
     <Compile Include="Instructions\PseudoOpCodes.cs" />
-    <Compile Include="Core\PureMemberReference.cs" />
     <Compile Include="Core\IAnnotationProvider.cs" />
-    <Compile Include="Extensions\BinaryReaderExtensions.cs" />
+    <Compile Include="Core\BinaryReaderExtensions.cs" />
     <Compile Include="Core\ClassReference.cs" />
     <Compile Include="Core\ArrayType.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
@@ -73,7 +73,6 @@
     <Compile Include="IO\Collectors\ModelSorter.cs" />
     <Compile Include="IO\Collectors\MethodReferenceComparer.cs" />
     <Compile Include="IO\Collectors\FieldReferenceComparer.cs" />
-    <Compile Include="IO\Collectors\PureMemberReferenceComparer.cs" />
     <Compile Include="IO\Collectors\PrototypeComparer.cs" />
     <Compile Include="IO\Collectors\PrototypeCollector.cs" />
     <Compile Include="IO\Collectors\TypeReferenceComparer.cs" />

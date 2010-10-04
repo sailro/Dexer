@@ -19,39 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Text;
-using System;
-
 namespace Dexer.Core
 {
-    public abstract class PureMemberReference : IMemberReference
+    public abstract class CompositeType : TypeReference
     {
-        public ClassReference Owner { get; set; }
-        public string Name { get; set; }
-
-        internal PureMemberReference()
-        {
-        }
-
-        internal PureMemberReference(ClassReference owner, string name)
-        {
-            Owner = owner;
-            Name = name;
-        }
-
-        #region " IEquatable "
-        public bool Equals(PureMemberReference other)
-        {
-            return Owner.Equals(other.Owner)
-                && Name.Equals(other.Name);
-        }
-
-        public virtual bool Equals(IMemberReference other)
-        {
-            return other is PureMemberReference
-                && this.Equals(other as PureMemberReference);
-        }
-        #endregion
 
     }
 }

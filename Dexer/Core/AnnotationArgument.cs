@@ -44,7 +44,19 @@ namespace Dexer.Core
         {
             return Name.Equals(other.Name)
                 && ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
-                && object.Equals(Value, other.Value);
+                && (((ValueFormat.GetFormat(Value) == ValueFormats.Array) && ArrayEquals(Value as Array, other.Value as Array)) || object.Equals(Value, other.Value));
+        }
+
+        private bool ArrayEquals(Array array1, Array array2)
+        {
+            if (array1.Length != array2.Length)
+                return false;
+
+            for (int i = 0; i < array1.Length; i++)
+                if (!array1.GetValue(i).Equals(array2.GetValue(i)))
+                    return false;
+
+            return true;
         }
         #endregion
 

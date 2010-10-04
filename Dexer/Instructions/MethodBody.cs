@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System;
 using Dexer.IO;
 using System.Runtime.InteropServices;
+using Dexer.Core;
 
 namespace Dexer.Instructions
 {
@@ -34,16 +35,18 @@ namespace Dexer.Instructions
         public List<ExceptionHandler> Exceptions { get; set; }
         public ushort IncomingArguments { get; set; }
         public ushort OutgoingArguments { get; set; }
+        public MethodDefinition Owner { get; set; }
 
-        public MethodBody(int registersSize)
+        public MethodBody(MethodDefinition method, int registersSize)
         {
-           Registers = new List<Register>();
-           for (int i = 0; i < registersSize; i++)
-           {
-               Registers.Add(new Register(i));
-           }
-           Instructions = new List<Instruction>();
-           Exceptions = new List<ExceptionHandler>();
+            Owner = method;
+            Registers = new List<Register>();
+            for (int i = 0; i < registersSize; i++)
+            {
+                Registers.Add(new Register(i));
+            }
+            Instructions = new List<Instruction>();
+            Exceptions = new List<ExceptionHandler>();
         }
 
         internal static void CheckArrayData(Instruction ins, out Array elements, out Type elementtype, out int elementsize)

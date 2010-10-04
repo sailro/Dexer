@@ -395,7 +395,7 @@ namespace Dexer.IO
                 for (int j = 0; j < typecount; j++)
                 {
                     Parameter parameter = new Parameter();
-                    int typeIndex = reader.ReadUInt16();
+                    ushort typeIndex = reader.ReadUInt16();
                     parameter.Type = Dex.TypeReferences[typeIndex];
                     prototype.Parameters.Add(parameter);
                 }
@@ -461,9 +461,12 @@ namespace Dexer.IO
         {
             reader.PreserveCurrentPosition(interfaceOffset, () =>
             {
-                int size = reader.ReadInt32();
-                ushort index = reader.ReadUInt16();
-                classDefinition.Interfaces.Add((ClassReference)Dex.TypeReferences[index]);
+                uint typecount = reader.ReadUInt32();
+                for (int j = 0; j < typecount; j++)
+                {
+                    ushort typeIndex = reader.ReadUInt16();
+                    classDefinition.Interfaces.Add((ClassReference)Dex.TypeReferences[typeIndex]);
+                }
             });
         }
 
@@ -569,7 +572,7 @@ namespace Dexer.IO
                 ushort triesSize = reader.ReadUInt16();
                 uint debugOffset = reader.ReadUInt32();
 
-                mdef.Body = new MethodBody(registersSize);
+                mdef.Body = new MethodBody(mdef, registersSize);
                 mdef.Body.IncomingArguments = incomingArgsSize;
                 mdef.Body.OutgoingArguments = outgoingArgsSize;
 
@@ -592,7 +595,7 @@ namespace Dexer.IO
         {
             reader.PreserveCurrentPosition(debugOffset, () =>
             {
-                DebugInfo debugInfo = new DebugInfo();
+                DebugInfo debugInfo = new DebugInfo(mdef.Body);
                 mdef.Body.DebugInfo = debugInfo;
 
                 uint lineStart = reader.ReadULEB128();
@@ -775,7 +778,7 @@ namespace Dexer.IO
                     int nameIndex = reader.ReadInt32();
 
                     MethodReference mref = new MethodReference();
-                    mref.Owner = (ClassReference)Dex.TypeReferences[classIndex];
+                    mref.Owner = (CompositeType) Dex.TypeReferences[classIndex]; 
                     // Clone the prototype so we can annotate & update it easily
                     mref.Prototype = Dex.Prototypes[prototypeIndex].Clone();
                     mref.Name = Dex.Strings[nameIndex];
@@ -797,7 +800,7 @@ namespace Dexer.IO
 
                     FieldReference fref = new FieldReference();
 
-                    fref.Owner = (ClassReference)Dex.TypeReferences[classIndex];
+                    fref.Owner = (ClassReference) Dex.TypeReferences[classIndex];
                     fref.Type = Dex.TypeReferences[typeIndex];
                     fref.Name = Dex.Strings[nameIndex];
 

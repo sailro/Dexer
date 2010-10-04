@@ -22,16 +22,24 @@ using Dexer.Metadata;
 
 namespace Dexer.IO.Collector
 {
-    internal class MethodReferenceComparer : PureMemberReferenceComparer, IComparer<MethodReference>
+    internal class MethodReferenceComparer : IComparer<MethodReference>
     {
         private PrototypeComparer prototypeComparer = new PrototypeComparer();
+        private TypeReferenceComparer typeReferenceComparer = new TypeReferenceComparer();
+        private StringComparer stringComparer = new StringComparer();
 
         public int Compare(MethodReference x, MethodReference y)
         {
-            int result = base.Compare(x, y);
+            int result = typeReferenceComparer.Compare(x.Owner, y.Owner);
+
+            if (result == 0)
+                result = stringComparer.Compare(x.Name, y.Name);
+
             if (result == 0)
                 result = prototypeComparer.Compare(x.Prototype, y.Prototype);
+
             return result;
         }
+
     }
 }

@@ -81,7 +81,21 @@ namespace Dexer.Core
             builder.AppendLine(TypeDescriptor.Encode(Type));
 
             foreach (AnnotationArgument argument in Arguments)
-                builder.AppendLine(String.Format("{0}={1}",argument.Name, argument.Value));
+            {
+                builder.Append(String.Format("{0}=", argument.Name));
+                if (ValueFormat.GetFormat(argument.Value) == ValueFormats.Array)
+                {
+                    Array array = argument.Value as Array;
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        if (i > 0)
+                            builder.Append(",");
+                        builder.Append(array.GetValue(i));
+                    }
+                } else
+                    builder.Append(argument.Value);
+                builder.AppendLine();
+            }
 
             return builder.ToString().GetHashCode();
         }

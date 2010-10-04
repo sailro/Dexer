@@ -59,6 +59,9 @@ namespace Dexer.IO
         internal Dictionary<MethodReference, int> MethodLookup { get; set; }
         internal Dictionary<FieldReference, int> FieldLookup { get; set; }
 
+        internal byte[] Signature { get; set; }
+        internal uint CheckSum { get; set; }
+
         public DexWriter(Dex dex)
         {
             Dex = dex;
@@ -1067,14 +1070,16 @@ namespace Dexer.IO
         #endregion
 
         #region " Signature & CheckSum "
-        private void ComputeSHA1Signature(BinaryWriter writer)
+        private byte[] ComputeSHA1Signature(BinaryWriter writer)
         {
             writer.Seek((int)HeaderMarkers.SignatureMarker.Positions[0] + DexConsts.SignatureSize, SeekOrigin.Begin);
             SHA1CryptoServiceProvider crypto = new SHA1CryptoServiceProvider();
-            HeaderMarkers.SignatureMarker.Value = crypto.ComputeHash(writer.BaseStream);
+            byte[] signature = crypto.ComputeHash(writer.BaseStream);
+            HeaderMarkers.SignatureMarker.Value = signature;
+            return signature;
         }
 
-        private void ComputeAdlerCheckSum(BinaryWriter writer)
+        private uint ComputeAdlerCheckSum(BinaryWriter writer)
         {
             writer.Seek((int)HeaderMarkers.SignatureMarker.Positions[0], SeekOrigin.Begin);
             ushort s1 = 1;
@@ -1085,7 +1090,9 @@ namespace Dexer.IO
                 s1 = (ushort)((s1 + value) % 65521);
                 s2 = (ushort)((s1 + s2) % 65521);
             }
-            HeaderMarkers.CheckSumMarker.Value = (uint)(s2 << 16 | s1);
+            uint checksum = (uint)(s2 << 16 | s1);
+            HeaderMarkers.CheckSumMarker.Value = checksum;
+            return checksum;
         }
         #endregion
 
@@ -1123,8 +1130,8 @@ namespace Dexer.IO
 
             WriteMapList(writer);
 
-            ComputeSHA1Signature(writer);
-            ComputeAdlerCheckSum(writer);
+            Signature = ComputeSHA1Signature(writer);
+            CheckSum = ComputeAdlerCheckSum(writer);
         }
       
     }
