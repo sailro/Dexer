@@ -48,6 +48,13 @@ namespace Dexer.Core
             this.Prototype = mref.Prototype;
         }
 
+        public MethodDefinition(ClassDefinition owner, string name, Prototype prototype) : this()
+        {
+            this.Owner = owner;
+            this.Name = name;
+            this.Prototype = prototype;
+        }
+
         public bool IsVirtual
         {
             get;
