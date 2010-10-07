@@ -125,33 +125,6 @@ namespace Dexer.IO
         }
         #endregion
 
-        #region " Collect and sort "
-        private void Hierarchicalize()
-        {
-            var TopClasses = new List<ClassDefinition>();
-            foreach (var cdef in Dex.Classes)
-            {
-                if (cdef.Fullname.Contains(DexConsts.InnerClassMarker.ToString()))
-                {
-                    String[] items = cdef.Fullname.Split(DexConsts.InnerClassMarker);
-                    string fullname = items[0];
-                    string name = items[1];
-                    ClassDefinition owner = Dex.GetClass(fullname);
-                    if (owner != null)
-                    {
-                        owner.InnerClasses.Add(cdef);
-                        cdef.Owner = owner;
-                    }
-                }
-                else
-                {
-                    TopClasses.Add(cdef);
-                }
-            }
-            Dex.Classes = TopClasses;
-        }
-        #endregion
-
         #region " Prefetch "
         private void PrefetchTypeReferences(BinaryReader reader)
         {
@@ -496,13 +469,11 @@ namespace Dexer.IO
                 case ValueFormats.Char:
                     return (char)reader.ReadByByteLength(valueArgument + 1);
                 case ValueFormats.Int:
+                case ValueFormats.Float:
                     return (int)reader.ReadByByteLength(valueArgument + 1);
                 case ValueFormats.Long:
-                    return (long)reader.ReadByByteLength(valueArgument + 1);
-                case ValueFormats.Float:
-                    return reader.ReadSingle();
                 case ValueFormats.Double:
-                    return reader.ReadDouble();
+                    return (long)reader.ReadByByteLength(valueArgument + 1);
                 case ValueFormats.String:
                     return Dex.Strings[(int)reader.ReadByByteLength(valueArgument + 1)];
                 case ValueFormats.Type:
@@ -519,7 +490,7 @@ namespace Dexer.IO
                 case ValueFormats.Null:
                     return null;
                 case ValueFormats.Boolean:
-                    return reader.ReadBoolean();
+                    return valueArgument != 0;
                 default:
                     throw new ArgumentException();
             }
@@ -840,7 +811,7 @@ namespace Dexer.IO
             PrefetchClassDefinitions(reader, true);
             ReadClassDefinitions(reader);
 
-            Hierarchicalize();
+            Dex.Classes = ClassDefinition.Hierarchicalize(Dex.Classes, Dex);
         }
 
     }

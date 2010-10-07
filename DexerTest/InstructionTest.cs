@@ -42,7 +42,7 @@ namespace Dexer.Test
             {
                 TestContext.WriteLine("Testing {0}", file);
 
-                Dex dex = Dex.Load(file);
+                Dex dex = Dex.Read(file);
 
                 foreach (ClassDefinition @class in dex.Classes)
                 {

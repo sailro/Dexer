@@ -75,6 +75,7 @@
     <Compile Include="IO\Collectors\FieldReferenceComparer.cs" />
     <Compile Include="IO\Collectors\PrototypeComparer.cs" />
     <Compile Include="IO\Collectors\PrototypeCollector.cs" />
+    <Compile Include="IO\Collectors\TopologicalSorter.cs" />
     <Compile Include="IO\Collectors\TypeReferenceComparer.cs" />
     <Compile Include="IO\AnnotationSet.cs" />
     <Compile Include="IO\CatchSet.cs" />

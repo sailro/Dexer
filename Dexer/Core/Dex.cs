@@ -40,9 +40,9 @@ namespace Dexer.Core
         internal List<string> Strings { get; set; }
         internal List<Prototype> Prototypes { get; set; }
 
-        public static Dex Load(string filename)
+        public static Dex Read(string filename)
         {
-            return Load(filename, true);
+            return Read(filename, true);
         }
 
         public void Write(string filename)
@@ -50,7 +50,7 @@ namespace Dexer.Core
             Write(filename, true);
         }
 
-        public static Dex Load(string filename, bool bufferize)
+        public static Dex Read(string filename, bool bufferize)
         {
             Dex result = new Dex();
 

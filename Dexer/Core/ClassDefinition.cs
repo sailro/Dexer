@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using Dexer.Metadata;
 using System.Linq;
+using Dexer.IO;
 
 namespace Dexer.Core
 {
@@ -135,6 +136,42 @@ namespace Dexer.Core
         }
         #endregion
 
+        #region " Static utilities "
+        static internal List<ClassDefinition> Flattenize(List<ClassDefinition> container)
+        {
+            List<ClassDefinition> result = new List<ClassDefinition>();
+            foreach (var cdef in container)
+            {
+                result.Add(cdef);
+                result.AddRange(Flattenize(cdef.InnerClasses));
+            }
+            return result;
+        }
 
+        static internal List<ClassDefinition> Hierarchicalize(List<ClassDefinition> container, Dex dex)
+        {
+            var result = new List<ClassDefinition>();
+            foreach (var cdef in container)
+            {
+                if (cdef.Fullname.Contains(DexConsts.InnerClassMarker.ToString()))
+                {
+                    string[] items = cdef.Fullname.Split(DexConsts.InnerClassMarker);
+                    string fullname = items[0];
+                    string name = items[1];
+                    ClassDefinition owner = dex.GetClass(fullname);
+                    if (owner != null)
+                    {
+                        owner.InnerClasses.Add(cdef);
+                        cdef.Owner = owner;
+                    }
+                }
+                else
+                {
+                    result.Add(cdef);
+                }
+            }
+            return result;
+        }
+        #endregion
     }
 }

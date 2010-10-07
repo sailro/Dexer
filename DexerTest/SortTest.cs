@@ -42,10 +42,16 @@ namespace Dexer.Test
             {
                 TestContext.WriteLine("Testing {0}", file);
 
-                Dex dex = Dex.Load(file);
+                Dex dex = Dex.Read(file);
                 List<T> items = new List<T>(provider(dex));
                 items.Shuffle();
                 items.Sort(comparer);
+
+                if (comparer is IPartialComparer<T>)
+                {
+                    TopologicalSorter tsorter = new TopologicalSorter();
+                    items = new List<T>(tsorter.TopologicalSort(items, comparer as IPartialComparer<T>));
+                }
 
                 for (int i = 0; i < items.Count; i++)
                     Assert.AreEqual(items[i], provider(dex)[i]);
@@ -65,7 +71,7 @@ namespace Dexer.Test
             foreach (string file in Directory.GetFiles(FilesDirectory))
             {
                 TestContext.WriteLine("Testing {0}", file);
-                Dex dex = Dex.Load(file);
+                Dex dex = Dex.Read(file);
                 MethodDefinitionComparer comparer = new MethodDefinitionComparer();
 
                 foreach (ClassDefinition @class in dex.Classes)
@@ -93,7 +99,7 @@ namespace Dexer.Test
             foreach (string file in Directory.GetFiles(FilesDirectory))
             {
                 TestContext.WriteLine("Testing {0}", file);
-                Dex dex = Dex.Load(file);
+                Dex dex = Dex.Read(file);
                 FieldDefinitionComparer comparer = new FieldDefinitionComparer();
 
                 foreach (ClassDefinition @class in dex.Classes)
@@ -112,6 +118,12 @@ namespace Dexer.Test
         public void TestTypeReferenceSort()
         {
             TestGlobalSort<TypeReference>((dex) => dex.TypeReferences, new TypeReferenceComparer());
+        }
+
+        [TestMethod]
+        public void TestClassDefinitionTopologicalSort()
+        {
+            TestGlobalSort<ClassDefinition>((dex) => dex.Classes, new ClassDefinitionComparer());
         }
 
         [TestMethod]

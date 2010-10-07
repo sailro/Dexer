@@ -42,7 +42,7 @@ namespace Dexer.Test
         internal C TestCollector<C, T>(Func<Dex, List<T>> provider, string file) where C : BaseCollector<T>, new()
         {
             TestContext.WriteLine("Testing {0}", file);
-            Dex dex = Dex.Load(file);
+            Dex dex = Dex.Read(file);
 
             C collector = new C();
             collector.Collect(dex);

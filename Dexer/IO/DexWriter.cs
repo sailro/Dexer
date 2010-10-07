@@ -455,6 +455,8 @@ namespace Dexer.IO
                 case ValueFormats.Char:
                 case ValueFormats.Int:
                 case ValueFormats.Long:
+                case ValueFormats.Float:
+                case ValueFormats.Double:
                     valueArgument = getBytesNeeded(Convert.ToInt64(value)) - 1;
                     break;
                 case ValueFormats.String:
@@ -469,6 +471,9 @@ namespace Dexer.IO
                     break;
                 case ValueFormats.Method:
                     valueArgument = getBytesNeeded(MethodLookup[(MethodReference)value]) - 1;
+                    break;
+                case ValueFormats.Boolean:
+                    valueArgument = Convert.ToInt32(Convert.ToBoolean(value));
                     break;
             }
 
@@ -485,13 +490,9 @@ namespace Dexer.IO
                 case ValueFormats.Char:
                 case ValueFormats.Int:
                 case ValueFormats.Long:
-                    writer.WriteByByteLength(Convert.ToInt64(value), valueArgument + 1);
-                    break;
                 case ValueFormats.Float:
-                    writer.Write(Convert.ToSingle(value));
-                    break;
                 case ValueFormats.Double:
-                    writer.Write(Convert.ToDouble(value));
+                    writer.WriteByByteLength(Convert.ToInt64(value), valueArgument + 1);
                     break;
                 case ValueFormats.String:
                     writer.WriteByByteLength(StringLookup[(String)value], valueArgument + 1);
@@ -513,9 +514,7 @@ namespace Dexer.IO
                     WriteEncodedAnnotation(writer, value as Annotation);
                     break;
                 case ValueFormats.Null:
-                    break;
                 case ValueFormats.Boolean:
-                    writer.Write(Convert.ToBoolean(value));
                     break;
                 default:
                     throw new ArgumentException();
@@ -579,17 +578,6 @@ namespace Dexer.IO
         public Dictionary<FieldReference, int> CollectFields()
         {
             return Collect(Dex.FieldReferences, new FieldReferenceComparer());
-        }
-
-        private List<ClassDefinition> Flattenize(List<ClassDefinition> container)
-        {
-            List<ClassDefinition> result = new List<ClassDefinition>();
-            foreach (ClassDefinition @class in container)
-            {
-                result.Add(@class);
-                result.AddRange(Flattenize(@class.InnerClasses));
-            }
-            return result;
         }
         #endregion
 
@@ -902,60 +890,86 @@ namespace Dexer.IO
         #endregion
 
         #region " EncodedArray "
+        // this is really test code, need to optimize
+        private string GetByteArrayAsString(byte[] bytes)
+        {
+            StringBuilder builder = new StringBuilder();
+            foreach (ushort item in bytes)
+                builder.AppendLine(item.ToString());
+            return builder.ToString();
+        }
+
         private void WriteEncodedArray(BinaryWriter writer)
         {
+            Dictionary<string, uint> buffers = new Dictionary<string, uint>();
             uint offset = (uint)writer.BaseStream.Position;
             uint count = 0;
 
-            for (int c = 0; c < FlatClasses.Count; c++ )
+            MemoryStream memoryStream = new MemoryStream();
+            using (BinaryWriter memoryWriter = new BinaryWriter(memoryStream))
             {
-                ClassDefinition @class = FlatClasses[c];
-                List<object> values = new List<object>();
-                int lastNonNullIndex = -1;
-
-                for (int i = 0; i < @class.Fields.Count; i++)
+                for (int c = 0; c < FlatClasses.Count; c++)
                 {
-                    FieldDefinition field = @class.Fields[i];
-                    switch (ValueFormat.GetFormat(field.Value))
+                    ClassDefinition @class = FlatClasses[c];
+                    List<object> values = new List<object>();
+                    int lastNonNullIndex = -1;
+
+                    for (int i = 0; i < @class.Fields.Count; i++)
                     {
-                        case ValueFormats.Annotation:
-                        case ValueFormats.Array:
-                        case ValueFormats.Method:
-                        case ValueFormats.Type:
-                        case ValueFormats.String:
-                        case ValueFormats.Enum:
-                        case ValueFormats.Field:
-                            // always set
-                            lastNonNullIndex = i;
-                            break;
-                        case ValueFormats.Null:
-                            // never set
-                            break;
-                        case ValueFormats.Double:
-                        case ValueFormats.Float:
-                            if (Convert.ToDouble(field.Value) != 0)
+                        FieldDefinition field = @class.Fields[i];
+                        switch (ValueFormat.GetFormat(field.Value))
+                        {
+                            case ValueFormats.Annotation:
+                            case ValueFormats.Array:
+                            case ValueFormats.Method:
+                            case ValueFormats.Type:
+                            case ValueFormats.String:
+                            case ValueFormats.Enum:
+                            case ValueFormats.Field:
+                                // always set
                                 lastNonNullIndex = i;
-                            break;
-                        case ValueFormats.Boolean:
-                        case ValueFormats.Byte:
-                        case ValueFormats.Char:
-                        case ValueFormats.Int:
-                        case ValueFormats.Long:
-                        case ValueFormats.Short:
-                            if (Convert.ToInt64(field.Value) != 0)
-                                lastNonNullIndex = i;
-                            break;
-                        default:
-                            throw new ArgumentException();
+                                break;
+                            case ValueFormats.Null:
+                                // never set
+                                break;
+                            case ValueFormats.Double:
+                            case ValueFormats.Float:
+                                if (Convert.ToDouble(field.Value) != 0)
+                                    lastNonNullIndex = i;
+                                break;
+                            case ValueFormats.Boolean:
+                            case ValueFormats.Byte:
+                            case ValueFormats.Char:
+                            case ValueFormats.Int:
+                            case ValueFormats.Long:
+                            case ValueFormats.Short:
+                                if (Convert.ToInt64(field.Value) != 0)
+                                    lastNonNullIndex = i;
+                                break;
+                            default:
+                                throw new ArgumentException();
+                        }
+                        values.Add(field.Value);
                     }
-                    values.Add(field.Value);
-                }
 
-                if (lastNonNullIndex != -1)
-                {
-                    count++;
-                    ClassDefinitionsMarkers[c].StaticValuesMarker.Value = (uint) writer.BaseStream.Position;
-                    WriteValues(writer, Enumerable.Take(values, lastNonNullIndex + 1).ToArray());
+                    if (lastNonNullIndex != -1)
+                    {
+                        memoryStream.Position = 0;
+                        memoryStream.SetLength(0);
+
+                        WriteValues(memoryWriter, Enumerable.Take(values, lastNonNullIndex + 1).ToArray());
+                        byte[] buffer = memoryStream.ToArray();
+                        string key = GetByteArrayAsString(buffer);
+
+                        if (!buffers.ContainsKey(key))
+                        {
+                            count++;
+                            buffers.Add(key, (uint)writer.BaseStream.Position);
+                            writer.Write(buffer);
+                        }
+
+                        ClassDefinitionsMarkers[c].StaticValuesMarker.Value = buffers[key];
+                    }
                 }
             }
 
@@ -1106,8 +1120,12 @@ namespace Dexer.IO
             MethodLookup = CollectMethods();
             FieldLookup = CollectFields();
             PrototypeLookup = CollectPrototypes();
-            FlatClasses = Flattenize(Dex.Classes);
+            FlatClasses = ClassDefinition.Flattenize(Dex.Classes);
+
+            // Standard sort then topological sort
+            TopologicalSorter tsorter = new TopologicalSorter();
             FlatClasses.Sort(new ClassDefinitionComparer());
+            FlatClasses = new List<ClassDefinition>(tsorter.TopologicalSort(FlatClasses, new ClassDefinitionComparer()));
 
             WriteHeader(writer);
             WriteStringId(writer);

@@ -19,14 +19,33 @@
 using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Metadata;
+using System.Linq;
 
 namespace Dexer.IO.Collector
 {
-    internal class ClassDefinitionComparer : ClassReferenceComparer, IComparer<ClassDefinition>
+    internal class ClassDefinitionComparer : ClassReferenceComparer, IPartialComparer<ClassDefinition>, IComparer<ClassDefinition>
     {
         public int Compare(ClassDefinition x, ClassDefinition y)
         {
             return base.Compare(x, y);
+        }
+
+        public int? PartialCompare(ClassDefinition x, ClassDefinition y)
+        {
+            var idefx = from i in x.Interfaces where ((i is ClassDefinition) && ((i as ClassDefinition).IsInterface)) select i;
+            var idefy = from i in y.Interfaces where ((i is ClassDefinition) && ((i as ClassDefinition).IsInterface)) select i;
+
+            if (idefy.Contains(x))
+            {
+                if (idefx.Contains(y))
+                    return 0;
+                return -1;
+            }
+
+            if (idefx.Contains(y))
+                return 1;
+
+            return null;
         }
     }
 }
