@@ -43,6 +43,11 @@ namespace Dexer.Instructions
         {
         }
 
+        public Instruction(OpCodes opcode)
+            : this(opcode, null, null)
+        {
+        }
+
         public Instruction(OpCodes opcode, object operand)
             : this(opcode, operand, null)
         {
@@ -52,7 +57,9 @@ namespace Dexer.Instructions
         {
             OpCode = opcode;
             Operand = operand;
-            Registers = new List<Register>(registers);
+
+            if (registers != null)
+                Registers = new List<Register>(registers);
         }
 
         public override string ToString()

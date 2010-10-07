@@ -469,11 +469,13 @@ namespace Dexer.IO
                 case ValueFormats.Char:
                     return (char)reader.ReadByByteLength(valueArgument + 1);
                 case ValueFormats.Int:
-                case ValueFormats.Float:
                     return (int)reader.ReadByByteLength(valueArgument + 1);
                 case ValueFormats.Long:
-                case ValueFormats.Double:
                     return (long)reader.ReadByByteLength(valueArgument + 1);
+                case ValueFormats.Float:
+                    return BitConverter.ToSingle(BitConverter.GetBytes((int)reader.ReadByByteLength(valueArgument + 1)), 0); 
+                case ValueFormats.Double:
+                    return BitConverter.Int64BitsToDouble(reader.ReadByByteLength(valueArgument + 1));
                 case ValueFormats.String:
                     return Dex.Strings[(int)reader.ReadByByteLength(valueArgument + 1)];
                 case ValueFormats.Type:

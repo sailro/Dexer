@@ -591,7 +591,7 @@ namespace Dexer.IO
                 WriteInt(key, ref ExtraOffset);
 
             foreach(int key in data.Targets.Keys)
-                WriteInt(data.Targets[key].Offset, ref ExtraOffset);
+                WriteInt(data.Targets[key].Offset - ins.Offset, ref ExtraOffset);
         }
 
         private void WritePackedSwitch(Instruction ins)

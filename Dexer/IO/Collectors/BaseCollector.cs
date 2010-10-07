@@ -68,10 +68,28 @@ namespace Dexer.IO.Collector
                 Collect(method);
         }
 
+        public virtual void Collect(List<MethodReference> methods)
+        {
+            foreach (MethodReference method in methods)
+                Collect(method);
+        }
+
         public virtual void Collect(List<FieldDefinition> fields)
         {
             foreach (FieldDefinition field in fields)
                 Collect(field);
+        }
+
+        public virtual void Collect(List<FieldReference> fields)
+        {
+            foreach (FieldReference field in fields)
+                Collect(field);
+        }
+
+        public virtual void Collect(List<TypeReference> types)
+        {
+            foreach (TypeReference type in types)
+                Collect(type);
         }
 
         public virtual void Collect(List<Annotation> annotations)

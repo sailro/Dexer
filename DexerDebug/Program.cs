@@ -11,11 +11,10 @@ namespace Dexer.Debug
         {
             Dex dex = Dex.Read("classes.dex");
 
-            /*MethodDefinition method = dex.GetClass("com.android.vending.licensing.LicenseValidator").GetMethod("verify");
-
-            Instruction sparseSwitch = (from i in method.Body.Instructions where i.OpCode == OpCodes.Sparse_switch select i).First();
-            SparseSwitchData data = sparseSwitch.Operand as SparseSwitchData;
-            data.Targets[1] = data.Targets[0]; // NOT_LICENSED -> LICENSED*/
+            MethodDefinition method = dex.GetClass("com.android.vending.licensing.LicenseValidator").GetMethod("verify");
+            method.Body.Instructions.Clear();
+            method.Body.Exceptions.Clear();
+            method.Body.Instructions.Add(new Instruction(OpCodes.Return_void));
 
             dex.Write("output.dex");
             Console.ReadLine();

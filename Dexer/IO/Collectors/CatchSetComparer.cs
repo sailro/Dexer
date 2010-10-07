@@ -38,6 +38,10 @@ namespace Dexer.IO.Collector
                 if (cp != 0)
                     return cp;
             }
+
+            if ((x.CatchAll != null) && (y.CatchAll != null))
+                return x.CatchAll.Offset.CompareTo(y.CatchAll.Offset);
+
             return 0;
         }
     }

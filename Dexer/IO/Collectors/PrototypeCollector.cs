@@ -27,6 +27,7 @@ namespace Dexer.IO.Collector
 {
     internal class PrototypeCollector : BaseCollector<Prototype>
     {
+
         public override void Collect(Prototype prototype)
         {
             base.Collect(prototype);

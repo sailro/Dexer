@@ -112,6 +112,9 @@ namespace Dexer.IO
         {
             var collector = new StringCollector();
             collector.Collect(Dex);
+            collector.Collect(Dex.MethodReferences);
+            collector.Collect(Dex.FieldReferences);
+            collector.Collect(Dex.TypeReferences);
 
             var strings = new List<string>(collector.Items.Keys);
             strings.Sort(new Dexer.IO.Collector.StringComparer());
@@ -156,6 +159,9 @@ namespace Dexer.IO
         {
             var collector = new PrototypeCollector();
             collector.Collect(Dex);
+            collector.Collect(Dex.MethodReferences);
+            collector.Collect(Dex.FieldReferences);
+            collector.Collect(Dex.TypeReferences);
 
             Dex.Prototypes = collector.ToList(new PrototypeComparer());
 
@@ -455,9 +461,13 @@ namespace Dexer.IO
                 case ValueFormats.Char:
                 case ValueFormats.Int:
                 case ValueFormats.Long:
-                case ValueFormats.Float:
-                case ValueFormats.Double:
                     valueArgument = getBytesNeeded(Convert.ToInt64(value)) - 1;
+                    break;
+                case ValueFormats.Float:
+                    valueArgument = getBytesNeeded(BitConverter.ToInt32(BitConverter.GetBytes(Convert.ToSingle(value)), 0)) - 1;
+                    break;
+                case ValueFormats.Double:
+                    valueArgument = getBytesNeeded(BitConverter.DoubleToInt64Bits(Convert.ToDouble(value))) - 1;
                     break;
                 case ValueFormats.String:
                     valueArgument = getBytesNeeded(StringLookup[(String)value]) - 1;
@@ -490,9 +500,13 @@ namespace Dexer.IO
                 case ValueFormats.Char:
                 case ValueFormats.Int:
                 case ValueFormats.Long:
-                case ValueFormats.Float:
-                case ValueFormats.Double:
                     writer.WriteByByteLength(Convert.ToInt64(value), valueArgument + 1);
+                    break;
+                case ValueFormats.Float:
+                    writer.WriteByByteLength(BitConverter.ToInt32(BitConverter.GetBytes(Convert.ToSingle(value)), 0), valueArgument + 1);
+                    break;
+                case ValueFormats.Double:
+                    writer.WriteByByteLength(BitConverter.DoubleToInt64Bits(Convert.ToDouble(value)), valueArgument + 1);
                     break;
                 case ValueFormats.String:
                     writer.WriteByByteLength(StringLookup[(String)value], valueArgument + 1);

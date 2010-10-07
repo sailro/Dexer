@@ -45,6 +45,12 @@ namespace Dexer.IO.Collector
             if (idefx.Contains(y))
                 return 1;
 
+            /*if (x.SuperClass == y)
+                return -1;
+
+            if (y.SuperClass == x)
+                return 1;*/
+
             return null;
         }
     }
