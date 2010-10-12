@@ -50,7 +50,7 @@
     <Compile Include="BaseCollectorTest.cs" />
     <Compile Include="RoundtripTest.cs" />
     <Compile Include="InstructionTest.cs" />
-    <Compile Include="LEB128Test.cs" />
+    <Compile Include="NumericalTest.cs" />
     <Compile Include="SortTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

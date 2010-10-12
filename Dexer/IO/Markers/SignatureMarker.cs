@@ -26,7 +26,9 @@ namespace Dexer.IO.Markers
     {
         public override byte[] Value
         {
-            set {
+            set
+            {
+#if !DISABLE_MARKERS || !DEBUG
                 foreach (uint position in Positions)
                 {
                     Writer.PreserveCurrentPosition(position, () =>
@@ -34,6 +36,7 @@ namespace Dexer.IO.Markers
                         Writer.Write(value);
                     });
                 }
+#endif
             }
         }
 

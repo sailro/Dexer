@@ -27,6 +27,7 @@ namespace Dexer.IO.Markers
         public override ushort Value
         {
             set {
+#if !DISABLE_MARKERS || !DEBUG
                 foreach (uint position in Positions)
                 {
                     Writer.PreserveCurrentPosition(position, () =>
@@ -34,6 +35,7 @@ namespace Dexer.IO.Markers
                         Writer.Write(value);
                     });
                 }
+#endif
             }
         }
 

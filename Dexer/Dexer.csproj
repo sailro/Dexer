@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;_DISABLE_MARKERS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -54,7 +54,7 @@
     <Compile Include="Instructions\DebugOpCodes.cs" />
     <Compile Include="Instructions\PseudoOpCodes.cs" />
     <Compile Include="Core\IAnnotationProvider.cs" />
-    <Compile Include="Core\BinaryReaderExtensions.cs" />
+    <Compile Include="Extensions\BinaryReaderExtensions.cs" />
     <Compile Include="Core\ClassReference.cs" />
     <Compile Include="Core\ArrayType.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
@@ -67,6 +67,7 @@
     <Compile Include="IO\Collectors\ClassReferenceComparer.cs" />
     <Compile Include="IO\Collectors\AnnotationComparer.cs" />
     <Compile Include="IO\Collectors\CatchSetComparer.cs" />
+    <Compile Include="IO\Collectors\DependecyCollector.cs" />
     <Compile Include="IO\Collectors\ModelShuffler.cs" />
     <Compile Include="IO\Collectors\FieldDefinitionComparer.cs" />
     <Compile Include="IO\Collectors\MethodDefinitionComparer.cs" />

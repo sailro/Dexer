@@ -69,6 +69,14 @@ namespace Dexer.Core
             return Enumerable.First(GetMethods(name));
         }
 
+        public FieldDefinition GetField(string name)
+        {
+            foreach (var fdef in Fields)
+                if (fdef.Name == name)
+                   return fdef;
+            return null;
+        }
+
         #region " AccessFlags "
         public bool IsPublic {
             get { return (AccessFlags & AccessFlags.Public) != 0; }

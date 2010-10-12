@@ -626,9 +626,9 @@ namespace Dexer.IO
                 {
                     case 1:
                         if (next)
-                            Codes[ExtraOffset++] |= (ushort)(Convert.ToSByte(element) << 8);
+                            Codes[ExtraOffset++] |= (ushort)((byte)(Convert.ToSByte(element)) << 8);
                         else
-                            Codes[ExtraOffset] |= (ushort)Convert.ToSByte(element);
+                            Codes[ExtraOffset] |= (ushort)((byte)Convert.ToSByte(element));
                         next = !next;
                         break;
                     case 2:

@@ -27,6 +27,7 @@ namespace Dexer.IO.Markers
         public override SizeOffset Value
         {
             set {
+#if !DISABLE_MARKERS || !DEBUG
                 foreach (uint position in Positions)
                 {
                     Writer.PreserveCurrentPosition(position, () =>
@@ -35,6 +36,7 @@ namespace Dexer.IO.Markers
                         Writer.Write(value.Offset);
                     });
                 }
+#endif
             }
         }
 

@@ -149,6 +149,11 @@ namespace Dexer.Core
             return tref;
         }
 
+        public ClassReference Import(ClassReference cref)
+        {
+            return (ClassReference)Import(cref, true);
+        }
+
         public TypeReference Import(TypeReference tref) {
             return Import(tref, true);
         }

@@ -21,6 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.IO;
+using System.Diagnostics;
 
 namespace Dexer.Extensions
 {
@@ -113,13 +114,24 @@ namespace Dexer.Extensions
 
         public static long ReadByByteLength(this BinaryReader reader, int byteLength)
         {
-            long value = 0;
+            ulong value = 0;
+            long result;
+
             for (int i = 0; i < byteLength; i++)
             {
-                value |= (long)reader.ReadByte() << (8 * i);
+                value |= ((ulong)reader.ReadByte()) << (8 * i);
             }
-            int shift = 8 * byteLength;
-            return (value << shift) >> shift;
+
+            //int shift = 8 * byteLength;
+            //result = (long)(value << shift) >> shift;
+            result = (long) value;
+            
+            if (byteLength != BinaryWriterExtensions.GetBytesNeeded(null, result))
+            {
+                Console.WriteLine(string.Format("{0:x} {1} != {2}", result, byteLength, BinaryWriterExtensions.GetBytesNeeded(null, result)));
+            }
+
+            return result;
         }
 
     }

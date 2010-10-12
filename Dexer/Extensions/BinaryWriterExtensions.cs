@@ -23,6 +23,7 @@ using System;
 using System.IO;
 using Dexer.IO;
 using Dexer.IO.Markers;
+using System.Collections.Generic;
 
 namespace Dexer.Extensions
 {
@@ -134,6 +135,20 @@ namespace Dexer.Extensions
             }
 
             writer.Write((byte) 0); // 0 padded;
+        }
+
+        public static int GetBytesNeeded(this BinaryWriter writer, long value)
+        {
+            ulong tmp = (ulong)value;
+            int result = 0;
+
+            do
+            {
+                tmp >>= 8;
+                result++;
+            } while (tmp > 0);
+
+            return result;
         }
 
         public static void WriteByByteLength(this BinaryWriter writer, long value, int byteLength)

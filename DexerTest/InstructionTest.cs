@@ -76,7 +76,7 @@ namespace Dexer.Test
                 }
 
             if (isInconclusive)
-                Assert.Inconclusive("Some OpCode(s) were not covered, see test details");
+                Assert.Inconclusive("Some OpCode(s) were not covered ({0:P} coverage) , see test details", ((double) coverage.Count) / (Enum.GetNames(typeof(OpCodes)).Length) );
         }
 
     }

@@ -439,17 +439,6 @@ namespace Dexer.IO
             }
         }
 
-        private int getBytesNeeded(long value)
-        {
-            int result = 0;
-            do
-            {
-                value >>= 8;
-                result++;
-            } while (value > 0);
-            return result;
-        }
-
         private void WriteValue(BinaryWriter writer, object value)
         {
             int valueArgument = 0;
@@ -461,26 +450,26 @@ namespace Dexer.IO
                 case ValueFormats.Char:
                 case ValueFormats.Int:
                 case ValueFormats.Long:
-                    valueArgument = getBytesNeeded(Convert.ToInt64(value)) - 1;
+                    valueArgument = writer.GetBytesNeeded(Convert.ToInt64(value)) - 1;
                     break;
                 case ValueFormats.Float:
-                    valueArgument = getBytesNeeded(BitConverter.ToInt32(BitConverter.GetBytes(Convert.ToSingle(value)), 0)) - 1;
+                    valueArgument = writer.GetBytesNeeded(BitConverter.ToInt32(BitConverter.GetBytes(Convert.ToSingle(value)), 0)) - 1;
                     break;
                 case ValueFormats.Double:
-                    valueArgument = getBytesNeeded(BitConverter.DoubleToInt64Bits(Convert.ToDouble(value))) - 1;
+                    valueArgument = writer.GetBytesNeeded(BitConverter.DoubleToInt64Bits(Convert.ToDouble(value))) - 1;
                     break;
                 case ValueFormats.String:
-                    valueArgument = getBytesNeeded(StringLookup[(String)value]) - 1;
+                    valueArgument = writer.GetBytesNeeded(StringLookup[(String)value]) - 1;
                     break;
                 case ValueFormats.Type:
-                    valueArgument = getBytesNeeded(TypeLookup[(TypeReference)value]) - 1;
+                    valueArgument = writer.GetBytesNeeded(TypeLookup[(TypeReference)value]) - 1;
                     break;
                 case ValueFormats.Field:
                 case ValueFormats.Enum:
-                    valueArgument = getBytesNeeded(FieldLookup[(FieldReference)value]) - 1;
+                    valueArgument = writer.GetBytesNeeded(FieldLookup[(FieldReference)value]) - 1;
                     break;
                 case ValueFormats.Method:
-                    valueArgument = getBytesNeeded(MethodLookup[(MethodReference)value]) - 1;
+                    valueArgument = writer.GetBytesNeeded(MethodLookup[(MethodReference)value]) - 1;
                     break;
                 case ValueFormats.Boolean:
                     valueArgument = Convert.ToInt32(Convert.ToBoolean(value));
