@@ -18,8 +18,6 @@
 
 using System.Collections.Generic;
 using Dexer.Core;
-using Dexer.Metadata;
-using System.Linq;
 
 namespace Dexer.IO.Collector
 {
@@ -30,26 +28,29 @@ namespace Dexer.IO.Collector
             return base.Compare(x, y);
         }
 
+        public List<ClassDefinition> CollectDependencies(ClassDefinition cdef)
+        {
+            DependencyCollector collector = new DependencyCollector();
+            collector.Collect(cdef);
+            var result = collector.ToList();
+            result.Remove(cdef);
+            return result;
+        }
+
         public int? PartialCompare(ClassDefinition x, ClassDefinition y)
         {
-            var idefx = from i in x.Interfaces where ((i is ClassDefinition) && ((i as ClassDefinition).IsInterface)) select i;
-            var idefy = from i in y.Interfaces where ((i is ClassDefinition) && ((i as ClassDefinition).IsInterface)) select i;
+            var xdependencies = CollectDependencies(x);
+            var ydependencies = CollectDependencies(y);
 
-            if (idefy.Contains(x))
+            if (ydependencies.Contains(x))
             {
-                if (idefx.Contains(y))
+                if (xdependencies.Contains(y))
                     return 0;
                 return -1;
             }
 
-            if (idefx.Contains(y))
+            if (xdependencies.Contains(y))
                 return 1;
-
-            /*if (x.SuperClass == y)
-                return -1;
-
-            if (y.SuperClass == x)
-                return 1;*/
 
             return null;
         }
