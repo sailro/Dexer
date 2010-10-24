@@ -15,8 +15,8 @@ using System.Runtime.CompilerServices;
 
 [assembly: Guid("8271aa20-84e7-4ab6-b483-345320e722b2")]
 
-[assembly: AssemblyVersion("0.3.0.0")]
-[assembly: AssemblyFileVersion("0.3.0.0")]
+[assembly: AssemblyVersion("0.5.0.0")]
+[assembly: AssemblyFileVersion("0.5.0.0")]
 
 [assembly: InternalsVisibleTo("DexerDebug")]
 [assembly: InternalsVisibleTo("DexerTest")]

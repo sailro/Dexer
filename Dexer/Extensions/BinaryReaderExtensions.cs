@@ -126,10 +126,12 @@ namespace Dexer.Extensions
             //result = (long)(value << shift) >> shift;
             result = (long) value;
             
+#if DEBUG
             if (byteLength != BinaryWriterExtensions.GetBytesNeeded(null, result))
             {
                 Console.WriteLine(string.Format("{0:x} {1} != {2}", result, byteLength, BinaryWriterExtensions.GetBytesNeeded(null, result)));
             }
+#endif
 
             return result;
         }
