@@ -446,30 +446,33 @@ namespace Dexer.IO
             ValueFormats format = ValueFormat.GetFormat(value);
             switch (format)
             {
-                case ValueFormats.Short:
                 case ValueFormats.Char:
+                    valueArgument = writer.GetByteCountForUnsignedPackedNumber(Convert.ToInt64(value)) - 1;
+                    break;
+                case ValueFormats.Byte:
+                case ValueFormats.Short:
                 case ValueFormats.Int:
                 case ValueFormats.Long:
-                    valueArgument = writer.GetBytesNeeded(Convert.ToInt64(value)) - 1;
+                    valueArgument = writer.GetByteCountForSignedPackedNumber(Convert.ToInt64(value)) - 1;
                     break;
                 case ValueFormats.Float:
-                    valueArgument = writer.GetBytesNeeded(BitConverter.ToInt32(BitConverter.GetBytes(Convert.ToSingle(value)), 0)) - 1;
+                    valueArgument = writer.GetByteCountForSignedPackedNumber(BitConverter.ToInt32(BitConverter.GetBytes(Convert.ToSingle(value)), 0)) - 1;
                     break;
                 case ValueFormats.Double:
-                    valueArgument = writer.GetBytesNeeded(BitConverter.DoubleToInt64Bits(Convert.ToDouble(value))) - 1;
+                    valueArgument = writer.GetByteCountForSignedPackedNumber(BitConverter.DoubleToInt64Bits(Convert.ToDouble(value))) - 1;
                     break;
                 case ValueFormats.String:
-                    valueArgument = writer.GetBytesNeeded(StringLookup[(String)value]) - 1;
+                    valueArgument = writer.GetByteCountForUnsignedPackedNumber(StringLookup[(String)value]) - 1;
                     break;
                 case ValueFormats.Type:
-                    valueArgument = writer.GetBytesNeeded(TypeLookup[(TypeReference)value]) - 1;
+                    valueArgument = writer.GetByteCountForUnsignedPackedNumber(TypeLookup[(TypeReference)value]) - 1;
                     break;
                 case ValueFormats.Field:
                 case ValueFormats.Enum:
-                    valueArgument = writer.GetBytesNeeded(FieldLookup[(FieldReference)value]) - 1;
+                    valueArgument = writer.GetByteCountForUnsignedPackedNumber(FieldLookup[(FieldReference)value]) - 1;
                     break;
                 case ValueFormats.Method:
-                    valueArgument = writer.GetBytesNeeded(MethodLookup[(MethodReference)value]) - 1;
+                    valueArgument = writer.GetByteCountForUnsignedPackedNumber(MethodLookup[(MethodReference)value]) - 1;
                     break;
                 case ValueFormats.Boolean:
                     valueArgument = Convert.ToInt32(Convert.ToBoolean(value));
@@ -482,33 +485,33 @@ namespace Dexer.IO
 
             switch (format)
             {
-                case ValueFormats.Byte:
-                    writer.Write(Convert.ToSByte(value));
+                case ValueFormats.Char:
+                    writer.WriteUnsignedPackedNumber(Convert.ToInt64(value));
                     break;
                 case ValueFormats.Short:
-                case ValueFormats.Char:
+                case ValueFormats.Byte:
                 case ValueFormats.Int:
                 case ValueFormats.Long:
-                    writer.WriteByByteLength(Convert.ToInt64(value), valueArgument + 1);
+                    writer.WritePackedSignedNumber(Convert.ToInt64(value));
                     break;
                 case ValueFormats.Float:
-                    writer.WriteByByteLength(BitConverter.ToInt32(BitConverter.GetBytes(Convert.ToSingle(value)), 0), valueArgument + 1);
+                    writer.WritePackedSignedNumber(BitConverter.ToInt32(BitConverter.GetBytes(Convert.ToSingle(value)), 0));
                     break;
                 case ValueFormats.Double:
-                    writer.WriteByByteLength(BitConverter.DoubleToInt64Bits(Convert.ToDouble(value)), valueArgument + 1);
+                    writer.WritePackedSignedNumber(BitConverter.DoubleToInt64Bits(Convert.ToDouble(value)));
                     break;
                 case ValueFormats.String:
-                    writer.WriteByByteLength(StringLookup[(String)value], valueArgument + 1);
+                    writer.WriteUnsignedPackedNumber(StringLookup[(String)value]);
                     break;
                 case ValueFormats.Type:
-                    writer.WriteByByteLength(TypeLookup[(TypeReference)value], valueArgument + 1);
+                    writer.WriteUnsignedPackedNumber(TypeLookup[(TypeReference)value]);
                     break;
                 case ValueFormats.Field:
                 case ValueFormats.Enum:
-                    writer.WriteByByteLength(FieldLookup[(FieldReference)value], valueArgument + 1);
+                    writer.WriteUnsignedPackedNumber(FieldLookup[(FieldReference)value]);
                     break;
                 case ValueFormats.Method:
-                    writer.WriteByByteLength(MethodLookup[(MethodReference)value], valueArgument + 1);
+                    writer.WriteUnsignedPackedNumber(MethodLookup[(MethodReference)value]);
                     break;
                 case ValueFormats.Array:
                     WriteValues(writer, (object[])value);

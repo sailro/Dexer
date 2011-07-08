@@ -137,25 +137,67 @@ namespace Dexer.Extensions
             writer.Write((byte) 0); // 0 padded;
         }
 
-        public static int GetBytesNeeded(this BinaryWriter writer, long value)
+        private static int NumberOfLeadingZeros(long i)
         {
-            ulong tmp = (ulong)value;
-            int result = 0;
+            if (i == 0)
+                return 64;
+            int n = 1;
+            int x = (int) (TripleShift(i, 32));
+            
+            if (x == 0)                     { n += 32; x = (int) i; }
+            if (TripleShift(x, 16) == 0)    { n += 16; x <<= 16; }
+            if (TripleShift(x, 24) == 0)    { n += 8;  x <<= 8; }
+            if (TripleShift(x, 28) == 0)    { n += 4;  x <<= 4; }
+            if (TripleShift(x, 30) == 0)    { n += 2;  x <<= 2; }
+            
+            n -= (int) TripleShift(x, 31);
+            return n;
+        }
 
-            do
-            {
-                tmp >>= 8;
-                result++;
-            } while (tmp > 0);
+        private static long TripleShift(long n, int s)
+        {
+            if (n >= 0)
+                return n >> s;
+            return (n >> s) + (2 << ~s);
+        }
+
+        public static int GetByteCountForSignedPackedNumber(this BinaryWriter writer, long value)
+        {
+            int requiredBits = 65 - NumberOfLeadingZeros(value ^ (value >> 63));
+            int result = (byte)((requiredBits + 0x07) >> 3);
 
             return result;
         }
 
-        public static void WriteByByteLength(this BinaryWriter writer, long value, int byteLength)
+        public static int GetByteCountForUnsignedPackedNumber(this BinaryWriter writer, long value)
         {
-            for (int i = 0; i < byteLength; i++)
+            int requiredBits = 64 - NumberOfLeadingZeros(value);
+            if (requiredBits == 0)
+                requiredBits = 1;
+
+            int result = (byte)((requiredBits + 0x07) >> 3);
+
+            return result;
+        }
+
+        public static void WritePackedSignedNumber(this BinaryWriter writer, long value)
+        {
+            int requiredBytes = GetByteCountForSignedPackedNumber(writer, value);
+
+            for (int i = 0; i < requiredBytes; i++)
             {
-                writer.Write((byte)(value & 0xFF));
+                writer.Write((byte)value);
+                value >>= 8;
+            }
+        }
+
+        public static void WriteUnsignedPackedNumber(this BinaryWriter writer, long value)
+        {
+            int requiredBytes = GetByteCountForUnsignedPackedNumber(writer, value);
+
+            for (int i = 0; i < requiredBytes; i++)
+            {
+                writer.Write((byte)value);
                 value >>= 8;
             }
         }

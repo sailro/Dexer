@@ -463,28 +463,28 @@ namespace Dexer.IO
             switch ((ValueFormats)valueFormat)
             {
                 case ValueFormats.Byte:
-                    return reader.ReadSByte();
+                    return (sbyte) reader.ReadSignedPackedNumber(valueArgument + 1);
                 case ValueFormats.Short:
-                    return (short)reader.ReadByByteLength(valueArgument + 1);
+                    return (short)reader.ReadSignedPackedNumber(valueArgument + 1);
                 case ValueFormats.Char:
-                    return (char)reader.ReadByByteLength(valueArgument + 1);
+                    return (char)reader.ReadUnsignedPackedNumber(valueArgument + 1);
                 case ValueFormats.Int:
-                    return (int)reader.ReadByByteLength(valueArgument + 1);
+                    return (int)reader.ReadSignedPackedNumber(valueArgument + 1);
                 case ValueFormats.Long:
-                    return (long)reader.ReadByByteLength(valueArgument + 1);
+                    return (long)reader.ReadSignedPackedNumber(valueArgument + 1);
                 case ValueFormats.Float:
-                    return BitConverter.ToSingle(BitConverter.GetBytes((int)reader.ReadByByteLength(valueArgument + 1)), 0); 
+                    return BitConverter.ToSingle(BitConverter.GetBytes((int)reader.ReadSignedPackedNumber(valueArgument + 1)), 0); 
                 case ValueFormats.Double:
-                    return BitConverter.Int64BitsToDouble(reader.ReadByByteLength(valueArgument + 1));
+                    return BitConverter.Int64BitsToDouble(reader.ReadSignedPackedNumber(valueArgument + 1));
                 case ValueFormats.String:
-                    return Dex.Strings[(int)reader.ReadByByteLength(valueArgument + 1)];
+                    return Dex.Strings[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)];
                 case ValueFormats.Type:
-                    return Dex.TypeReferences[(int)reader.ReadByByteLength(valueArgument + 1)];
+                    return Dex.TypeReferences[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)];
                 case ValueFormats.Field:
                 case ValueFormats.Enum:
-                    return Dex.FieldReferences[(int)reader.ReadByByteLength(valueArgument + 1)];
+                    return Dex.FieldReferences[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)];
                 case ValueFormats.Method:
-                    return Dex.MethodReferences[(int)reader.ReadByByteLength(valueArgument + 1)];
+                    return Dex.MethodReferences[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)];
                 case ValueFormats.Array:
                     return ReadValues(reader);
                 case ValueFormats.Annotation:

@@ -60,7 +60,7 @@ namespace Dexer.Test
         {
             TestNumber<uint>((reader) => reader.ReadULEB128(),
                              (writer, value) => writer.WriteULEB128(value),
-                             GenerateUintValues());
+                             GenerateUIntValues());
         }
 
         [TestMethod]
@@ -68,36 +68,55 @@ namespace Dexer.Test
         {
             TestNumber<int>((reader) => reader.ReadSLEB128(),
                             (writer, value) => writer.WriteSLEB128(value),
-                            GenerateIntValues());
+                            GenerateSIntValues());
         }
 
         private int bytelength;
         
-        private void VBLWriter(BinaryWriter writer, long value) {
-            bytelength = writer.GetBytesNeeded(value);
-            writer.WriteByByteLength(value, bytelength);
+        private void VBLSIntWriter(BinaryWriter writer, long value) {
+            bytelength = writer.GetByteCountForSignedPackedNumber(value);
+            writer.WritePackedSignedNumber(value);
+        }
+
+        private void VBLUIntWriter(BinaryWriter writer, long value)
+        {
+            bytelength = writer.GetByteCountForUnsignedPackedNumber(value);
+            writer.WriteUnsignedPackedNumber(value);
         }
 
         [TestMethod]
-        public void TestVBL()
+        public void TestUnsignedPackedNumbers()
         {
-            TestNumber<long>( (reader) => reader.ReadByByteLength(bytelength), 
-                              VBLWriter,
-                              GenerateLongValues());
+            TestNumber<long>( (reader) => reader.ReadUnsignedPackedNumber(bytelength), 
+                              VBLUIntWriter,
+                              GenerateULongValues());
         }
 
-        private IEnumerable<long> GenerateLongValues()
+        [TestMethod]
+        public void TestSignedPackedNumbers()
         {
-            foreach (long item1 in GenerateIntValues().AsParallel())
+            TestNumber<long>((reader) => reader.ReadSignedPackedNumber(bytelength),
+                              VBLSIntWriter,
+                              GenerateSLongValues());
+        }
+
+        private IEnumerable<long> GenerateULongValues()
+        {
+            foreach (long value in GenerateUIntValues())
             {
-                //foreach (long item2 in GenerateIntValues().AsParallel())
-                //{
-                    yield return item1 << 32; // | item2;
-                //}
+                yield return value;
             }
         }
 
-        private IEnumerable<uint> GenerateUintValues()
+        private IEnumerable<long> GenerateSLongValues()
+        {
+            foreach (long value in GenerateSIntValues())
+            {
+                yield return value;
+            }
+        }
+
+        private IEnumerable<uint> GenerateUIntValues()
         {
             long value = 1;
 
@@ -110,9 +129,9 @@ namespace Dexer.Test
             }
         }
 
-        private IEnumerable<int> GenerateIntValues()
+        private IEnumerable<int> GenerateSIntValues()
         {
-            foreach (uint item in GenerateUintValues())
+            foreach (uint item in GenerateUIntValues())
             {
                 yield return (int)item;
                 yield return -(int)item;

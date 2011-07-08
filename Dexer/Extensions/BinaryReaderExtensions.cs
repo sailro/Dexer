@@ -112,28 +112,26 @@ namespace Dexer.Extensions
             return new String(chars);
         }
 
-        public static long ReadByByteLength(this BinaryReader reader, int byteLength)
+        public static long ReadUnsignedPackedNumber(this BinaryReader reader, int byteLength)
         {
-            ulong value = 0;
-            long result;
-
+            long value = 0;
             for (int i = 0; i < byteLength; i++)
             {
-                value |= ((ulong)reader.ReadByte()) << (8 * i);
+                value |= (((long)(reader.ReadByte() & 0xFF)) << i * 8);
             }
+            return value;
+        }
 
-            //int shift = 8 * byteLength;
-            //result = (long)(value << shift) >> shift;
-            result = (long) value;
-            
-#if DEBUG
-            if (byteLength != BinaryWriterExtensions.GetBytesNeeded(null, result))
+        public static long ReadSignedPackedNumber(this BinaryReader reader, int byteLength)
+        {
+            long value = 0;
+            for (int i = 0; i < byteLength; i++)
             {
-                Console.WriteLine(string.Format("{0:x} {1} != {2}", result, byteLength, BinaryWriterExtensions.GetBytesNeeded(null, result)));
+                value |= (((long)((reader.ReadByte()) & 0xFF)) << (i * 8));
             }
-#endif
 
-            return result;
+            int shift = (8 - byteLength) * 8;
+            return value << shift >> shift;
         }
 
     }
