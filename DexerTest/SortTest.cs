@@ -98,7 +98,6 @@ namespace Dexer.Test
             {
                 TestContext.WriteLine("Testing {0}", file);
                 Dex dex = Dex.Read(file);
-                List<Annotation> items = null;
 
                 foreach (ClassDefinition @class in dex.Classes)
                 {
