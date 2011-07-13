@@ -22,13 +22,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Dexer.Core;
 using Dexer.Extensions;
 using Dexer.IO.Collector;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Dexer.IO;
-using Dexer.Instructions;
 
 namespace Dexer.Test
 {
@@ -66,32 +63,61 @@ namespace Dexer.Test
         }
 
         [TestMethod]
+        public void TestFieldReferenceSort()
+        {
+            TestGlobalSort<FieldReference>((dex) => dex.FieldReferences, new FieldReferenceComparer());
+        }
+
+        private void SortAndCheck<T>(List<T> source, IComparer<T> comparer)
+        {
+            var items = new List<T>(source);
+            items.Shuffle();
+            items.Sort(comparer);
+
+            for (int i = 0; i < items.Count; i++)
+                Assert.AreEqual(items[i], source[i]);
+        }
+
+        [TestMethod]
         public void TestMethodDefinitionSort()
         {
             foreach (string file in Directory.GetFiles(FilesDirectory))
             {
                 TestContext.WriteLine("Testing {0}", file);
                 Dex dex = Dex.Read(file);
-                MethodDefinitionComparer comparer = new MethodDefinitionComparer();
 
                 foreach (ClassDefinition @class in dex.Classes)
-                {
-                    List<MethodDefinition> items = new List<MethodDefinition>(@class.Methods);
-                    items.Shuffle();
-                    items.Sort(comparer);
-
-                    for (int i = 0; i < items.Count; i++)
-                        Assert.AreEqual(items[i], @class.Methods[i]);
-                }
+                    SortAndCheck(@class.Methods, new MethodDefinitionComparer());
             }
         }
 
-
         [TestMethod]
-        public void TestFieldReferenceSort()
+        public void TestAnnotationSort()
         {
-            TestGlobalSort<FieldReference>((dex) => dex.FieldReferences, new FieldReferenceComparer());
+            foreach (string file in Directory.GetFiles(FilesDirectory))
+            {
+                TestContext.WriteLine("Testing {0}", file);
+                Dex dex = Dex.Read(file);
+                List<Annotation> items = null;
+
+                foreach (ClassDefinition @class in dex.Classes)
+                {
+                    SortAndCheck(@class.Annotations, new AnnotationComparer());
+
+                    foreach (FieldDefinition field in @class.Fields)
+                        SortAndCheck(field.Annotations, new AnnotationComparer());
+
+                    foreach (MethodDefinition method in @class.Methods)
+                    {
+                        SortAndCheck(method.Annotations, new AnnotationComparer());
+
+                        foreach (Parameter parameter in method.Prototype.Parameters)
+                            SortAndCheck(parameter.Annotations, new AnnotationComparer());
+                    }
+                }
+            }
         }
+        
 
         [TestMethod]
         public void TestFieldDefinitionSort()
@@ -100,17 +126,9 @@ namespace Dexer.Test
             {
                 TestContext.WriteLine("Testing {0}", file);
                 Dex dex = Dex.Read(file);
-                FieldDefinitionComparer comparer = new FieldDefinitionComparer();
 
                 foreach (ClassDefinition @class in dex.Classes)
-                {
-                    List<FieldDefinition> items = new List<FieldDefinition>(@class.Fields);
-                    items.Shuffle();
-                    items.Sort(comparer);
-
-                    for (int i = 0; i < items.Count; i++)
-                        Assert.AreEqual(items[i], @class.Fields[i]);
-                }
+                    SortAndCheck(@class.Fields, new FieldDefinitionComparer());
             }
         }
 
