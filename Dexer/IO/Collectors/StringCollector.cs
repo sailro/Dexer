@@ -32,7 +32,7 @@ namespace Dexer.IO.Collector
         {
             base.Collect(debugInfo);
 
-            if (debugInfo != null)
+            if (debugInfo != null && debugInfo.Owner != null && debugInfo.Owner.Owner != null && !debugInfo.Owner.Owner.IsStatic)
                 Collect("this");
         }
 

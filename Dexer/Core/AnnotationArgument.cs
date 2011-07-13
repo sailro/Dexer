@@ -47,7 +47,7 @@ namespace Dexer.Core
                 && (((ValueFormat.GetFormat(Value) == ValueFormats.Array) && ArrayEquals(Value as Array, other.Value as Array)) || object.Equals(Value, other.Value));
         }
 
-        private bool ArrayEquals(Array array1, Array array2)
+        internal static bool ArrayEquals(Array array1, Array array2)
         {
             if (array1.Length != array2.Length)
                 return false;

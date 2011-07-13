@@ -68,6 +68,5 @@ namespace Dexer.IO.Collector
             annotations.Sort(ac);
             base.Collect(annotations);
         }
-
     }
 }

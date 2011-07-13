@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Metadata;
@@ -25,10 +26,32 @@ namespace Dexer.IO.Collector
     internal class AnnotationComparer : IComparer<Annotation>
     {
         private TypeReferenceComparer typeReferenceComparer = new TypeReferenceComparer();
+        private ArgumentComparer argumentComparer = new ArgumentComparer();
 
         public int Compare(Annotation x, Annotation y)
         {
-            return typeReferenceComparer.Compare(x.Type, y.Type);
+            int result = typeReferenceComparer.Compare(x.Type, y.Type);
+
+            if (result == 0)
+                result = x.Visibility.CompareTo(y.Visibility);
+
+            if (result != 0)
+                return result;
+
+            for (int i = 0; i < Math.Min(x.Arguments.Count, y.Arguments.Count); i++)
+            {
+                result = argumentComparer.Compare(x.Arguments[i], y.Arguments[i]);
+                if (result != 0)
+                    return result;
+            }
+
+            if (x.Arguments.Count > y.Arguments.Count)
+                return 1;
+
+            if (y.Arguments.Count > x.Arguments.Count)
+                return -1;
+            
+            return result;
         }
     }
 }

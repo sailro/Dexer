@@ -29,7 +29,20 @@ namespace Dexer.Extensions
 {
     public static class BinaryWriterExtensions
     {
-        public static void EnsureAlignment(this BinaryWriter writer, int alignment, Action action)
+        public static void EnsureAlignment(this BinaryWriter writer, uint sectionOffset, int alignment, Action action)
+        {
+            long position = writer.BaseStream.Position-sectionOffset;
+
+            while (position % alignment != 0)
+            {
+                writer.Write((byte)0);
+                position++;
+            }
+
+            action();
+        }
+
+        /*public static void EnsureAlignment(this BinaryWriter writer, int alignment, Action action)
         {
             long position = writer.BaseStream.Position;
 
@@ -37,7 +50,7 @@ namespace Dexer.Extensions
 
             while ((writer.BaseStream.Position - position) % alignment != 0)
                 writer.Write((byte)0);
-        }
+        }*/
 
         public static void PreserveCurrentPosition(this BinaryWriter writer, uint newPosition, Action action)
         {

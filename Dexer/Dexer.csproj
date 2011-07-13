@@ -68,6 +68,7 @@
     <Compile Include="IO\Collectors\ClassReferenceComparer.cs" />
     <Compile Include="IO\Collectors\AnnotationComparer.cs" />
     <Compile Include="IO\Collectors\CatchSetComparer.cs" />
+    <Compile Include="IO\Collectors\ArgumentComparer.cs" />
     <Compile Include="IO\Collectors\DependecyCollector.cs" />
     <Compile Include="IO\Collectors\ModelShuffler.cs" />
     <Compile Include="IO\Collectors\FieldDefinitionComparer.cs" />
