@@ -1,4 +1,4 @@
-/* Dexer Copyright (c) 2010 Sebastien LEBRETON
+/* Dexer Copyright (c) 2010-2011 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
