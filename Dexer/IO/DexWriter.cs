@@ -653,22 +653,25 @@ namespace Dexer.IO
                         writer.Write(annotatedMethods.Count);
                         writer.Write(annotatedParametersList.Count);
 
-                        var test = annotatedFields.Cast<FieldReference>().ToList();
-                        test.Sort(new FieldReferenceComparer());
-
-                        foreach (FieldDefinition field in annotatedFields)
+                        var fields = new List<FieldReference>(annotatedFields.Cast<FieldReference>());
+                        fields.Sort(new FieldReferenceComparer());
+                        foreach (FieldDefinition field in fields)
                         {
                             writer.Write(FieldLookup[field]);
                             writer.Write(AnnotationSets[new AnnotationSet(field)]);
                         }
 
-                        foreach (MethodDefinition method in annotatedMethods)
+                        var methods = new List<MethodReference>(annotatedMethods.Cast<MethodReference>());
+                        methods.Sort(new MethodReferenceComparer());
+                        foreach (MethodDefinition method in methods)
                         {
                             writer.Write(MethodLookup[method]);
                             writer.Write(AnnotationSets[new AnnotationSet(method)]);
                         }
 
-                        foreach (MethodDefinition method in annotatedParametersList)
+                        methods = new List<MethodReference>(annotatedParametersList.Cast<MethodReference>());
+                        methods.Sort(new MethodReferenceComparer());
+                        foreach (MethodDefinition method in methods)
                         {
                             writer.Write(MethodLookup[method]);
                             writer.Write(AnnotationSetRefLists[method]);
