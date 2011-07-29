@@ -61,7 +61,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Files\bubble.classes.dex" />
+    <None Include="Files\bud.classes.dex" />
+    <None Include="Files\f1live.classes.dex" />
+    <None Include="Files\gesture.classes.dex" />
+    <None Include="Files\helloactivity.classes.dex" />
+    <None Include="Files\lcd.classes.dex" />
+    <None Include="Files\lunar.classes.dex" />
+    <None Include="Files\notepad.classes.dex" />
     <None Include="Files\searchable.classes.dex" />
+    <None Include="Files\skeleton.classes.dex" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
