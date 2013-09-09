@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Dexer")]
-[assembly: AssemblyCopyright("Copyright © 2010-2011 Sebastien LEBRETON")]
+[assembly: AssemblyCopyright("Copyright © 2010-2013 Sebastien LEBRETON")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
