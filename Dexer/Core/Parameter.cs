@@ -52,10 +52,8 @@ namespace Dexer.Core
 
         object ICloneable.Clone()
         {
-            Parameter result = new Parameter();
-            result.Type = this.Type;
-
-            return result;
+            var result = new Parameter {Type = Type};
+	        return result;
         }
         #endregion
 

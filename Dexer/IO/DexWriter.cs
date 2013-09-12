@@ -21,16 +21,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Dexer.Core;
 using Dexer.Extensions;
+using Dexer.IO.Collectors;
 using Dexer.Instructions;
-using Dexer.IO.Collector;
 using Dexer.IO.Markers;
 using Dexer.Metadata;
+using StringComparer = Dexer.IO.Collectors.StringComparer;
 
 namespace Dexer.IO
 {
@@ -84,7 +86,7 @@ namespace Dexer.IO
         #region " Header "
         private void WriteHeader(BinaryWriter writer)
         {
-            uint sectionOffset = (uint) writer.BaseStream.Position;
+            var sectionOffset = (uint) writer.BaseStream.Position;
             Map.Add(TypeCodes.Header, new MapItem(TypeCodes.Header, 1, sectionOffset));
 
             writer.EnsureAlignment(sectionOffset, 4, () =>
@@ -119,11 +121,11 @@ namespace Dexer.IO
             collector.Collect(Dex.TypeReferences);
 
             var strings = new List<string>(collector.Items.Keys);
-            strings.Sort(new Dexer.IO.Collector.StringComparer());
+            strings.Sort(new StringComparer());
             Dex.Strings = strings;
 
             var lookup = new Dictionary<string, int>();
-            for (int i = 0; i < strings.Count; i++)
+            for (var i = 0; i < strings.Count; i++)
                 lookup.Add(strings[i], i);
 
             return lookup;
@@ -137,7 +139,7 @@ namespace Dexer.IO
                 Map.Add(TypeCodes.StringId, new MapItem(TypeCodes.StringId, (uint)Dex.Strings.Count, (uint)writer.BaseStream.Position));
             }
 
-            for (int i = 0; i < Dex.Strings.Count; i++)
+            for (var i = 0; i < Dex.Strings.Count; i++)
                 StringMarkers.Add(writer.MarkUInt());
         }
         #endregion
@@ -148,7 +150,7 @@ namespace Dexer.IO
             if (Dex.Strings.Count > 0)
                 Map.Add(TypeCodes.StringData, new MapItem(TypeCodes.StringData, (uint)Dex.Strings.Count, (uint)writer.BaseStream.Position));
 
-            for (int i = 0; i < Dex.Strings.Count; i++)
+            for (var i = 0; i < Dex.Strings.Count; i++)
             {
                 StringMarkers[i].Value = (uint)writer.BaseStream.Position;
                 writer.WriteMUTF8String(Dex.Strings[i]);
@@ -168,7 +170,7 @@ namespace Dexer.IO
             Dex.Prototypes = collector.ToList(new PrototypeComparer());
 
             var lookup = new Dictionary<Prototype, int>();
-            for (int i = 0; i < Dex.Prototypes.Count; i++)
+            for (var i = 0; i < Dex.Prototypes.Count; i++)
                 lookup.Add(Dex.Prototypes[i], i);
             
             return lookup;
@@ -182,7 +184,7 @@ namespace Dexer.IO
                 Map.Add(TypeCodes.ProtoId, new MapItem(TypeCodes.ProtoId, (uint)Dex.Prototypes.Count, (uint)writer.BaseStream.Position));
             }
 
-            foreach (Prototype prototype in Dex.Prototypes)
+            foreach (var prototype in Dex.Prototypes)
             {
                 writer.Write((uint)StringLookup[TypeDescriptor.Encode(prototype)]);
                 writer.Write((uint)Dex.TypeReferences.IndexOf(prototype.ReturnType));
@@ -194,37 +196,36 @@ namespace Dexer.IO
         #region " TypeList "
         private void WriteTypeList(BinaryWriter writer, uint sectionOffset, ushort[] typelist, UIntMarker marker)
         {
-            if (typelist.Length > 0)
-            {
-                String key = GetTypeListAsString(typelist);
-                if (!TypeLists.ContainsKey(key))
-                {
+	        if (typelist.Length <= 0) 
+				return;
+	        
+			var key = GetTypeListAsString(typelist);
+	        if (!TypeLists.ContainsKey(key))
+	        {
 
-                    writer.EnsureAlignment(sectionOffset, 4, () =>
-                    {
-                        TypeLists.Add(key, (uint)writer.BaseStream.Position);
+		        writer.EnsureAlignment(sectionOffset, 4, () =>
+			    {
+				    TypeLists.Add(key, (uint)writer.BaseStream.Position);
 
-                        writer.Write((uint)typelist.Length);
+				    writer.Write((uint)typelist.Length);
 
-                        foreach (ushort item in typelist)
-                            writer.Write(item);
-                    });
-                }
-                if (marker != null)
-                    marker.Value = TypeLists[key];
-            }
-
+				    foreach (var item in typelist)
+					    writer.Write(item);
+			    });
+	        }
+	        if (marker != null)
+		        marker.Value = TypeLists[key];
         }
 
         private void WriteTypeLists(BinaryWriter writer)
         {
-                uint offset = (uint) writer.BaseStream.Position;
+                var offset = (uint) writer.BaseStream.Position;
 
-                for (int i = 0; i < FlatClasses.Count; i++)
+                for (var i = 0; i < FlatClasses.Count; i++)
                     WriteTypeList(writer, offset, ComputeTypeList(FlatClasses[i].Interfaces),
                                 ClassDefinitionsMarkers[i].InterfacesMarker);
 
-                for (int i = 0; i < Dex.Prototypes.Count; i++)
+                for (var i = 0; i < Dex.Prototypes.Count; i++)
                     WriteTypeList(writer, offset, ComputeTypeList(Dex.Prototypes[i].Parameters),
                                 PrototypeTypeListMarkers[i]);
 
@@ -234,28 +235,22 @@ namespace Dexer.IO
 
         }
 
-        private string GetTypeListAsString(ushort[] typelist)
+        private static string GetTypeListAsString(IEnumerable<ushort> typelist)
         {
-            StringBuilder builder = new StringBuilder();
-            foreach (ushort item in typelist)
-                builder.AppendLine(item.ToString());
+            var builder = new StringBuilder();
+            foreach (var item in typelist)
+                builder.AppendLine(item.ToString(CultureInfo.InvariantCulture));
             return builder.ToString();
         }
 
-        private ushort[] ComputeTypeList(List<Parameter> parameters)
+        private ushort[] ComputeTypeList(IEnumerable<Parameter> parameters)
         {
-            List<ushort> result = new List<ushort>();
-            foreach (Parameter parameter in parameters)
-                result.Add((ushort)TypeLookup[parameter.Type]);
-            return result.ToArray();
+	        return parameters.Select(parameter => (ushort) TypeLookup[parameter.Type]).ToArray();
         }
 
-        private ushort[] ComputeTypeList(List<ClassReference> classes)
+        private ushort[] ComputeTypeList(IEnumerable<ClassReference> classes)
         {
-            List<ushort> result = new List<ushort>();
-            foreach (ClassReference @class in classes)
-                result.Add((ushort)TypeLookup[@class]);
-            return result.ToArray();
+	        return classes.Select(@class => (ushort) TypeLookup[@class]).ToArray();
         }
         #endregion
 
@@ -268,7 +263,7 @@ namespace Dexer.IO
                 Map.Add(TypeCodes.FieldId, new MapItem(TypeCodes.FieldId, (uint)Dex.FieldReferences.Count, (uint)writer.BaseStream.Position));
             }
 
-            foreach (FieldReference field in Dex.FieldReferences)
+            foreach (var field in Dex.FieldReferences)
             {
                 writer.Write((ushort)TypeLookup[field.Owner]);
                 writer.Write((ushort)TypeLookup[field.Type]);
@@ -286,7 +281,7 @@ namespace Dexer.IO
                 Map.Add(TypeCodes.MethodId, new MapItem(TypeCodes.MethodId, (uint)Dex.MethodReferences.Count, (uint)writer.BaseStream.Position));
             }
 
-            foreach (MethodReference method in Dex.MethodReferences)
+            foreach (var method in Dex.MethodReferences)
             {
                 writer.Write((ushort)TypeLookup[method.Owner]);
                 writer.Write((ushort)PrototypeLookup[method.Prototype]);
@@ -304,7 +299,7 @@ namespace Dexer.IO
                 Map.Add(TypeCodes.TypeId, new MapItem(TypeCodes.TypeId, (uint)Dex.TypeReferences.Count, (uint)writer.BaseStream.Position));
             }
 
-            foreach (TypeReference tref in Dex.TypeReferences)
+            foreach (var tref in Dex.TypeReferences)
                 writer.Write((uint)StringLookup[TypeDescriptor.Encode(tref)]);
         }
         #endregion
@@ -318,12 +313,13 @@ namespace Dexer.IO
                 Map.Add(TypeCodes.ClassDef, new MapItem(TypeCodes.ClassDef, (uint)FlatClasses.Count, (uint)writer.BaseStream.Position));
             }
 
-            uint sectionOffset = (uint) writer.BaseStream.Position;
-            foreach (ClassDefinition @class in FlatClasses)
+            var sectionOffset = (uint) writer.BaseStream.Position;
+            foreach (var flatclass in FlatClasses)
             {
-                writer.EnsureAlignment(sectionOffset, 4, () =>
-                {
-                    ClassDefinitionMarkers markers = new ClassDefinitionMarkers();
+				var @class = flatclass; 
+				writer.EnsureAlignment(sectionOffset, 4, () =>
+	            {
+                    var markers = new ClassDefinitionMarkers();
                     ClassDefinitionsMarkers.Add(markers);
 
                     writer.Write(TypeLookup[@class]);
@@ -342,21 +338,19 @@ namespace Dexer.IO
         #region " AnnotationSetRefList "
         private void WriteAnnotationSetRefList(BinaryWriter writer)
         {
-            uint sectionOffset = (uint)writer.BaseStream.Position;
+            var sectionOffset = (uint)writer.BaseStream.Position;
 
-            foreach (ClassDefinition @class in FlatClasses)
+            foreach (var flatclass in FlatClasses)
             {
+	            var @class = flatclass;
                 writer.EnsureAlignment(sectionOffset, 4, () =>
                 {
-                    foreach (MethodDefinition mdef in @class.Methods)
+                    foreach (var mdef in @class.Methods.Where(mdef => (mdef.Prototype.ContainsAnnotation())))
                     {
-                        if ((mdef.Prototype.ContainsAnnotation()))
-                        {
-                            AnnotationSetRefLists.Add(mdef, (uint)writer.BaseStream.Position);
-                            writer.Write(mdef.Prototype.Parameters.Count);
-                            foreach (Parameter parameter in mdef.Prototype.Parameters)
-                                AnnotationSetRefListMarkers.Add(parameter, writer.MarkUInt());
-                        }
+	                    AnnotationSetRefLists.Add(mdef, (uint)writer.BaseStream.Position);
+	                    writer.Write(mdef.Prototype.Parameters.Count);
+	                    foreach (var parameter in mdef.Prototype.Parameters)
+		                    AnnotationSetRefListMarkers.Add(parameter, writer.MarkUInt());
                     }
                 });
             }
@@ -369,9 +363,9 @@ namespace Dexer.IO
         #region " AnnotationSet "
         private void WriteAnnotationSet(BinaryWriter writer)
         {
-            uint sectionOffset = (uint)writer.BaseStream.Position;
+            var sectionOffset = (uint)writer.BaseStream.Position;
 
-            foreach (ClassDefinition @class in FlatClasses)
+            foreach (var @class in FlatClasses)
             {
                 WriteAnnotationSet(writer, sectionOffset, @class, false);
 
@@ -383,11 +377,11 @@ namespace Dexer.IO
 
             }
 
-            foreach (ClassDefinition @class in FlatClasses)
+            foreach (var @class in FlatClasses)
             {
-                foreach (MethodDefinition method in @class.Methods)
+                foreach (var method in @class.Methods)
                     if (method.Prototype.ContainsAnnotation())
-                        foreach (Parameter parameter in method.Prototype.Parameters)
+                        foreach (var parameter in method.Prototype.Parameters)
                             AnnotationSetRefListMarkers[parameter].Value = WriteAnnotationSet(writer, sectionOffset, parameter, true);
             }
 
@@ -409,7 +403,7 @@ namespace Dexer.IO
                     if (provider.Annotations.Count > 0 || writezero)
                         writer.Write(provider.Annotations.Count);
 
-                    foreach (Annotation annotation in provider.Annotations)
+                    foreach (var annotation in provider.Annotations)
                         if (AnnotationSetMarkers.ContainsKey(annotation))
                             AnnotationSetMarkers[annotation].CloneMarker();
                         else
@@ -440,7 +434,7 @@ namespace Dexer.IO
             writer.WriteULEB128((uint)TypeLookup[annotation.Type]);
             writer.WriteULEB128((uint)annotation.Arguments.Count);
 
-            foreach (AnnotationArgument argument in annotation.Arguments)
+            foreach (var argument in annotation.Arguments)
             {
                 writer.WriteULEB128((uint)StringLookup[argument.Name]);
                 WriteValue(writer, argument.Value);
@@ -451,7 +445,7 @@ namespace Dexer.IO
         {
             int valueArgument = 0;
 
-            ValueFormats format = ValueFormat.GetFormat(value);
+            var format = ValueFormat.GetFormat(value);
             switch (format)
             {
                 case ValueFormats.Char:
@@ -487,7 +481,7 @@ namespace Dexer.IO
                     break;
             }
 
-            byte data = (byte)(valueArgument << 5);
+            var data = (byte)(valueArgument << 5);
             data |= (byte)format;
             writer.Write(data);
 
@@ -535,31 +529,30 @@ namespace Dexer.IO
             }
         }
 
-        private void WriteValues(BinaryWriter writer, object[] values)
+        private void WriteValues(BinaryWriter writer, ICollection<object> values)
         {
-            writer.WriteULEB128((uint)values.Length);
-            foreach (Object value in values)
+            writer.WriteULEB128((uint)values.Count);
+            foreach (var value in values)
                 WriteValue(writer, value);
         }
 
         private void WriteAnnotations(BinaryWriter writer)
         {
-            uint offset = (uint)writer.BaseStream.Position;
-            
-            Dictionary<Annotation, uint> annotations = new Dictionary<Annotation, uint>();
+            var offset = (uint)writer.BaseStream.Position;
+            var annotations = new Dictionary<Annotation, uint>();
 
-            foreach (AnnotationSet annotationset in AnnotationSets.Keys.ToList())
+            foreach (var annotationset in AnnotationSets.Keys.ToList())
             {
-                foreach (Annotation annotation in annotationset)
+                foreach (var annotation in annotationset)
                 {
-                    if (!annotations.ContainsKey(annotation))
-                    {
-                        uint annoffset = (uint)writer.BaseStream.Position;
-                        WriteAnnotation(writer, annotation);
-                        annotations.Add(annotation, annoffset);
+	                if (annotations.ContainsKey(annotation)) 
+						continue;
+	                
+					var annoffset = (uint)writer.BaseStream.Position;
+	                WriteAnnotation(writer, annotation);
+	                annotations.Add(annotation, annoffset);
 
-                        AnnotationSetMarkers[annotation].Value = annoffset;
-                    }
+	                AnnotationSetMarkers[annotation].Value = annoffset;
                 }
             }
 
@@ -571,10 +564,10 @@ namespace Dexer.IO
         #region " Collect and sort "
         public Dictionary<T, int> Collect<T>(List<T> container, IComparer<T> comparer)
         {
-            Dictionary<T, int> result = new Dictionary<T, int>();
+            var result = new Dictionary<T, int>();
             container.Sort(comparer);
 
-            for (int i = 0; i < container.Count; i++)
+            for (var i = 0; i < container.Count; i++)
                 result.Add(container[i], i);
 
             return result;
@@ -599,25 +592,23 @@ namespace Dexer.IO
         #region " AnnotationsDirectory "
         private void WriteAnnotationsDirectory(BinaryWriter writer)
         {
-            uint sectionOffset = (uint) writer.BaseStream.Position;
+            var sectionOffset = (uint) writer.BaseStream.Position;
             uint count = 0;
 
-            Dictionary<AnnotationSet, uint> classAnnotationSets = new Dictionary<AnnotationSet, uint>();
+            var classAnnotationSets = new Dictionary<AnnotationSet, uint>();
 
-            for (int i = 0; i < FlatClasses.Count; i++ )
+            for (var index = 0; index < FlatClasses.Count; index++ )
             {
-                ClassDefinition @class = FlatClasses[i];
+				var i = index; 
+				var @class = FlatClasses[i];
+
                 writer.EnsureAlignment(sectionOffset, 4, () =>
                 {
-                    List<FieldDefinition> annotatedFields = new List<FieldDefinition>();            // by field index
-                    List<MethodDefinition> annotatedMethods = new List<MethodDefinition>();         // by method index
-                    List<MethodDefinition> annotatedParametersList = new List<MethodDefinition>();  // by method index
+	                var annotatedMethods = new List<MethodDefinition>();										// by method index
+                    var annotatedParametersList = new List<MethodDefinition>();									// by method index
+	                var annotatedFields = @class.Fields.Where(field => field.Annotations.Count > 0).ToList();	// by field index
 
-                    foreach (FieldDefinition field in @class.Fields)
-                        if (field.Annotations.Count > 0)
-                            annotatedFields.Add(field);
-
-                    foreach (MethodDefinition method in @class.Methods)
+	                foreach (var method in @class.Methods)
                     {
                         if (method.Annotations.Count > 0)
                             annotatedMethods.Add(method);
@@ -625,59 +616,58 @@ namespace Dexer.IO
                             annotatedParametersList.Add(method);
                     }
 
-                    int total = @class.Annotations.Count + annotatedFields.Count + annotatedMethods.Count + annotatedParametersList.Count;
-                    if (total > 0)
-                    {
-                        // all datas except class annotations are specific.
-                        if (total == @class.Annotations.Count)
-                        {
-                            AnnotationSet set = new AnnotationSet(@class);
-                            if (classAnnotationSets.ContainsKey(set))
-                            {
-                                ClassDefinitionsMarkers[i].AnnotationsMarker.Value = classAnnotationSets[set];
-                                return;
-                            }
-                            else
-                                classAnnotationSets.Add(set, (uint)writer.BaseStream.Position);
-                        }
+                    var total = @class.Annotations.Count + annotatedFields.Count + annotatedMethods.Count + annotatedParametersList.Count;
+	                if (total <= 0) 
+						return;
+	                
+					// all datas except class annotations are specific.
+	                if (total == @class.Annotations.Count)
+	                {
+		                var set = new AnnotationSet(@class);
+		                if (classAnnotationSets.ContainsKey(set))
+		                {
+			                ClassDefinitionsMarkers[i].AnnotationsMarker.Value = classAnnotationSets[set];
+			                return;
+		                }
 
-                        ClassDefinitionsMarkers[i].AnnotationsMarker.Value = (uint)writer.BaseStream.Position;
-                        count++;
+						classAnnotationSets.Add(set, (uint)writer.BaseStream.Position);
+	                }
 
-                        if (@class.Annotations.Count > 0)
-                            writer.Write(AnnotationSets[new AnnotationSet(@class)]);
-                        else
-                            writer.Write((uint)0);
+	                ClassDefinitionsMarkers[i].AnnotationsMarker.Value = (uint)writer.BaseStream.Position;
+	                count++;
 
-                        writer.Write(annotatedFields.Count);
-                        writer.Write(annotatedMethods.Count);
-                        writer.Write(annotatedParametersList.Count);
+	                if (@class.Annotations.Count > 0)
+		                writer.Write(AnnotationSets[new AnnotationSet(@class)]);
+	                else
+		                writer.Write((uint)0);
 
-                        var fields = new List<FieldReference>(annotatedFields.Cast<FieldReference>());
-                        fields.Sort(new FieldReferenceComparer());
-                        foreach (FieldDefinition field in fields)
-                        {
-                            writer.Write(FieldLookup[field]);
-                            writer.Write(AnnotationSets[new AnnotationSet(field)]);
-                        }
+	                writer.Write(annotatedFields.Count);
+	                writer.Write(annotatedMethods.Count);
+	                writer.Write(annotatedParametersList.Count);
 
-                        var methods = new List<MethodReference>(annotatedMethods.Cast<MethodReference>());
-                        methods.Sort(new MethodReferenceComparer());
-                        foreach (MethodDefinition method in methods)
-                        {
-                            writer.Write(MethodLookup[method]);
-                            writer.Write(AnnotationSets[new AnnotationSet(method)]);
-                        }
+	                var fields = new List<FieldReference>(annotatedFields.Cast<FieldReference>());
+	                fields.Sort(new FieldReferenceComparer());
+	                foreach (FieldDefinition field in fields)
+	                {
+		                writer.Write(FieldLookup[field]);
+		                writer.Write(AnnotationSets[new AnnotationSet(field)]);
+	                }
 
-                        methods = new List<MethodReference>(annotatedParametersList.Cast<MethodReference>());
-                        methods.Sort(new MethodReferenceComparer());
-                        foreach (MethodDefinition method in methods)
-                        {
-                            writer.Write(MethodLookup[method]);
-                            writer.Write(AnnotationSetRefLists[method]);
-                        }
-                    }
+	                var methods = new List<MethodReference>(annotatedMethods.Cast<MethodReference>());
+	                methods.Sort(new MethodReferenceComparer());
+	                foreach (MethodDefinition method in methods)
+	                {
+		                writer.Write(MethodLookup[method]);
+		                writer.Write(AnnotationSets[new AnnotationSet(method)]);
+	                }
 
+	                methods = new List<MethodReference>(annotatedParametersList.Cast<MethodReference>());
+	                methods.Sort(new MethodReferenceComparer());
+	                foreach (MethodDefinition method in methods)
+	                {
+		                writer.Write(MethodLookup[method]);
+		                writer.Write(AnnotationSetRefLists[method]);
+	                }
                 });
             }
 
@@ -689,81 +679,78 @@ namespace Dexer.IO
         #region " Code "
         private void WriteCode(BinaryWriter writer)
         {
-            uint sectionOffset = (uint)writer.BaseStream.Position;
+            var sectionOffset = (uint)writer.BaseStream.Position;
             uint count = 0;
 
-            foreach (ClassDefinition @class in FlatClasses)
+            foreach (var loopmethod in FlatClasses.SelectMany(@class => @class.Methods))
             {
-                foreach (MethodDefinition method in @class.Methods)
-                {
-                    Codes.Add(method, 0);
-                    MethodBody body = method.Body;
-                    if (body != null)
-                    {
-                        writer.EnsureAlignment(sectionOffset, 4, () => 
-                        {
-                            Codes[method] = (uint)writer.BaseStream.Position;
-                            count++;
+	            var method = loopmethod;
 
-                            writer.Write((ushort)body.Registers.Count);
-                            writer.Write(body.IncomingArguments);
-                            writer.Write(body.OutgoingArguments);
-                            writer.Write((ushort)body.Exceptions.Count);
-                            DebugMarkers.Add(method, writer.MarkUInt());
+	            Codes.Add(method, 0);
+	            var body = method.Body;
+	            if (body != null)
+	            {
+		            writer.EnsureAlignment(sectionOffset, 4, () => 
+			            {
+				            Codes[method] = (uint)writer.BaseStream.Position;
+				            count++;
 
-                            InstructionWriter iwriter = new InstructionWriter(this, method);
-                            iwriter.WriteTo(writer);
+				            writer.Write((ushort)body.Registers.Count);
+				            writer.Write(body.IncomingArguments);
+				            writer.Write(body.OutgoingArguments);
+				            writer.Write((ushort)body.Exceptions.Count);
+				            DebugMarkers.Add(method, writer.MarkUInt());
 
-                            if ((body.Exceptions.Count != 0) && (iwriter.Codes.Length % 2 != 0))
-                                writer.Write((ushort)0); // padding (tries 4-byte alignment)
+				            var iwriter = new InstructionWriter(this, method);
+				            iwriter.WriteTo(writer);
 
-                            Dictionary<CatchSet, List<ExceptionHandler>> catchHandlers = new Dictionary<CatchSet, List<ExceptionHandler>>();
-                            Dictionary<ExceptionHandler, UShortMarker> ExceptionsMarkers = new Dictionary<ExceptionHandler, UShortMarker>();
-                            foreach (ExceptionHandler handler in body.Exceptions)
-                            {
-                                writer.Write(handler.TryStart.Offset);
-                                writer.Write((ushort)(iwriter.LookupLast[handler.TryEnd] - handler.TryStart.Offset + 1));
-                                ExceptionsMarkers.Add(handler, writer.MarkUShort());
+				            if ((body.Exceptions.Count != 0) && (iwriter.Codes.Length % 2 != 0))
+					            writer.Write((ushort)0); // padding (tries 4-byte alignment)
 
-                                CatchSet set = new CatchSet(handler);
-                                if (!catchHandlers.ContainsKey(set))
-                                    catchHandlers.Add(set, new List<ExceptionHandler>());
+				            var catchHandlers = new Dictionary<CatchSet, List<ExceptionHandler>>();
+				            var exceptionsMarkers = new Dictionary<ExceptionHandler, UShortMarker>();
+				            foreach (var handler in body.Exceptions)
+				            {
+					            writer.Write(handler.TryStart.Offset);
+					            writer.Write((ushort)(iwriter.LookupLast[handler.TryEnd] - handler.TryStart.Offset + 1));
+					            exceptionsMarkers.Add(handler, writer.MarkUShort());
 
-                                catchHandlers[set].Add(handler);
-                            }
+					            var set = new CatchSet(handler);
+					            if (!catchHandlers.ContainsKey(set))
+						            catchHandlers.Add(set, new List<ExceptionHandler>());
 
-                            List<CatchSet> catchSets = catchHandlers.Keys.ToList();
-                            catchSets.Sort(new CatchSetComparer());
+					            catchHandlers[set].Add(handler);
+				            }
 
-                            if (catchSets.Count > 0)
-                            {
-                                long baseOffset = writer.BaseStream.Position;
-                                writer.WriteULEB128((uint)catchSets.Count);
-                                foreach (CatchSet set in catchSets)
-                                {
-                                    long itemoffset = writer.BaseStream.Position - baseOffset;
+				            var catchSets = catchHandlers.Keys.ToList();
+				            catchSets.Sort(new CatchSetComparer());
 
-                                    if (set.CatchAll != null)
-                                        writer.WriteSLEB128(-set.Count);
-                                    else
-                                        writer.WriteSLEB128(set.Count);
+				            if (catchSets.Count <= 0) return;
+				            var baseOffset = writer.BaseStream.Position;
+				            writer.WriteULEB128((uint)catchSets.Count);
+				            foreach (var set in catchSets)
+				            {
+					            var itemoffset = writer.BaseStream.Position - baseOffset;
 
-                                    foreach (ExceptionHandler handler in catchHandlers[set])
-                                        ExceptionsMarkers[handler].Value = (ushort)itemoffset;
+					            if (set.CatchAll != null)
+						            writer.WriteSLEB128(-set.Count);
+					            else
+						            writer.WriteSLEB128(set.Count);
 
-                                    foreach (Catch @catch in set)
-                                    {
-                                        writer.WriteULEB128((uint)TypeLookup[@catch.Type]);
-                                        writer.WriteULEB128((uint)@catch.Instruction.Offset);
-                                    }
+					            foreach (var handler in catchHandlers[set])
+						            exceptionsMarkers[handler].Value = (ushort)itemoffset;
 
-                                    if (set.CatchAll != null)
-                                        writer.WriteULEB128((uint)set.CatchAll.Offset);
-                                }
-                            }
-                        });
-                    }
-                }
+					            foreach (var @catch in set)
+					            {
+						            writer.WriteULEB128((uint)TypeLookup[@catch.Type]);
+						            writer.WriteULEB128((uint)@catch.Instruction.Offset);
+					            }
+
+					            if (set.CatchAll != null)
+						            writer.WriteULEB128((uint)set.CatchAll.Offset);
+				            }
+			            });
+	            }
             }
 
             if (Codes.Count > 0)
@@ -772,7 +759,7 @@ namespace Dexer.IO
         #endregion
 
         #region " DebugInfo "
-        private void CheckOperand(DebugInstruction ins, int operandCount, params Type[] types)
+        private static void CheckOperand(DebugInstruction ins, int operandCount, params Type[] types)
         {
             if (ins.Operands.Count != operandCount)
                 throw new DebugInstructionException(ins, string.Format("Expecting {0} operands", operandCount));
@@ -781,9 +768,11 @@ namespace Dexer.IO
             {
                 try
                 {
-                    if (types[i].IsAssignableFrom(ins.Operands[i].GetType()))
+                    if (types[i].IsInstanceOfType(ins.Operands[i]))
                         continue;
+					// ReSharper disable ReturnValueOfPureMethodIsNotUsed
                     Convert.ChangeType(ins.Operands[i], types[i]);
+					// ReSharper restore ReturnValueOfPureMethodIsNotUsed
                 }
                 catch (Exception)
                 {
@@ -794,114 +783,112 @@ namespace Dexer.IO
 
         private void WriteDebugInfo(BinaryWriter writer)
         {
-            uint offset = (uint) writer.BaseStream.Position;
+            var offset = (uint) writer.BaseStream.Position;
             uint count = 0;
 
-            foreach (ClassDefinition @class in FlatClasses)
+            foreach (var @class in FlatClasses)
             {
-                foreach (MethodDefinition method in @class.Methods)
+                foreach (var method in @class.Methods)
                 {
-                    MethodBody body = method.Body;
-                    if (body != null && body.DebugInfo != null)
-                    {
-                        DebugMarkers[method].Value = (uint)writer.BaseStream.Position;
-                        count++;
+                    var body = method.Body;
+	                if (body == null || body.DebugInfo == null)
+						continue;
+	                
+					DebugMarkers[method].Value = (uint)writer.BaseStream.Position;
+	                count++;
 
-                        // byte aligned
-                        DebugInfo debugInfo = body.DebugInfo;
-                        writer.WriteULEB128(debugInfo.LineStart);
+	                // byte aligned
+	                var debugInfo = body.DebugInfo;
+	                writer.WriteULEB128(debugInfo.LineStart);
 
-                        if (debugInfo.Parameters.Count != method.Prototype.Parameters.Count)
-                            throw new MalformedException("Unexpected parameter count in DebugInfo, must match with prototype");
+	                if (debugInfo.Parameters.Count != method.Prototype.Parameters.Count)
+		                throw new MalformedException("Unexpected parameter count in DebugInfo, must match with prototype");
 
-                        writer.WriteULEB128((uint)debugInfo.Parameters.Count);
-                        foreach (String parameter in debugInfo.Parameters)
-                        {
-                            if (string.IsNullOrEmpty(parameter))
-                                writer.WriteULEB128p1(DexConsts.NoIndex);
-                            else
-                                writer.WriteULEB128p1(StringLookup[parameter]);
-                        }
+	                writer.WriteULEB128((uint)debugInfo.Parameters.Count);
+	                foreach (var parameter in debugInfo.Parameters)
+	                {
+		                if (string.IsNullOrEmpty(parameter))
+			                writer.WriteULEB128P1(DexConsts.NoIndex);
+		                else
+			                writer.WriteULEB128P1(StringLookup[parameter]);
+	                }
 
-                        foreach (DebugInstruction ins in debugInfo.DebugInstructions)
-                        {
-                            String name = null;
-                            String signature = null;
-                            TypeReference type = null;
+	                foreach (var ins in debugInfo.DebugInstructions)
+	                {
+		                String name;
 
-                            writer.Write((byte)ins.OpCode);
-                            switch (ins.OpCode)
-                            {
-                                case DebugOpCodes.AdvancePc:
-                                    // uleb128 addr_diff
-                                    CheckOperand(ins, 1, typeof(uint));
-                                    writer.WriteULEB128(Convert.ToUInt32(ins.Operands[0]));
-                                    break;
-                                case DebugOpCodes.AdvanceLine:
-                                    // sleb128 line_diff
-                                    CheckOperand(ins, 1, typeof(int));
-                                    writer.WriteSLEB128(Convert.ToInt32(ins.Operands[0]));
-                                    break;
-                                case DebugOpCodes.EndLocal:
-                                case DebugOpCodes.RestartLocal:
-                                    // uleb128 register_num
-                                    CheckOperand(ins, 1, typeof(Register));
-                                    writer.WriteULEB128((uint)((Register)ins.Operands[0]).Index);
-                                    break;
-                                case DebugOpCodes.SetFile:
-                                    // uleb128p1 name_idx
-                                    CheckOperand(ins, 1, typeof(String));
-                                    name = (String)ins.Operands[0];
-                                    if (string.IsNullOrEmpty(name))
-                                        writer.WriteULEB128p1(DexConsts.NoIndex);
-                                    else
-                                        writer.WriteULEB128p1(StringLookup[name]);
-                                    break;
-                                case DebugOpCodes.StartLocalExtended:
-                                case DebugOpCodes.StartLocal:
-                                    // StartLocalExtended : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx, uleb128p1 sig_idx
-                                    // StartLocal : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx
-                                    Boolean isExtended = ins.OpCode == DebugOpCodes.StartLocalExtended;
+		                writer.Write((byte)ins.OpCode);
+		                switch (ins.OpCode)
+		                {
+			                case DebugOpCodes.AdvancePc:
+				                // uleb128 addr_diff
+				                CheckOperand(ins, 1, typeof(uint));
+				                writer.WriteULEB128(Convert.ToUInt32(ins.Operands[0]));
+				                break;
+			                case DebugOpCodes.AdvanceLine:
+				                // sleb128 line_diff
+				                CheckOperand(ins, 1, typeof(int));
+				                writer.WriteSLEB128(Convert.ToInt32(ins.Operands[0]));
+				                break;
+			                case DebugOpCodes.EndLocal:
+			                case DebugOpCodes.RestartLocal:
+				                // uleb128 register_num
+				                CheckOperand(ins, 1, typeof(Register));
+				                writer.WriteULEB128((uint)((Register)ins.Operands[0]).Index);
+				                break;
+			                case DebugOpCodes.SetFile:
+				                // uleb128p1 name_idx
+				                CheckOperand(ins, 1, typeof(String));
+				                name = (String)ins.Operands[0];
+				                if (string.IsNullOrEmpty(name))
+					                writer.WriteULEB128P1(DexConsts.NoIndex);
+				                else
+					                writer.WriteULEB128P1(StringLookup[name]);
+				                break;
+			                case DebugOpCodes.StartLocalExtended:
+			                case DebugOpCodes.StartLocal:
+				                // StartLocalExtended : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx, uleb128p1 sig_idx
+				                // StartLocal : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx
+				                var isExtended = ins.OpCode == DebugOpCodes.StartLocalExtended;
 
-                                    if (isExtended)
-                                        CheckOperand(ins, 4, typeof(Register), typeof(String), typeof(TypeReference), typeof(String));
-                                    else
-                                        CheckOperand(ins, 3, typeof(Register), typeof(String), typeof(TypeReference));
+				                if (isExtended)
+					                CheckOperand(ins, 4, typeof(Register), typeof(String), typeof(TypeReference), typeof(String));
+				                else
+					                CheckOperand(ins, 3, typeof(Register), typeof(String), typeof(TypeReference));
 
-                                    writer.WriteULEB128((uint)((Register)ins.Operands[0]).Index);
+				                writer.WriteULEB128((uint)((Register)ins.Operands[0]).Index);
 
-                                    name = (String)ins.Operands[1];
-                                    if (string.IsNullOrEmpty(name))
-                                        writer.WriteULEB128p1(DexConsts.NoIndex);
-                                    else
-                                        writer.WriteULEB128p1(StringLookup[name]);
+				                name = (String)ins.Operands[1];
+				                if (string.IsNullOrEmpty(name))
+					                writer.WriteULEB128P1(DexConsts.NoIndex);
+				                else
+					                writer.WriteULEB128P1(StringLookup[name]);
 
-                                    type = (TypeReference)ins.Operands[2];
-                                    if (type == null)
-                                        writer.WriteULEB128p1(DexConsts.NoIndex);
-                                    else
-                                        writer.WriteULEB128p1(TypeLookup[type]);
+				                var type = (TypeReference)ins.Operands[2];
+				                if (type == null)
+					                writer.WriteULEB128P1(DexConsts.NoIndex);
+				                else
+					                writer.WriteULEB128P1(TypeLookup[type]);
 
-                                    if (isExtended)
-                                    {
-                                        signature = (String)ins.Operands[3];
-                                        if (string.IsNullOrEmpty(signature))
-                                            writer.WriteULEB128p1(DexConsts.NoIndex);
-                                        else
-                                            writer.WriteULEB128p1(StringLookup[signature]);
-                                    }
+				                if (isExtended)
+				                {
+					                var signature = (String)ins.Operands[3];
+					                if (string.IsNullOrEmpty(signature))
+						                writer.WriteULEB128P1(DexConsts.NoIndex);
+					                else
+						                writer.WriteULEB128P1(StringLookup[signature]);
+				                }
 
-                                    break;
-                                case DebugOpCodes.EndSequence:
-                                case DebugOpCodes.Special:
-                                // between 0x0a and 0xff (inclusive)
-                                case DebugOpCodes.SetPrologueEnd:
-                                case DebugOpCodes.SetEpilogueBegin:
-                                default:
-                                    break;
-                            }
-                        }
-                    }
+				                break;
+			                //case DebugOpCodes.EndSequence:
+			                //case DebugOpCodes.Special:
+				                // between 0x0a and 0xff (inclusive)
+			                //case DebugOpCodes.SetPrologueEnd:
+			                //case DebugOpCodes.SetEpilogueBegin:
+			                //default:
+				            //    break;
+		                }
+	                }
                 }
             }
 
@@ -912,32 +899,32 @@ namespace Dexer.IO
 
         #region " EncodedArray "
         // this is really test code, need to optimize
-        private string GetByteArrayAsString(byte[] bytes)
+        private string GetByteArrayAsString(IEnumerable<byte> bytes)
         {
-            StringBuilder builder = new StringBuilder();
-            foreach (ushort item in bytes)
-                builder.AppendLine(item.ToString());
+            var builder = new StringBuilder();
+            foreach (var item in bytes)
+                builder.AppendLine(item.ToString(CultureInfo.InvariantCulture));
             return builder.ToString();
         }
 
         private void WriteEncodedArray(BinaryWriter writer)
         {
-            Dictionary<string, uint> buffers = new Dictionary<string, uint>();
-            uint offset = (uint)writer.BaseStream.Position;
+            var buffers = new Dictionary<string, uint>();
+            var offset = (uint)writer.BaseStream.Position;
             uint count = 0;
 
-            MemoryStream memoryStream = new MemoryStream();
-            using (BinaryWriter memoryWriter = new BinaryWriter(memoryStream))
+            var memoryStream = new MemoryStream();
+            using (var memoryWriter = new BinaryWriter(memoryStream))
             {
-                for (int c = 0; c < FlatClasses.Count; c++)
+                for (var c = 0; c < FlatClasses.Count; c++)
                 {
-                    ClassDefinition @class = FlatClasses[c];
-                    List<object> values = new List<object>();
-                    int lastNonNullIndex = -1;
+                    var @class = FlatClasses[c];
+                    var values = new List<object>();
+                    var lastNonNullIndex = -1;
 
-                    for (int i = 0; i < @class.Fields.Count; i++)
+                    for (var i = 0; i < @class.Fields.Count; i++)
                     {
-                        FieldDefinition field = @class.Fields[i];
+                        var field = @class.Fields[i];
                         switch (ValueFormat.GetFormat(field.Value))
                         {
                             case ValueFormats.Annotation:
@@ -955,9 +942,11 @@ namespace Dexer.IO
                                 break;
                             case ValueFormats.Double:
                             case ValueFormats.Float:
+								// ReSharper disable CompareOfFloatsByEqualityOperator
                                 if (Convert.ToDouble(field.Value) != 0)
                                     lastNonNullIndex = i;
-                                break;
+								// ReSharper restore CompareOfFloatsByEqualityOperator
+								break;
                             case ValueFormats.Boolean:
                             case ValueFormats.Byte:
                             case ValueFormats.Char:
@@ -978,9 +967,9 @@ namespace Dexer.IO
                         memoryStream.Position = 0;
                         memoryStream.SetLength(0);
 
-                        WriteValues(memoryWriter, Enumerable.Take(values, lastNonNullIndex + 1).ToArray());
-                        byte[] buffer = memoryStream.ToArray();
-                        string key = GetByteArrayAsString(buffer);
+                        WriteValues(memoryWriter, values.Take(lastNonNullIndex + 1).ToArray());
+                        var buffer = memoryStream.ToArray();
+                        var key = GetByteArrayAsString(buffer);
 
                         if (!buffers.ContainsKey(key))
                         {
@@ -1002,33 +991,33 @@ namespace Dexer.IO
         #region " ClassData "
         private void WriteClassData(BinaryWriter writer)
         {
-            uint offset = (uint)writer.BaseStream.Position;
+            var offset = (uint)writer.BaseStream.Position;
             uint count = 0;
 
-            for (int i = 0; i < FlatClasses.Count; i++)
+            for (var i = 0; i < FlatClasses.Count; i++)
             {
-                ClassDefinition @class = FlatClasses[i];
+                var @class = FlatClasses[i];
 
-                var staticFields = (@class.Fields.Where((field) => field.IsStatic).OrderBy((field) => FieldLookup[field])).ToList();
-                var instanceFields = (@class.Fields.Except(staticFields).OrderBy((field) => FieldLookup[field])).ToList();
-                var virtualMethods = (@class.Methods.Where((method) => method.IsVirtual).OrderBy((method) => MethodLookup[method])).ToList();
-                var directMethods = (@class.Methods.Except(virtualMethods).OrderBy((method) => MethodLookup[method])).ToList();
+                var staticFields = (@class.Fields.Where(field => field.IsStatic).OrderBy(field => FieldLookup[field])).ToList();
+                var instanceFields = (@class.Fields.Except(staticFields).OrderBy(field => FieldLookup[field])).ToList();
+                var virtualMethods = (@class.Methods.Where(method => method.IsVirtual).OrderBy(method => MethodLookup[method])).ToList();
+                var directMethods = (@class.Methods.Except(virtualMethods).OrderBy(method => MethodLookup[method])).ToList();
 
-                if ((staticFields.Count + instanceFields.Count + virtualMethods.Count + directMethods.Count) > 0)
-                {
-                    ClassDefinitionsMarkers[i].ClassDataMarker.Value = (uint)writer.BaseStream.Position;
-                    count++;
+	            if ((staticFields.Count + instanceFields.Count + virtualMethods.Count + directMethods.Count) <= 0)
+		            continue;
 
-                    writer.WriteULEB128((uint)staticFields.Count);
-                    writer.WriteULEB128((uint)instanceFields.Count);
-                    writer.WriteULEB128((uint)directMethods.Count);
-                    writer.WriteULEB128((uint)virtualMethods.Count);
+	            ClassDefinitionsMarkers[i].ClassDataMarker.Value = (uint)writer.BaseStream.Position;
+	            count++;
 
-                    WriteFields(writer, staticFields);
-                    WriteFields(writer, instanceFields);
-                    WriteMethods(writer, directMethods);
-                    WriteMethods(writer, virtualMethods);
-                }
+	            writer.WriteULEB128((uint)staticFields.Count);
+	            writer.WriteULEB128((uint)instanceFields.Count);
+	            writer.WriteULEB128((uint)directMethods.Count);
+	            writer.WriteULEB128((uint)virtualMethods.Count);
+
+	            WriteFields(writer, staticFields);
+	            WriteFields(writer, instanceFields);
+	            WriteMethods(writer, directMethods);
+	            WriteMethods(writer, virtualMethods);
             }
 
             // File "global" alignment (EnsureAlignment is used for local alignment)
@@ -1039,49 +1028,48 @@ namespace Dexer.IO
                 Map.Add(TypeCodes.ClassData, new MapItem(TypeCodes.ClassData, count, offset));
         }
 
-        private void WriteFields(BinaryWriter writer, List<FieldDefinition> fields)
+        private void WriteFields(BinaryWriter writer, IEnumerable<FieldDefinition> fields)
         {
-            int fieldIndex = 0;
-            int lastIndex = 0;
-            for (int i = 0; i < fields.Count; i++)
+	        var lastIndex = 0;
+            foreach (var field in fields)
             {
-                fieldIndex = FieldLookup[fields[i]];
+	            var fieldIndex = FieldLookup[field];
 
-                writer.WriteULEB128((uint)(fieldIndex - lastIndex));
-                writer.WriteULEB128((uint)fields[i].AccessFlags);
+	            writer.WriteULEB128((uint)(fieldIndex - lastIndex));
+	            writer.WriteULEB128((uint)field.AccessFlags);
 
-                lastIndex = fieldIndex;
+	            lastIndex = fieldIndex;
             }
         }
 
-        private void WriteMethods(BinaryWriter writer, List<MethodDefinition> methods)
+        private void WriteMethods(BinaryWriter writer, IEnumerable<MethodDefinition> methods)
         {
-            int methodIndex = 0;
-            int lastIndex = 0;
-            for (int i = 0; i < methods.Count; i++)
-            {
-                methodIndex = MethodLookup[methods[i]];
+	        var lastIndex = 0;
+	        foreach (var method in methods)
+	        {
+		        var methodIndex = MethodLookup[method];
 
-                writer.WriteULEB128((uint)(methodIndex - lastIndex));
-                writer.WriteULEB128((uint)methods[i].AccessFlags);
-                writer.WriteULEB128(Codes[methods[i]]);
+		        writer.WriteULEB128((uint)(methodIndex - lastIndex));
+		        writer.WriteULEB128((uint)method.AccessFlags);
+		        writer.WriteULEB128(Codes[method]);
 
-                lastIndex = methodIndex;
-            }
+		        lastIndex = methodIndex;
+	        }
         }
-        #endregion
+
+	    #endregion
 
         #region " MapList "
         private void WriteMapList(BinaryWriter writer)
         {
-            uint sectionOffset = (uint) writer.BaseStream.Position;
+            var sectionOffset = (uint) writer.BaseStream.Position;
             HeaderMarkers.MapMarker.Value = sectionOffset;
             Map.Add(TypeCodes.MapList, new MapItem(TypeCodes.MapList, 1, sectionOffset));
 
             writer.EnsureAlignment(sectionOffset, 4, () =>
             {
                 writer.Write(Map.Count);
-                foreach (MapItem item in Map.Values)
+                foreach (var item in Map.Values)
                 {
                     writer.Write((ushort)item.Type);
                     writer.Write((ushort)0); // unused
@@ -1090,17 +1078,16 @@ namespace Dexer.IO
                 }
             });
 
-            uint filesize = (uint)writer.BaseStream.Position;
+            var filesize = (uint)writer.BaseStream.Position;
             HeaderMarkers.FileSizeMarker.Value = filesize;
 
-            TypeCodes lastEntry = TypeCodes.Header;
-            foreach (TypeCodes type in Map.Keys)
+            var lastEntry = TypeCodes.Header;
+            foreach (var type in Map.Keys)
             {
                 if (lastEntry == TypeCodes.ClassDef)
-                {
                     HeaderMarkers.DataMarker.Value = new SizeOffset(filesize - Map[type].Offset, Map[type].Offset);
-                }
-                lastEntry = type;
+
+				lastEntry = type;
             }
         }
         #endregion
@@ -1109,8 +1096,8 @@ namespace Dexer.IO
         private byte[] ComputeSHA1Signature(BinaryWriter writer)
         {
             writer.Seek((int)HeaderMarkers.SignatureMarker.Positions[0] + DexConsts.SignatureSize, SeekOrigin.Begin);
-            SHA1CryptoServiceProvider crypto = new SHA1CryptoServiceProvider();
-            byte[] signature = crypto.ComputeHash(writer.BaseStream);
+            var crypto = new SHA1CryptoServiceProvider();
+            var signature = crypto.ComputeHash(writer.BaseStream);
             HeaderMarkers.SignatureMarker.Value = signature;
             return signature;
         }
@@ -1126,7 +1113,7 @@ namespace Dexer.IO
                 s1 = (ushort)((s1 + value) % 65521);
                 s2 = (ushort)((s1 + s2) % 65521);
             }
-            uint checksum = (uint)(s2 << 16 | s1);
+            var checksum = (uint)(s2 << 16 | s1);
             HeaderMarkers.CheckSumMarker.Value = checksum;
             return checksum;
         }
@@ -1146,7 +1133,7 @@ namespace Dexer.IO
             FlatClasses = ClassDefinition.Flattenize(Dex.Classes);
 
             // Standard sort then topological sort
-            TopologicalSorter tsorter = new TopologicalSorter();
+            var tsorter = new TopologicalSorter();
             FlatClasses.Sort(new ClassDefinitionComparer());
             FlatClasses = new List<ClassDefinition>(tsorter.TopologicalSort(FlatClasses, new ClassDefinitionComparer()));
 

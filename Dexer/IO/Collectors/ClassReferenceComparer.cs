@@ -21,9 +21,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
 using Dexer.Core;
-using Dexer.Metadata;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class ClassReferenceComparer : TypeReferenceComparer, IComparer<ClassReference>
     {

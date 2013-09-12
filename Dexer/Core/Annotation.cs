@@ -39,10 +39,10 @@ namespace Dexer.Core
 
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             builder.Append(Type);
             builder.Append("(");
-            for (int i = 0; i < Arguments.Count; i++)
+            for (var i = 0; i < Arguments.Count; i++)
             {
                 if (i > 0)
                     builder.Append(", ");
@@ -56,10 +56,10 @@ namespace Dexer.Core
         #region " IEquatable "
         public bool Equals(Annotation other)
         {
-            bool result = Type.Equals(other.Type) && Arguments.Count.Equals(other.Arguments.Count);
+            var result = Type.Equals(other.Type) && Arguments.Count.Equals(other.Arguments.Count);
             if (result)
             {
-                for (int i = 0; i < Arguments.Count; i++)
+                for (var i = 0; i < Arguments.Count; i++)
                     result = result && Arguments[i].Equals(other.Arguments[i]);
             }
             return result;
@@ -77,16 +77,19 @@ namespace Dexer.Core
 
         public override int GetHashCode()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             builder.AppendLine(TypeDescriptor.Encode(Type));
 
-            foreach (AnnotationArgument argument in Arguments)
+            foreach (var argument in Arguments)
             {
                 builder.Append(String.Format("{0}=", argument.Name));
                 if (ValueFormat.GetFormat(argument.Value) == ValueFormats.Array)
                 {
-                    Array array = argument.Value as Array;
-                    for (int i = 0; i < array.Length; i++)
+                    var array = argument.Value as Array;
+					if (array == null)
+						throw new ArgumentException();
+
+                    for (var i = 0; i < array.Length; i++)
                     {
                         if (i > 0)
                             builder.Append(",");

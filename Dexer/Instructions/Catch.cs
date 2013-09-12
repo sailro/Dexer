@@ -19,6 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+using System.Globalization;
 using Dexer.Core;
 using System;
 using System.Text;
@@ -39,12 +40,8 @@ namespace Dexer.Instructions
 
         object ICloneable.Clone()
         {
-            Catch result = new Catch();
-            
-            result.Type = this.Type;
-            result.Instruction = this.Instruction;
-
-            return result;
+            var result = new Catch {Type = Type, Instruction = Instruction};
+	        return result;
         }
         #endregion
 
@@ -67,10 +64,10 @@ namespace Dexer.Instructions
 
         public override int GetHashCode()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
 
             builder.AppendLine(TypeDescriptor.Encode(Type));
-            builder.AppendLine(Instruction.GetHashCode().ToString());
+            builder.AppendLine(Instruction.GetHashCode().ToString(CultureInfo.InvariantCulture));
 
             return builder.ToString().GetHashCode();
         }

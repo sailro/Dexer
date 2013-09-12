@@ -21,21 +21,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Dexer.Core;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class DependencyCollector: BaseCollector<ClassDefinition>
     {
 
         public override void Collect(TypeReference tref)
         {
-            if (tref is ClassDefinition)
-            {
-                ClassDefinition @class = tref as ClassDefinition;
-                if (!Items.ContainsKey(@class))
-                    Items.Add(@class, 0);
+	        if (!(tref is ClassDefinition)) 
+				return;
+	        
+			var @class = tref as ClassDefinition;
+	        if (!Items.ContainsKey(@class))
+		        Items.Add(@class, 0);
 
-                Items[@class]++;
-            }
+	        Items[@class]++;
         }
 
         public override void Collect(ClassDefinition @class)

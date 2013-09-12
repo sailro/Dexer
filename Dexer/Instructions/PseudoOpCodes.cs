@@ -23,8 +23,8 @@ namespace Dexer.Instructions
 {
     public enum PseudoOpCodes
     {
-        Packed_switch = 0x0100,
-        Sparse_switch = 0x0200,
-        Fill_array_data = 0x0300
+        PackedSwitch = 0x0100,
+        SparseSwitch = 0x0200,
+        FillArrayData = 0x0300
     }
 }

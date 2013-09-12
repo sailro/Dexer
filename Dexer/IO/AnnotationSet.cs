@@ -21,6 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Dexer.Core;
 using System.Text;
 
@@ -43,19 +44,19 @@ namespace Dexer.IO
 
         public override int GetHashCode()
         {
-            StringBuilder builder = new StringBuilder();
-            foreach (Annotation annotation in this)
-                builder.AppendLine(annotation.GetHashCode().ToString());
+            var builder = new StringBuilder();
+            foreach (var annotation in this)
+                builder.AppendLine(annotation.GetHashCode().ToString(CultureInfo.InvariantCulture));
             return builder.ToString().GetHashCode();
         }
 
         public bool Equals(AnnotationSet other)
         {
-            bool result = Count == other.Count;
+            var result = Count == other.Count;
 
             if (result)
             {
-                for (int i = 0; i < Count; i++)
+                for (var i = 0; i < Count; i++)
                     result &= this[i].Equals(other[i]);
             }
 

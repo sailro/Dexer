@@ -21,7 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
-using Dexer.Core;
+using System.Globalization;
 using System.Text;
 using Dexer.Instructions;
 
@@ -47,20 +47,20 @@ namespace Dexer.IO
 
         public override int GetHashCode()
         {
-            StringBuilder builder = new StringBuilder();
-            builder.AppendLine(CatchAll == null ? "0" : CatchAll.Offset.ToString());
-            foreach (Catch @catch in this)
-                builder.AppendLine(@catch.GetHashCode().ToString());
+            var builder = new StringBuilder();
+            builder.AppendLine(CatchAll == null ? "0" : CatchAll.Offset.ToString(CultureInfo.InvariantCulture));
+            foreach (var @catch in this)
+                builder.AppendLine(@catch.GetHashCode().ToString(CultureInfo.InvariantCulture));
             return builder.ToString().GetHashCode();
         }
 
         public bool Equals(CatchSet other)
         {
-            bool result = Count == other.Count && object.Equals(this.CatchAll, other.CatchAll);
+            var result = Count == other.Count && Equals(CatchAll, other.CatchAll);
 
             if (result)
             {
-                for (int i = 0; i < Count; i++)
+                for (var i = 0; i < Count; i++)
                     result &= this[i].Equals(other[i]);
             }
 

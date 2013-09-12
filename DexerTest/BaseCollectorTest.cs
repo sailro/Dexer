@@ -23,7 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Dexer.Core;
-using Dexer.IO.Collector;
+using Dexer.IO.Collectors;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Dexer.Test
@@ -31,26 +31,26 @@ namespace Dexer.Test
     [TestClass]
     public class BaseCollectorTest : BaseTest
     {
-        internal void TestCollector<C,T>(Func<Dex, List<T>> provider) where C : BaseCollector<T>, new()
+        internal void TestCollector<TC,T>(Func<Dex, List<T>> provider) where TC : BaseCollector<T>, new()
         {
-            foreach (string file in Directory.GetFiles(FilesDirectory))
+            foreach (var file in Directory.GetFiles(FilesDirectory))
             {
-                TestCollector<C, T>(provider, file);
+                TestCollector<TC, T>(provider, file);
             }
         }
 
-        internal C TestCollector<C, T>(Func<Dex, List<T>> provider, string file) where C : BaseCollector<T>, new()
+        internal TC TestCollector<TC, T>(Func<Dex, List<T>> provider, string file) where TC : BaseCollector<T>, new()
         {
             TestContext.WriteLine("Testing {0}", file);
-            Dex dex = Dex.Read(file);
+            var dex = Dex.Read(file);
 
-            C collector = new C();
+            var collector = new TC();
             collector.Collect(dex);
 
-            foreach (T key in provider(dex))
+            foreach (var key in provider(dex))
                 Assert.IsTrue(collector.Items.ContainsKey(key), "Item '{0}' not collected", key);
 
-            foreach (T key in collector.Items.Keys)
+            foreach (var key in collector.Items.Keys)
                 Assert.IsTrue(provider(dex).Contains(key), "Item '{0}' is 'over' collected", key);
 
             Assert.AreEqual(provider(dex).Count, collector.Items.Count);

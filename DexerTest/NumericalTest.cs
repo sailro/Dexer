@@ -33,24 +33,21 @@ namespace Dexer.Test
     {
         public void TestNumber<T>(Func<BinaryReader, T> readProvider, Action<BinaryWriter, T> writeProvider, IEnumerable<T> values)
         {
-            MemoryStream stream = new MemoryStream();
-            BinaryReader reader = new BinaryReader(stream);
-            BinaryWriter writer = new BinaryWriter(stream);
+            var stream = new MemoryStream();
+            var reader = new BinaryReader(stream);
+            var writer = new BinaryWriter(stream);
 
-            foreach (T item in values)
+            foreach (var expected in values.Select(item => (T)Convert.ChangeType(item, typeof(T))))
             {
-                T expected = (T)Convert.ChangeType(item, typeof(T));
-                T actual;
+	            TestContext.WriteLine("{0}, {0:x}", expected);
 
-                TestContext.WriteLine("{0}, {0:x}", expected);
+	            stream.Position = 0;
+	            writeProvider(writer, expected);
 
-                stream.Position = 0;
-                writeProvider(writer, expected);
+	            stream.Position = 0;
+	            var actual = readProvider(reader);
 
-                stream.Position = 0;
-                actual = readProvider(reader);
-
-                Assert.AreEqual(expected, actual);
+	            Assert.AreEqual(expected, actual);
             }
 
         }
@@ -58,7 +55,7 @@ namespace Dexer.Test
         [TestMethod]
         public void TestULEB128()
         {
-            TestNumber<uint>((reader) => reader.ReadULEB128(),
+            TestNumber(reader => reader.ReadULEB128(),
                              (writer, value) => writer.WriteULEB128(value),
                              GenerateUIntValues());
         }
@@ -66,28 +63,28 @@ namespace Dexer.Test
         [TestMethod]
         public void TestSLEB128()
         {
-            TestNumber<int>((reader) => reader.ReadSLEB128(),
+            TestNumber(reader => reader.ReadSLEB128(),
                             (writer, value) => writer.WriteSLEB128(value),
                             GenerateSIntValues());
         }
 
-        private int bytelength;
+        private int _bytelength;
         
         private void VBLSIntWriter(BinaryWriter writer, long value) {
-            bytelength = writer.GetByteCountForSignedPackedNumber(value);
+            _bytelength = writer.GetByteCountForSignedPackedNumber(value);
             writer.WritePackedSignedNumber(value);
         }
 
         private void VBLUIntWriter(BinaryWriter writer, long value)
         {
-            bytelength = writer.GetByteCountForUnsignedPackedNumber(value);
+            _bytelength = writer.GetByteCountForUnsignedPackedNumber(value);
             writer.WriteUnsignedPackedNumber(value);
         }
 
         [TestMethod]
         public void TestUnsignedPackedNumbers()
         {
-            TestNumber<long>( (reader) => reader.ReadUnsignedPackedNumber(bytelength), 
+            TestNumber(reader => reader.ReadUnsignedPackedNumber(_bytelength), 
                               VBLUIntWriter,
                               GenerateULongValues());
         }
@@ -95,28 +92,22 @@ namespace Dexer.Test
         [TestMethod]
         public void TestSignedPackedNumbers()
         {
-            TestNumber<long>((reader) => reader.ReadSignedPackedNumber(bytelength),
+            TestNumber(reader => reader.ReadSignedPackedNumber(_bytelength),
                               VBLSIntWriter,
                               GenerateSLongValues());
         }
 
         private IEnumerable<long> GenerateULongValues()
         {
-            foreach (long value in GenerateUIntValues())
-            {
-                yield return value;
-            }
+	        return GenerateUIntValues().Select(Convert.ToInt64);
         }
 
-        private IEnumerable<long> GenerateSLongValues()
-        {
-            foreach (long value in GenerateSIntValues())
-            {
-                yield return value;
-            }
-        }
+	    private IEnumerable<long> GenerateSLongValues()
+	    {
+		    return GenerateSIntValues().Select(Convert.ToInt64);
+	    }
 
-        private IEnumerable<uint> GenerateUIntValues()
+	    private static IEnumerable<uint> GenerateUIntValues()
         {
             long value = 1;
 
@@ -129,9 +120,9 @@ namespace Dexer.Test
             }
         }
 
-        private IEnumerable<int> GenerateSIntValues()
+        private static IEnumerable<int> GenerateSIntValues()
         {
-            foreach (uint item in GenerateUIntValues())
+            foreach (var item in GenerateUIntValues())
             {
                 yield return (int)item;
                 yield return -(int)item;

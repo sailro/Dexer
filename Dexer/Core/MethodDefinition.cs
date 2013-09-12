@@ -43,16 +43,16 @@ namespace Dexer.Core
         // for prefetching
         internal MethodDefinition(MethodReference mref) : this()
         {
-            this.Owner = mref.Owner as ClassDefinition;
-            this.Name = mref.Name;
-            this.Prototype = mref.Prototype;
+            Owner = mref.Owner as ClassDefinition;
+            Name = mref.Name;
+            Prototype = mref.Prototype;
         }
 
         public MethodDefinition(ClassDefinition owner, string name, Prototype prototype) : this()
         {
-            this.Owner = owner;
-            this.Name = name;
-            this.Prototype = prototype;
+            Owner = owner;
+            Name = name;
+            Prototype = prototype;
         }
 
         public bool IsVirtual
@@ -62,7 +62,9 @@ namespace Dexer.Core
         }
 
         #region " AccessFlags "
-        public bool IsPublic {
+		// ReSharper disable ValueParameterNotUsed
+		public bool IsPublic
+		{
             get { return (AccessFlags & AccessFlags.Public) != 0; }
             set { AccessFlags |= AccessFlags.Public; }
         }
@@ -131,7 +133,8 @@ namespace Dexer.Core
             get { return (AccessFlags & AccessFlags.DeclaredSynchronized) != 0; }
             set { AccessFlags |= AccessFlags.DeclaredSynchronized; }
         }
-        #endregion
+		// ReSharper restore ValueParameterNotUsed
+		#endregion
 
         #region " IEquatable "
         public bool Equals(MethodDefinition other)
@@ -143,7 +146,7 @@ namespace Dexer.Core
         public override bool Equals(IMemberReference other)
         {
             return (other is MethodDefinition)
-                && this.Equals(other as MethodDefinition);
+                && Equals(other as MethodDefinition);
         }
         #endregion
 

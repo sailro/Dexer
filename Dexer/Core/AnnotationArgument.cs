@@ -19,6 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+using System.Linq;
 using Dexer.Metadata;
 using System.Text;
 using System;
@@ -32,7 +33,7 @@ namespace Dexer.Core
 
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             builder.Append(Name);
             builder.Append(":");
             builder.Append(Value);
@@ -44,7 +45,7 @@ namespace Dexer.Core
         {
             return Name.Equals(other.Name)
                 && ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
-                && (((ValueFormat.GetFormat(Value) == ValueFormats.Array) && ArrayEquals(Value as Array, other.Value as Array)) || object.Equals(Value, other.Value));
+                && (((ValueFormat.GetFormat(Value) == ValueFormats.Array) && ArrayEquals(Value as Array, other.Value as Array)) || Equals(Value, other.Value));
         }
 
         internal static bool ArrayEquals(Array array1, Array array2)
@@ -52,11 +53,7 @@ namespace Dexer.Core
             if (array1.Length != array2.Length)
                 return false;
 
-            for (int i = 0; i < array1.Length; i++)
-                if (!array1.GetValue(i).Equals(array2.GetValue(i)))
-                    return false;
-
-            return true;
+	        return !array1.Cast<object>().Where((t, i) => !array1.GetValue(i).Equals(array2.GetValue(i))).Any();
         }
         #endregion
 

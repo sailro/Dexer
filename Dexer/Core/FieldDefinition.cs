@@ -43,13 +43,15 @@ namespace Dexer.Core
         // for prefetching
         internal FieldDefinition(FieldReference fref) : this()
         {
-            this.Owner = fref.Owner as ClassDefinition;
-            this.Type = fref.Type;
-            this.Name = fref.Name;
+            Owner = fref.Owner as ClassDefinition;
+            Type = fref.Type;
+            Name = fref.Name;
         }
 
         #region " AccessFlags "
-        public bool IsPublic {
+		// ReSharper disable ValueParameterNotUsed
+		public bool IsPublic
+		{
             get { return (AccessFlags & AccessFlags.Public) != 0; }
             set { AccessFlags |= AccessFlags.Public; }
         }
@@ -93,7 +95,8 @@ namespace Dexer.Core
             get { return (AccessFlags & AccessFlags.Enum) != 0; }
             set { AccessFlags |= AccessFlags.Enum; }
         }
-        #endregion
+		// ReSharper restore ValueParameterNotUsed
+		#endregion
 
         #region " IEquatable "
         public bool Equals(FieldDefinition other)
@@ -105,7 +108,7 @@ namespace Dexer.Core
         public override bool Equals(IMemberReference other)
         {
             return (other is FieldDefinition)
-                && this.Equals(other as FieldDefinition);
+                && Equals(other as FieldDefinition);
         }
         #endregion
 

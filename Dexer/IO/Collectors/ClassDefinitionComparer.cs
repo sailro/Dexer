@@ -22,7 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using Dexer.Core;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class ClassDefinitionComparer : ClassReferenceComparer, IPartialComparer<ClassDefinition>, IComparer<ClassDefinition>
     {
@@ -33,7 +33,7 @@ namespace Dexer.IO.Collector
 
         public List<ClassDefinition> CollectDependencies(ClassDefinition cdef)
         {
-            DependencyCollector collector = new DependencyCollector();
+            var collector = new DependencyCollector();
             collector.Collect(cdef);
             var result = collector.ToList();
             result.Remove(cdef);

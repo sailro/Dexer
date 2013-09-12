@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Metadata;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class TypeReferenceComparer : IComparer<TypeReference>
     {

@@ -21,9 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.IO;
-using Dexer.IO;
 using Dexer.IO.Markers;
-using System.Collections.Generic;
 
 namespace Dexer.Extensions
 {
@@ -31,7 +29,7 @@ namespace Dexer.Extensions
     {
         public static void EnsureAlignment(this BinaryWriter writer, uint sectionOffset, int alignment, Action action)
         {
-            long position = writer.BaseStream.Position-sectionOffset;
+            var position = writer.BaseStream.Position-sectionOffset;
 
             while (position % alignment != 0)
             {
@@ -54,7 +52,7 @@ namespace Dexer.Extensions
 
         public static void PreserveCurrentPosition(this BinaryWriter writer, uint newPosition, Action action)
         {
-            long position = writer.BaseStream.Position;
+            var position = writer.BaseStream.Position;
             writer.BaseStream.Seek(newPosition, SeekOrigin.Begin);
 
             action();
@@ -64,12 +62,12 @@ namespace Dexer.Extensions
 
         internal static UShortMarker MarkUShort(this BinaryWriter writer)
         {
-            return new UShortMarker(writer); ;
+            return new UShortMarker(writer);
         }
 
         internal static UIntMarker MarkUInt(this BinaryWriter writer)
         {
-            return new UIntMarker(writer); ;
+            return new UIntMarker(writer);
         }
 
         internal static SizeOffsetMarker MarkSizeOffset(this BinaryWriter writer)
@@ -84,10 +82,9 @@ namespace Dexer.Extensions
 
         public static void WriteULEB128(this BinaryWriter writer, uint value)
         {
-            byte partial;
-            do
+	        do
             {
-                partial = (byte)(value & 0x7f);
+                var partial = (byte)(value & 0x7f);
                 value >>= 7;
                 if (value != 0) 
                     partial |= 0x80;
@@ -95,7 +92,7 @@ namespace Dexer.Extensions
             } while (value != 0);
         }
 
-        public static void WriteULEB128p1(this BinaryWriter writer, long value)
+        public static void WriteULEB128P1(this BinaryWriter writer, long value)
         {
             WriteULEB128(writer, (uint)(value + 1));
         }
@@ -103,13 +100,12 @@ namespace Dexer.Extensions
         public static void WriteSLEB128(this BinaryWriter writer, int value)
         {
 
-            bool negative = (value < 0);
-            byte partial;
-            bool next = true;
+            var negative = (value < 0);
+	        var next = true;
 
             while (next)
             {
-                partial = (byte)(value & 0x7f);
+                var partial = (byte)(value & 0x7f);
                 value >>= 7;
                 if (negative)
                     value |= -(1 << 24);
@@ -127,24 +123,23 @@ namespace Dexer.Extensions
         {
             writer.WriteULEB128((uint)value.Length);
 
-            for (int i = 0; i < value.Length; i++)
+            foreach (char c in value)
             {
-                char c = value[i];
-                if ((c != 0) && (c < 0x80))
-                {
-                    writer.Write((byte)c);
-                }
-                else if (c < 0x800)
-                {
-                    writer.Write((byte)(((c >> 6) & 0x1f) | 0xc0));
-                    writer.Write((byte)((c & 0x3f) | 0x80));
-                }
-                else
-                {
-                    writer.Write((byte)(((c >> 12) & 0x0f) | 0xe0));
-                    writer.Write((byte)(((c >> 6) & 0x3f) | 0xc0));
-                    writer.Write((byte)((c & 0x3f) | 0x80));
-                }
+	            if ((c != 0) && (c < 0x80))
+	            {
+		            writer.Write((byte)c);
+	            }
+	            else if (c < 0x800)
+	            {
+		            writer.Write((byte)(((c >> 6) & 0x1f) | 0xc0));
+		            writer.Write((byte)((c & 0x3f) | 0x80));
+	            }
+	            else
+	            {
+		            writer.Write((byte)(((c >> 12) & 0x0f) | 0xe0));
+		            writer.Write((byte)(((c >> 6) & 0x3f) | 0xc0));
+		            writer.Write((byte)((c & 0x3f) | 0x80));
+	            }
             }
 
             writer.Write((byte) 0); // 0 padded;
@@ -154,8 +149,8 @@ namespace Dexer.Extensions
         {
             if (i == 0)
                 return 64;
-            int n = 1;
-            int x = (int) (TripleShift(i, 32));
+            var n = 1;
+            var x = (int) (TripleShift(i, 32));
             
             if (x == 0)                     { n += 32; x = (int) i; }
             if (TripleShift(x, 16) == 0)    { n += 16; x <<= 16; }
@@ -176,7 +171,7 @@ namespace Dexer.Extensions
 
         public static int GetByteCountForSignedPackedNumber(this BinaryWriter writer, long value)
         {
-            int requiredBits = 65 - NumberOfLeadingZeros(value ^ (value >> 63));
+            var requiredBits = 65 - NumberOfLeadingZeros(value ^ (value >> 63));
             int result = (byte)((requiredBits + 0x07) >> 3);
 
             return result;
@@ -184,7 +179,7 @@ namespace Dexer.Extensions
 
         public static int GetByteCountForUnsignedPackedNumber(this BinaryWriter writer, long value)
         {
-            int requiredBits = 64 - NumberOfLeadingZeros(value);
+            var requiredBits = 64 - NumberOfLeadingZeros(value);
             if (requiredBits == 0)
                 requiredBits = 1;
 
@@ -195,9 +190,9 @@ namespace Dexer.Extensions
 
         public static void WritePackedSignedNumber(this BinaryWriter writer, long value)
         {
-            int requiredBytes = GetByteCountForSignedPackedNumber(writer, value);
+            var requiredBytes = GetByteCountForSignedPackedNumber(writer, value);
 
-            for (int i = 0; i < requiredBytes; i++)
+            for (var i = 0; i < requiredBytes; i++)
             {
                 writer.Write((byte)value);
                 value >>= 8;
@@ -206,9 +201,9 @@ namespace Dexer.Extensions
 
         public static void WriteUnsignedPackedNumber(this BinaryWriter writer, long value)
         {
-            int requiredBytes = GetByteCountForUnsignedPackedNumber(writer, value);
+            var requiredBytes = GetByteCountForUnsignedPackedNumber(writer, value);
 
-            for (int i = 0; i < requiredBytes; i++)
+            for (var i = 0; i < requiredBytes; i++)
             {
                 writer.Write((byte)value);
                 value >>= 8;

@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
+using System.Globalization;
 using Dexer.Metadata;
 using System.Linq;
 using Dexer.IO;
@@ -52,33 +53,30 @@ namespace Dexer.Core
         internal ClassDefinition(ClassReference cref)
             : this()
         {
-            this.Fullname = cref.Fullname;
-            this.Namespace = cref.Namespace;
-            this.Name = cref.Name;
+            Fullname = cref.Fullname;
+            Namespace = cref.Namespace;
+            Name = cref.Name;
         }
 
         public IEnumerable<MethodDefinition> GetMethods(string name)
         {
-            foreach (var mdef in Methods)
-                if (mdef.Name == name)
-                    yield return mdef;
+	        return Methods.Where(mdef => mdef.Name == name);
         }
 
-        public MethodDefinition GetMethod(string name)
+	    public MethodDefinition GetMethod(string name)
         {
-            return Enumerable.First(GetMethods(name));
+            return GetMethods(name).FirstOrDefault();
         }
 
         public FieldDefinition GetField(string name)
         {
-            foreach (var fdef in Fields)
-                if (fdef.Name == name)
-                   return fdef;
-            return null;
+	        return Fields.FirstOrDefault(fdef => fdef.Name == name);
         }
 
-        #region " AccessFlags "
-        public bool IsPublic {
+	    #region " AccessFlags "
+		// ReSharper disable ValueParameterNotUsed
+		public bool IsPublic
+		{
             get { return (AccessFlags & AccessFlags.Public) != 0; }
             set { AccessFlags |= AccessFlags.Public; }
         }
@@ -128,7 +126,8 @@ namespace Dexer.Core
             get { return (AccessFlags & AccessFlags.Enum) != 0; }
             set { AccessFlags |= AccessFlags.Enum; }
         }
-        #endregion
+		// ReSharper restore ValueParameterNotUsed
+		#endregion
 
         #region " IEquatable "
         public bool Equals(ClassDefinition other)
@@ -140,14 +139,14 @@ namespace Dexer.Core
         public override bool Equals(TypeReference other)
         {
             return (other is ClassDefinition)
-                && this.Equals(other as ClassDefinition);
+                && Equals(other as ClassDefinition);
         }
         #endregion
 
         #region " Static utilities "
         static internal List<ClassDefinition> Flattenize(List<ClassDefinition> container)
         {
-            List<ClassDefinition> result = new List<ClassDefinition>();
+            var result = new List<ClassDefinition>();
             foreach (var cdef in container)
             {
                 result.Add(cdef);
@@ -161,12 +160,12 @@ namespace Dexer.Core
             var result = new List<ClassDefinition>();
             foreach (var cdef in container)
             {
-                if (cdef.Fullname.Contains(DexConsts.InnerClassMarker.ToString()))
+                if (cdef.Fullname.Contains(DexConsts.InnerClassMarker.ToString(CultureInfo.InvariantCulture)))
                 {
-                    string[] items = cdef.Fullname.Split(DexConsts.InnerClassMarker);
-                    string fullname = items[0];
-                    string name = items[1];
-                    ClassDefinition owner = dex.GetClass(fullname);
+                    var items = cdef.Fullname.Split(DexConsts.InnerClassMarker);
+                    var fullname = items[0];
+                    //var name = items[1];
+                    var owner = dex.GetClass(fullname);
                     if (owner != null)
                     {
                         owner.InnerClasses.Add(cdef);

@@ -19,13 +19,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Dexer.Core;
 using Dexer.Extensions;
-using Dexer.IO.Collector;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Dexer.IO;
 using Dexer.Metadata;
@@ -39,11 +37,11 @@ namespace Dexer.Test
         {
             TestContext.WriteLine("Testing {0}", file);
 
-            Dex dex = new Dex();
+            var dex = new Dex();
             dexreader = new DexReader(dex);
 
             using (Stream fs = new FileStream(file, FileMode.Open))
-            using (BinaryReader reader = new BinaryReader(fs))
+            using (var reader = new BinaryReader(fs))
                 dexreader.ReadFrom(reader);
 
             dexwriter = new DexWriter(dex);
@@ -53,30 +51,29 @@ namespace Dexer.Test
         [TestMethod]
         public void TestMap()
         {
-            foreach (string file in Directory.GetFiles(FilesDirectory))
+            foreach (var file in Directory.GetFiles(FilesDirectory))
             {
                 DexReader dexreader;
                 DexWriter dexwriter;
                 TestReadWrite(file, out dexreader, out dexwriter);
 
-                Dictionary<TypeCodes, string> checklist = new Dictionary<TypeCodes, string>();
+                var checklist = new Dictionary<TypeCodes, string>();
 
-                foreach (TypeCodes tc in dexwriter.Map.Keys)
-                    if (dexreader.Map.ContainsKey(tc))
-                    {
-                        if (dexreader.Map[tc].Size != dexwriter.Map[tc].Size)
-                        {
-                            TestContext.WriteLine("{0} Size differs expected={1}, actual={2}", tc, dexreader.Map[tc].Size, dexwriter.Map[tc].Size);
-                            if (!checklist.ContainsKey(tc))
-                                checklist.Add(tc, tc.ToString());
-                        }
-                        if (dexreader.Map[tc].Offset != dexwriter.Map[tc].Offset)
-                        {
-                            TestContext.WriteLine("{0} Offset differs : expected={1}, actual={2}", tc, dexreader.Map[tc].Offset, dexwriter.Map[tc].Offset);
-                            if (!checklist.ContainsKey(tc))
-                                checklist.Add(tc, tc.ToString());
-                        }
-                    }
+                foreach (var tc in dexwriter.Map.Keys.Where(tc => dexreader.Map.ContainsKey(tc)))
+                {
+	                if (dexreader.Map[tc].Size != dexwriter.Map[tc].Size)
+	                {
+		                TestContext.WriteLine("{0} Size differs expected={1}, actual={2}", tc, dexreader.Map[tc].Size, dexwriter.Map[tc].Size);
+		                if (!checklist.ContainsKey(tc))
+			                checklist.Add(tc, tc.ToString());
+	                }
+	                if (dexreader.Map[tc].Offset != dexwriter.Map[tc].Offset)
+	                {
+		                TestContext.WriteLine("{0} Offset differs : expected={1}, actual={2}", tc, dexreader.Map[tc].Offset, dexwriter.Map[tc].Offset);
+		                if (!checklist.ContainsKey(tc))
+			                checklist.Add(tc, tc.ToString());
+	                }
+                }
 
                 Assert.IsTrue(checklist.Count == 0, string.Concat("Check test report : ", string.Join(", ", checklist.Values)));
             }
@@ -85,7 +82,7 @@ namespace Dexer.Test
         [TestMethod]
         public void TestCheckSum()
         {
-            foreach (string file in Directory.GetFiles(FilesDirectory))
+            foreach (var file in Directory.GetFiles(FilesDirectory))
             {
                 DexReader dexreader;
                 DexWriter dexwriter;
@@ -98,7 +95,7 @@ namespace Dexer.Test
         [TestMethod]
         public void TestSignature()
         {
-            foreach (string file in Directory.GetFiles(FilesDirectory))
+            foreach (var file in Directory.GetFiles(FilesDirectory))
             {
                 DexReader dexreader;
                 DexWriter dexwriter;

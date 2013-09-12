@@ -21,25 +21,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
 using Dexer.Core;
-using Dexer.Metadata;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class MethodReferenceComparer : IComparer<MethodReference>
     {
-        private PrototypeComparer prototypeComparer = new PrototypeComparer();
-        private TypeReferenceComparer typeReferenceComparer = new TypeReferenceComparer();
-        private StringComparer stringComparer = new StringComparer();
+        private readonly PrototypeComparer _prototypeComparer = new PrototypeComparer();
+        private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
+        private readonly StringComparer _stringComparer = new StringComparer();
 
         public int Compare(MethodReference x, MethodReference y)
         {
-            int result = typeReferenceComparer.Compare(x.Owner, y.Owner);
+            var result = _typeReferenceComparer.Compare(x.Owner, y.Owner);
 
             if (result == 0)
-                result = stringComparer.Compare(x.Name, y.Name);
+                result = _stringComparer.Compare(x.Name, y.Name);
 
             if (result == 0)
-                result = prototypeComparer.Compare(x.Prototype, y.Prototype);
+                result = _prototypeComparer.Compare(x.Prototype, y.Prototype);
 
             return result;
         }

@@ -22,18 +22,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using Dexer.Core;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class FieldReferenceComparer : IComparer<FieldReference>
     {
-        private TypeReferenceComparer typeReferenceComparer = new TypeReferenceComparer();
-        private StringComparer stringComparer = new StringComparer();
+        private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
+        private readonly StringComparer _stringComparer = new StringComparer();
 
         public int Compare(FieldReference x, FieldReference y)
         {
-            int result = typeReferenceComparer.Compare(x.Owner, y.Owner);
+            var result = _typeReferenceComparer.Compare(x.Owner, y.Owner);
             if (result == 0)
-                result = stringComparer.Compare(x.Name, y.Name);
+                result = _stringComparer.Compare(x.Name, y.Name);
             return result;
         }
     }

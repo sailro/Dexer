@@ -20,7 +20,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Dexer.Metadata;
-using System.Collections.Generic;
 using System;
 
 namespace Dexer.Core
@@ -32,7 +31,7 @@ namespace Dexer.Core
         #region " IEquatable "
         public virtual bool Equals(TypeReference other)
         {
-            return this.TypeDescriptor == other.TypeDescriptor;
+            return TypeDescriptor == other.TypeDescriptor;
         }
         #endregion
 

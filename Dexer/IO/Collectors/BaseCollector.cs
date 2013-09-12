@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Instructions;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class BaseCollector<T>
     {
@@ -55,85 +55,85 @@ namespace Dexer.IO.Collector
 
         public virtual void Collect(List<ClassDefinition> classes)
         {
-            foreach (ClassDefinition @class in classes)
+            foreach (var @class in classes)
                 Collect(@class);
         }
 
         public virtual void Collect(List<ClassReference> classes)
         {
-            foreach (ClassReference @class in classes)
+            foreach (var @class in classes)
                 Collect(@class);
         }
 
         public virtual void Collect(List<MethodDefinition> methods)
         {
-            foreach (MethodDefinition method in methods)
+            foreach (var method in methods)
                 Collect(method);
         }
 
         public virtual void Collect(List<MethodReference> methods)
         {
-            foreach (MethodReference method in methods)
+            foreach (var method in methods)
                 Collect(method);
         }
 
         public virtual void Collect(List<FieldDefinition> fields)
         {
-            foreach (FieldDefinition field in fields)
+            foreach (var field in fields)
                 Collect(field);
         }
 
         public virtual void Collect(List<FieldReference> fields)
         {
-            foreach (FieldReference field in fields)
+            foreach (var field in fields)
                 Collect(field);
         }
 
         public virtual void Collect(List<TypeReference> types)
         {
-            foreach (TypeReference type in types)
+            foreach (var type in types)
                 Collect(type);
         }
 
         public virtual void Collect(List<Annotation> annotations)
         {
-            foreach (Annotation annotation in annotations)
+            foreach (var annotation in annotations)
                 Collect(annotation);
         }
 
         public virtual void Collect(List<Parameter> parameters)
         {
-            foreach (Parameter parameter in parameters)
+            foreach (var parameter in parameters)
                 Collect(parameter);
         }
 
         public virtual void Collect(List<AnnotationArgument> arguments)
         {
-            foreach (AnnotationArgument argument in arguments)
+            foreach (var argument in arguments)
                 Collect(argument);
         }
 
         public virtual void Collect(List<Instruction> instructions)
         {
-            foreach (Instruction instruction in instructions)
+            foreach (var instruction in instructions)
                 Collect(instruction);
         }
 
         public virtual void Collect(List<DebugInstruction> instructions)
         {
-            foreach (DebugInstruction instruction in instructions)
+            foreach (var instruction in instructions)
                 Collect(instruction);
         }
 
         public virtual void Collect(List<ExceptionHandler> exceptions)
         {
-            foreach (ExceptionHandler exception in exceptions)
+            foreach (var exception in exceptions)
                 Collect(exception);
         }
 
         public virtual void Collect(List<Catch> catches)
         {
-            foreach (Catch @catch in catches)
+            foreach (var @catch in catches)
                 Collect(@catch);
         }
 
@@ -271,35 +271,34 @@ namespace Dexer.IO.Collector
 
         public virtual void Collect(object obj)
         {
-            if (obj != null)
-            {
-                if (obj is CompositeType)
-                    Collect(obj as CompositeType);
-                else if (obj is FieldReference)
-                    Collect(obj as FieldReference);
-                else if (obj is MethodReference)
-                    Collect(obj as MethodReference);
-                else if (obj is TypeReference)
-                    Collect(obj as TypeReference);
+	        if (obj == null) 
+				return;
+	        
+			if (obj is CompositeType)
+		        Collect(obj as CompositeType);
+	        else if (obj is FieldReference)
+		        Collect(obj as FieldReference);
+	        else if (obj is MethodReference)
+		        Collect(obj as MethodReference);
+	        else if (obj is TypeReference)
+		        Collect(obj as TypeReference);
 
-                else if (obj is string)
-                    Collect(obj as string);
+	        else if (obj is string)
+		        Collect(obj as string);
                 
-                else if (obj is IEnumerable)
-                    foreach (object iobj in (obj as IEnumerable))
-                        Collect(iobj);
+	        else if (obj is IEnumerable)
+		        foreach (var iobj in (obj as IEnumerable))
+			        Collect(iobj);
                 
-                else if (obj is ValueType) return;
-                else if (obj is Register) return;
-                else if (obj is Instruction) return;
-                else if (obj is PackedSwitchData) return;
-                else if (obj is SparseSwitchData
-                    ) return;
-                else throw new ArgumentException(obj.GetType().Name);
-            }
+	        else if (obj is ValueType) return;
+	        else if (obj is Register) return;
+	        else if (obj is Instruction) return;
+	        else if (obj is PackedSwitchData) return;
+	        else if (obj is SparseSwitchData) return;
+			else throw new ArgumentException(obj.GetType().Name);
         }
 
-        public virtual void Collect(string str)
+	    public virtual void Collect(string str)
         {
         }
 

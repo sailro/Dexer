@@ -21,15 +21,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
 using Dexer.Core;
-using Dexer.Metadata;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class FieldDefinitionComparer : FieldReferenceComparer, IComparer<FieldDefinition>
     {
         public int Compare(FieldDefinition x, FieldDefinition y)
         {
-            int result = y.IsStatic.CompareTo(x.IsStatic);
+            var result = y.IsStatic.CompareTo(x.IsStatic);
 
             if (result == 0)
                 result = base.Compare(x, y);

@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System;
 using Dexer.Metadata;
@@ -45,19 +46,14 @@ namespace Dexer.Core
 
         public bool ContainsAnnotation()
         {
-            foreach (Parameter parameter in Parameters)
-            {
-                if (parameter.Annotations.Count > 0)
-                    return true;
-            }
-            return false;
+	        return Parameters.Any(parameter => parameter.Annotations.Count > 0);
         }
 
-        public override string ToString()
+	    public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             builder.Append("(");
-            for (int i = 0; i < Parameters.Count; i++)
+            for (var i = 0; i < Parameters.Count; i++)
             {
                 if (i>0)
                     builder.Append(", ");
@@ -78,10 +74,9 @@ namespace Dexer.Core
 
         object ICloneable.Clone()
         {
-            Prototype result = new Prototype();
-            result.ReturnType = this.ReturnType;
+            var result = new Prototype {ReturnType = ReturnType};
 
-            foreach (Parameter p in Parameters)
+	        foreach (var p in Parameters)
             {
                 result.Parameters.Add(p.Clone());
             }
@@ -93,10 +88,10 @@ namespace Dexer.Core
         #region " IEquatable "
         public bool Equals(Prototype other)
         {
-            bool result = ReturnType.Equals(other.ReturnType) && Parameters.Count.Equals(other.Parameters.Count);
+            var result = ReturnType.Equals(other.ReturnType) && Parameters.Count.Equals(other.Parameters.Count);
             if (result)
             {
-                for (int i = 0; i < Parameters.Count; i++)
+                for (var i = 0; i < Parameters.Count; i++)
                     result = result && Parameters[i].Equals(other.Parameters[i]);
             }
             return result;
@@ -114,10 +109,10 @@ namespace Dexer.Core
 
         public override int GetHashCode()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             builder.AppendLine(TypeDescriptor.Encode(ReturnType));
 
-            foreach (Parameter parameter in Parameters)
+            foreach (var parameter in Parameters)
                 builder.AppendLine(TypeDescriptor.Encode(parameter.Type));
 
             return builder.ToString().GetHashCode();

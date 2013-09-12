@@ -47,7 +47,7 @@ namespace Dexer.Core
         public override bool Equals(TypeReference other)
         {
             return (other is ArrayType)
-                && this.Equals(other as ArrayType);
+                && Equals(other as ArrayType);
         }
         #endregion
 

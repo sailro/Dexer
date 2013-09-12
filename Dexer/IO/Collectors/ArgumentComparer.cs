@@ -24,16 +24,16 @@ using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Metadata;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class ArgumentComparer : IComparer<AnnotationArgument>
     {
-        private int CompareValue(Object x, Object y)
+        private static int CompareValue(Object x, Object y)
         {
             var xf = ValueFormat.GetFormat(x);
             var yf = ValueFormat.GetFormat(y);
 
-            int result = xf.CompareTo(yf);
+            var result = xf.CompareTo(yf);
 
             if (result != 0)
                 return result;
@@ -49,7 +49,7 @@ namespace Dexer.IO.Collector
                 case ValueFormats.Double:
                 case ValueFormats.Boolean:
                 case ValueFormats.String:
-                    return ((IComparable) x).CompareTo((IComparable) y);
+                    return ((IComparable) x).CompareTo(y);
                 case ValueFormats.Null:
                     return 0;
                 case ValueFormats.Type:
@@ -63,8 +63,8 @@ namespace Dexer.IO.Collector
                     return new AnnotationComparer().Compare((Annotation)x, (Annotation)y);
                 case ValueFormats.Array:
 
-                    Array ax = (Array) x;
-                    Array ay = (Array) y;
+                    var ax = (Array) x;
+                    var ay = (Array) y;
                     for (int i = 0; i < Math.Min(ax.Length, ay.Length); i++)
                     {
                         result = CompareValue(ax.GetValue(i), ay.GetValue(i));
@@ -87,12 +87,8 @@ namespace Dexer.IO.Collector
 
         public int Compare(AnnotationArgument x, AnnotationArgument y)
         {
-            int result = x.Name.CompareTo(y.Name);
-
-            if (result != 0)
-                return result;
-
-            return CompareValue(x.Value, y.Value);
+            var result = String.Compare(x.Name, y.Name, StringComparison.Ordinal);
+            return result != 0 ? result : CompareValue(x.Value, y.Value);
         }
     }
 }

@@ -20,7 +20,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Text;
-using System;
 
 namespace Dexer.Core
 {
@@ -30,7 +29,7 @@ namespace Dexer.Core
         public string Name { get; set; }
         public Prototype Prototype { get; set; }
 
-        public MethodReference() : base()
+        public MethodReference()
         {
         }
 
@@ -43,7 +42,7 @@ namespace Dexer.Core
 
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             builder.Append(Owner);
             builder.Append("::");
             builder.Append(Name);
@@ -62,7 +61,7 @@ namespace Dexer.Core
         public virtual bool Equals(IMemberReference other)
         {
             return (other is MethodReference)
-                && this.Equals(other as MethodReference);
+                && Equals(other as MethodReference);
         }
         #endregion
     }

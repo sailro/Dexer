@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
+using System.Globalization;
 using System.Text;
 using Dexer.Metadata;
 
@@ -37,7 +38,7 @@ namespace Dexer.Core
         {
             get
             {
-                StringBuilder result = new StringBuilder(Namespace);
+                var result = new StringBuilder(Namespace);
                 if (result.Length > 0)
                     result.Append(NamespaceSeparator);
                 result.Append(Name);
@@ -46,12 +47,12 @@ namespace Dexer.Core
             set
             {
                 value = value.Replace(InternalNamespaceSeparator, NamespaceSeparator);
-                string[] items = value.Split(NamespaceSeparator);
+                var items = value.Split(NamespaceSeparator);
                 if (items.Length > 0)
                 {
                     Name = items[items.Length - 1];
                     Array.Resize(ref items, items.Length - 1);
-                    Namespace = string.Join(NamespaceSeparator.ToString(), items);
+                    Namespace = string.Join(NamespaceSeparator.ToString(CultureInfo.InvariantCulture), items);
                 }
                 else
                 {
@@ -80,19 +81,19 @@ namespace Dexer.Core
         public bool Equals(ClassReference other)
         {
             return base.Equals(other)
-                && this.Fullname == other.Fullname;
+                && Fullname == other.Fullname;
         }
 
         public override bool Equals(TypeReference other)
         {
             return (other is ClassReference)
-                && this.Equals(other as ClassReference);
+                && Equals(other as ClassReference);
         }
 
         public bool Equals(IMemberReference other)
         {
             return (other is ClassReference)
-                && this.Equals(other as ClassReference);
+                && Equals(other as ClassReference);
         }
         #endregion
     }

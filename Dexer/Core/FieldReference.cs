@@ -35,7 +35,7 @@ namespace Dexer.Core
 
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             builder.Append(Owner);
             builder.Append("::");
             builder.Append(Name);
@@ -55,7 +55,7 @@ namespace Dexer.Core
         public virtual bool Equals(IMemberReference other)
         {
             return (other is FieldReference)
-                && this.Equals(other as FieldReference);
+                && Equals(other as FieldReference);
         }
         #endregion
 

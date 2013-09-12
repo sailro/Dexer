@@ -22,9 +22,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Extensions;
-using Dexer.Instructions;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class ModelShuffler : BaseCollector<object>
     {

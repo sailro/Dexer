@@ -22,18 +22,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 using Dexer.Core;
-using Dexer.Metadata;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class AnnotationComparer : IComparer<Annotation>
     {
-        private TypeReferenceComparer typeReferenceComparer = new TypeReferenceComparer();
-        private ArgumentComparer argumentComparer = new ArgumentComparer();
+        private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
+        private readonly ArgumentComparer _argumentComparer = new ArgumentComparer();
 
         public int Compare(Annotation x, Annotation y)
         {
-            int result = typeReferenceComparer.Compare(x.Type, y.Type);
+            int result = _typeReferenceComparer.Compare(x.Type, y.Type);
 
             if (result == 0)
                 result = x.Visibility.CompareTo(y.Visibility);
@@ -41,9 +40,9 @@ namespace Dexer.IO.Collector
             if (result != 0)
                 return result;
 
-            for (int i = 0; i < Math.Min(x.Arguments.Count, y.Arguments.Count); i++)
+            for (var i = 0; i < Math.Min(x.Arguments.Count, y.Arguments.Count); i++)
             {
-                result = argumentComparer.Compare(x.Arguments[i], y.Arguments[i]);
+                result = _argumentComparer.Compare(x.Arguments[i], y.Arguments[i]);
                 if (result != 0)
                     return result;
             }

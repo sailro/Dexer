@@ -19,13 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using Dexer.Extensions;
 using Dexer.IO;
-using Dexer.Metadata;
 
 namespace Dexer.Core
 {
@@ -52,22 +49,22 @@ namespace Dexer.Core
 
         public static Dex Read(string filename, bool bufferize)
         {
-            Dex result = new Dex();
+            var result = new Dex();
 
-            using (FileStream filestream = new FileStream(filename, FileMode.Open))
+            using (var filestream = new FileStream(filename, FileMode.Open))
             {
                 Stream sourcestream = filestream; 
                 if (bufferize)
                 {
-                    MemoryStream memorystream = new MemoryStream();
+                    var memorystream = new MemoryStream();
                     filestream.CopyTo(memorystream);
                     memorystream.Position = 0;
                     sourcestream = memorystream;
                 }
 
-                using (BinaryReader binaryReader = new BinaryReader(sourcestream))
+                using (var binaryReader = new BinaryReader(sourcestream))
                 {
-                    DexReader reader = new DexReader(result);
+                    var reader = new DexReader(result);
                     reader.ReadFrom(binaryReader);
                     return result;
                 }
@@ -76,7 +73,7 @@ namespace Dexer.Core
 
         public void Write(string filename, bool bufferize)
         {
-            using (FileStream filestream = new FileStream(filename, FileMode.Create))
+            using (var filestream = new FileStream(filename, FileMode.Create))
             {
                 Stream deststream = filestream;
                 MemoryStream memorystream = null;
@@ -87,16 +84,16 @@ namespace Dexer.Core
                     deststream = memorystream;
                 }
 
-                using (BinaryWriter binaryWriter = new BinaryWriter(deststream))
+                using (var binaryWriter = new BinaryWriter(deststream))
                 {
-                    DexWriter writer = new DexWriter(this);
+                    var writer = new DexWriter(this);
                     writer.WriteTo(binaryWriter);
 
-                    if (bufferize)
-                    {
-                        memorystream.Position = 0;
-                        memorystream.CopyTo(filestream);
-                    }
+	                if (!bufferize)
+						return;
+	                
+					memorystream.Position = 0;
+	                memorystream.CopyTo(filestream);
                 }
 
             }

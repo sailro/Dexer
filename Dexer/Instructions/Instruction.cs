@@ -19,7 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using Dexer.Core;
 using System.Collections.Generic;
 using System.Text;
 using System;
@@ -64,12 +63,12 @@ namespace Dexer.Instructions
 
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             builder.Append(OpCode.ToString());
-            for (int i = 0; i < Registers.Count; i++)
+            foreach (var register in Registers)
             {
-                builder.Append(" ");
-                builder.Append(Registers[i]);
+	            builder.Append(" ");
+	            builder.Append(register);
             }
             builder.Append(" ");
             if (Operand is Instruction)

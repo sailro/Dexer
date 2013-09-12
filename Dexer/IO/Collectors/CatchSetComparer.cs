@@ -21,19 +21,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class CatchSetComparer : IComparer<CatchSet>
     {
         public List<int> CollectOffsets(CatchSet set)
         {
-            var result = new List<int>();
+            var result = set.Select(@catch => @catch.Instruction.Offset).ToList();
 
-            foreach (var @catch in set)
-                result.Add(@catch.Instruction.Offset);
-
-            if (set.CatchAll != null)
+	        if (set.CatchAll != null)
                 result.Add(set.CatchAll.Offset);
 
             return result;
@@ -44,10 +42,10 @@ namespace Dexer.IO.Collector
             var xOffsets = CollectOffsets(x);
             var yOffsets = CollectOffsets(y);
 
-            int minp = Math.Min(xOffsets.Count, yOffsets.Count);
-            for (int i = 0; i < minp; i++)
+            var minp = Math.Min(xOffsets.Count, yOffsets.Count);
+            for (var i = 0; i < minp; i++)
             {
-                int cp = xOffsets[i].CompareTo(yOffsets[i]);
+                var cp = xOffsets[i].CompareTo(yOffsets[i]);
                 if (cp != 0)
                     return cp;
             }

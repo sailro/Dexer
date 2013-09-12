@@ -20,7 +20,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.IO;
-using Dexer.Extensions;
 using System.Collections.Generic;
 
 namespace Dexer.IO.Markers
@@ -37,12 +36,12 @@ namespace Dexer.IO.Markers
 
         public void CloneMarker()
         {
-            uint position = (uint)Writer.BaseStream.Position;
+            var position = (uint)Writer.BaseStream.Position;
             Positions.Add(position);
             Allocate();
         }
 
-        public Marker(BinaryWriter writer)
+	    protected Marker(BinaryWriter writer)
         {
             Writer = writer;
             Positions = new List<uint>();

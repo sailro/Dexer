@@ -21,15 +21,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
 using Dexer.Core;
-using Dexer.Metadata;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class MethodDefinitionComparer : MethodReferenceComparer, IComparer<MethodDefinition>
     {
         public int Compare(MethodDefinition x, MethodDefinition y)
         {
-            int result = x.IsVirtual.CompareTo(y.IsVirtual);
+            var result = x.IsVirtual.CompareTo(y.IsVirtual);
 
             if (result == 0)
                 result = base.Compare(x, y);

@@ -20,7 +20,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
-using System.IO;
 using System.Collections.Generic;
 
 namespace Dexer.Extensions
@@ -28,22 +27,21 @@ namespace Dexer.Extensions
     public static class ListExtensions
     {
 
-        private static Random rnd = new Random();
+        private static readonly Random Rnd = new Random();
 
         public static void Shuffle<T>(this List<T> list)
         {
-            if (list.Count > 1)
-            {
-                for (int i = list.Count - 1; i >= 0; i--)
-                {
-                    T item = list[i];
-                    int index = rnd.Next(i + 1);
+	        if (list.Count <= 1)
+				return;
+	        
+			for (var i = list.Count - 1; i >= 0; i--)
+	        {
+		        var item = list[i];
+		        var index = Rnd.Next(i + 1);
 
-                    list[i] = list[index];
-                    list[index] = item;
-                }
-            }
+		        list[i] = list[index];
+		        list[index] = item;
+	        }
         }
-
     }
 }

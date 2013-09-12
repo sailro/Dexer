@@ -19,7 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
 using Dexer.Core;
 using System.Text;
 
@@ -31,8 +30,8 @@ namespace Dexer.Metadata
         {
             if (!string.IsNullOrEmpty(tdString))
             {
-                char prefix = tdString[0];
-                TypeDescriptors td = (TypeDescriptors)prefix;
+                var prefix = tdString[0];
+                var td = (TypeDescriptors)prefix;
                 switch (td)
                 {
                     case TypeDescriptors.Boolean:
@@ -67,11 +66,11 @@ namespace Dexer.Metadata
             if (!string.IsNullOrEmpty(tdString))
             {
                 char prefix = tdString[0];
-                TypeDescriptors td = (TypeDescriptors)prefix;
+                var td = (TypeDescriptors)prefix;
                 switch (td)
                 {
                     case TypeDescriptors.Array:
-                        ArrayType atype = (ArrayType)item;
+                        var atype = (ArrayType)item;
 
                         TypeReference elementType = Allocate(tdString.Substring(1));
                         Fill(tdString.Substring(1), elementType, context);
@@ -86,7 +85,7 @@ namespace Dexer.Metadata
 
                         break;
                     case TypeDescriptors.FullyQualifiedName:
-                        ClassReference cref = (ClassReference)item;
+                        var cref = (ClassReference)item;
                         cref.Fullname = tdString.Substring(1, tdString.Length-2);
                         break;
                 }
@@ -99,10 +98,10 @@ namespace Dexer.Metadata
 
         public static string Encode(Prototype prototype)
         {
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
             result.Append(Encode(prototype.ReturnType,true));
 
-            foreach (Parameter parameter in prototype.Parameters)
+            foreach (var parameter in prototype.Parameters)
                 result.Append(Encode(parameter.Type, true));
 
             return result.ToString();
@@ -115,9 +114,9 @@ namespace Dexer.Metadata
 
         public static string Encode(TypeReference tref, bool shorty)
         {
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
 
-            char td = (char)tref.TypeDescriptor;
+            var td = (char)tref.TypeDescriptor;
 
             if (!shorty)
             {

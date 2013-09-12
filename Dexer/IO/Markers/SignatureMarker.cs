@@ -32,12 +32,9 @@ namespace Dexer.IO.Markers
             set
             {
 #if !DISABLE_MARKERS || !DEBUG
-                foreach (uint position in Positions)
+                foreach (var position in Positions)
                 {
-                    Writer.PreserveCurrentPosition(position, () =>
-                    {
-                        Writer.Write(value);
-                    });
+                    Writer.PreserveCurrentPosition(position, () => Writer.Write(value));
                 }
 #endif
             }

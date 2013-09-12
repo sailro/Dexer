@@ -37,25 +37,25 @@ namespace Dexer.Core
 
         private PrimitiveType(TypeDescriptors typeDescriptor)
         {
-            this.TypeDescriptor = typeDescriptor;
+            TypeDescriptor = typeDescriptor;
         }
 
         public override string ToString()
         {
-            return this.TypeDescriptor.ToString();
+            return TypeDescriptor.ToString();
         }
 
         #region " IEquatable "
         public bool Equals(PrimitiveType other)
         {
             return base.Equals(other)
-                && this.TypeDescriptor == other.TypeDescriptor;
+                && TypeDescriptor == other.TypeDescriptor;
         }
 
         public override bool Equals(TypeReference other)
         {
             return (other is PrimitiveType)
-                && this.Equals(other as PrimitiveType);
+                && Equals(other as PrimitiveType);
         }
         #endregion
 

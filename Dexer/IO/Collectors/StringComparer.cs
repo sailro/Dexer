@@ -21,7 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class StringComparer : IComparer<string>
     {

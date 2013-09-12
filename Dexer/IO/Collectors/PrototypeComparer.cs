@@ -21,18 +21,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
 using Dexer.Core;
-using Dexer.Metadata;
 using System;
 
-namespace Dexer.IO.Collector
+namespace Dexer.IO.Collectors
 {
     internal class PrototypeComparer : IComparer<Prototype>
     {
-        private TypeReferenceComparer typeReferenceComparer = new TypeReferenceComparer();
+        private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
 
         public int Compare(Prototype x, Prototype y)
         {
-            int crt = typeReferenceComparer.Compare(x.ReturnType, y.ReturnType);
+            var crt = _typeReferenceComparer.Compare(x.ReturnType, y.ReturnType);
             if (crt == 0)
             {
                 if (x.Parameters.Count == 0 && y.Parameters.Count != 0)
@@ -41,10 +40,10 @@ namespace Dexer.IO.Collector
                 if (y.Parameters.Count == 0 && x.Parameters.Count != 0)
                     return 1;
 
-                int minp = Math.Min(x.Parameters.Count, y.Parameters.Count);
-                for (int i = 0; i < minp; i++)
+                var minp = Math.Min(x.Parameters.Count, y.Parameters.Count);
+                for (var i = 0; i < minp; i++)
                 {
-                    int cp = typeReferenceComparer.Compare(x.Parameters[i].Type,y.Parameters[i].Type);
+                    var cp = _typeReferenceComparer.Compare(x.Parameters[i].Type,y.Parameters[i].Type);
                     if (cp != 0)
                         return cp;
                 }

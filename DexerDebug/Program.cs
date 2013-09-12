@@ -26,9 +26,9 @@ namespace Dexer.Debug
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            Dex dex = Dex.Read("classes.dex");
+            var dex = Dex.Read("classes.dex");
             dex.Write("output.dex");
             Console.ReadLine();
         }

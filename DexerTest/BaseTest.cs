@@ -27,12 +27,12 @@ namespace Dexer.Test
     [TestClass]
     public abstract class BaseTest
     {
-        private TestContext testContextInstance;
-        private string filesDirectory;
+        private TestContext _testContextInstance;
+        private string _filesDirectory;
 
         public string FilesDirectory
         {
-            get { return filesDirectory; }
+            get { return _filesDirectory; }
         }
 
         /// <summary>
@@ -43,14 +43,14 @@ namespace Dexer.Test
         {
             get
             {
-                return testContextInstance;
+                return _testContextInstance;
             }
             set
             {
-                testContextInstance = value;
-                filesDirectory = Path.Combine(testContextInstance.TestDir, @"..\..");
-                filesDirectory = Path.Combine(filesDirectory, @"DexerTest\Files");
-                filesDirectory = Path.GetFullPath(filesDirectory);
+                _testContextInstance = value;
+                _filesDirectory = Path.Combine(_testContextInstance.TestDir, @"..\..");
+                _filesDirectory = Path.Combine(_filesDirectory, @"DexerTest\Files");
+                _filesDirectory = Path.GetFullPath(_filesDirectory);
             }
         }
     }

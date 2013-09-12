@@ -21,7 +21,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.IO;
-using System.Diagnostics;
 
 namespace Dexer.Extensions
 {
@@ -30,7 +29,7 @@ namespace Dexer.Extensions
 
         public static void PreserveCurrentPosition(this BinaryReader reader, uint newPosition, Action action)
         {
-            long position = reader.BaseStream.Position;
+            var position = reader.BaseStream.Position;
             reader.BaseStream.Seek(newPosition, SeekOrigin.Begin);
 
             action();
@@ -38,15 +37,15 @@ namespace Dexer.Extensions
             reader.BaseStream.Seek(position, SeekOrigin.Begin);
         }
 
-        public static long ReadULEB128p1(this BinaryReader reader)
+        public static long ReadULEB128P1(this BinaryReader reader)
         {
             return ((long) ReadULEB128(reader)) - 1;
         }
 
         public static uint ReadULEB128(this BinaryReader reader)
         {
-            int result = 0;
-            int shift = 0;
+            var result = 0;
+            var shift = 0;
             byte partial;
 
             do
@@ -61,9 +60,9 @@ namespace Dexer.Extensions
 
         public static int ReadSLEB128(this BinaryReader reader)
         {
-            int result = 0;
-            int shift = 0;
-            byte partial = 0;
+            var result = 0;
+            var shift = 0;
+            byte partial;
 
             do
             {
@@ -80,9 +79,9 @@ namespace Dexer.Extensions
 
         public static String ReadMUTF8String(this BinaryReader reader)
         {
-            uint stringLength = ReadULEB128(reader);
-            char[] chars = new char[stringLength];
-            for (int j = 0, j_length = chars.Length; j < j_length; j++)
+            var stringLength = ReadULEB128(reader);
+            var chars = new char[stringLength];
+            for (int j = 0, jLength = chars.Length; j < jLength; j++)
             {
                 int data = reader.ReadByte();
                 switch (data >> 4)
@@ -115,7 +114,7 @@ namespace Dexer.Extensions
         public static long ReadUnsignedPackedNumber(this BinaryReader reader, int byteLength)
         {
             long value = 0;
-            for (int i = 0; i < byteLength; i++)
+            for (var i = 0; i < byteLength; i++)
             {
                 value |= (((long)(reader.ReadByte() & 0xFF)) << i * 8);
             }
@@ -125,12 +124,12 @@ namespace Dexer.Extensions
         public static long ReadSignedPackedNumber(this BinaryReader reader, int byteLength)
         {
             long value = 0;
-            for (int i = 0; i < byteLength; i++)
+            for (var i = 0; i < byteLength; i++)
             {
                 value |= (((long)((reader.ReadByte()) & 0xFF)) << (i * 8));
             }
 
-            int shift = (8 - byteLength) * 8;
+            var shift = (8 - byteLength) * 8;
             return value << shift >> shift;
         }
 
