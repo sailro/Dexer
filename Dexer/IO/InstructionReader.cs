@@ -326,19 +326,19 @@ namespace Dexer.IO
                     case OpCodes.Goto:
                         // +AA
                         offset = ReadSByte();
-                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
+                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[(ushort)(ins.Offset + offset)]);
                         break;
                     case OpCodes.Goto16:
                         // +AAAA
                         _ip++;
                         offset = ReadShort(ref _ip);
-                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
+                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[(ushort)(ins.Offset + offset)]);
                         break;
                     case OpCodes.Goto32:
                         // +AAAAAAAA
                         _ip++;
                         offset = ReadInt(ref _ip);
-                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
+                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[(ushort)(ins.Offset + offset)]);
                         break;
                     case OpCodes.PackedSwitch:
                         // vAA, +BBBBBBBB
@@ -418,7 +418,7 @@ namespace Dexer.IO
                         ReadvA(ins);
                         ReadvB(ins);
                         offset = ReadShort(ref _ip);
-                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
+                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[(ushort)(ins.Offset + offset)]);
                         break;
                     case OpCodes.IfEqz:
                     case OpCodes.IfNez:
@@ -429,7 +429,7 @@ namespace Dexer.IO
                         // vAA, +BBBB
                         ReadvAA(ins);
                         offset = ReadShort(ref _ip);
-                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[ins.Offset + offset]);
+                        LazyInstructionsSetters.Add(() => ins.Operand = Lookup[(ushort)(ins.Offset + offset)]);
                         break;
                     case OpCodes.Iget:
                     case OpCodes.IgetWide:
@@ -590,7 +590,7 @@ namespace Dexer.IO
 
             for (var i=0; i<targetcount; i++) {
                 var target = ReadInt(ref offset);
-                LazyInstructionsSetters.Add( () => result.Targets.Add(Lookup[ins.Offset + target]));
+                LazyInstructionsSetters.Add( () => result.Targets.Add(Lookup[(ushort)(ins.Offset + target)]));
             }
 
             if (offset - baseOffset != targetcount * 2 + 4)
