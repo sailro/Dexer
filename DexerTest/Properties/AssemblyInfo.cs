@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("DexerDebug")]
@@ -7,7 +6,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Dexer")]
-[assembly: AssemblyCopyright("Copyright © 2010-2013 Sebastien LEBRETON")]
+[assembly: AssemblyCopyright("Copyright © 2010-2016 Sebastien LEBRETON")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
