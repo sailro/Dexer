@@ -201,7 +201,13 @@ namespace Dexer.IO
 	                var reference = Dex.TypeReferences[classIndex] as ClassDefinition;
 	                if (reference == null)
                     {
-                        var cdef = new ClassDefinition((ClassReference)Dex.TypeReferences[classIndex]);
+                        ClassDefinition cdef = new ClassDefinition();
+                        var reference2 = Dex.TypeReferences[classIndex] as ClassReference;
+                        if (reference2 == null) { }
+                        // use empty object
+                        else
+                            cdef = new ClassDefinition(reference2);
+                        
                         Dex.TypeReferences[classIndex] = cdef;
                         Dex.Classes.Add(cdef);
                     }
