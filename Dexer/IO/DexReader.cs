@@ -114,11 +114,13 @@ namespace Dexer.IO
 		{
 			reader.PreserveCurrentPosition(Header.StringsOffset, () =>
 			{
-				var stringsDataOffset = reader.ReadUInt32();
-				reader.BaseStream.Seek(stringsDataOffset, SeekOrigin.Begin);
 				for (var i = 0; i < Header.StringsSize; i++)
 				{
-					Dex.Strings.Add(reader.ReadMUTF8String());
+					var stringDataOffset = reader.ReadUInt32();
+					reader.PreserveCurrentPosition(stringDataOffset, () =>
+					{
+						Dex.Strings.Add(reader.ReadMUTF8String());
+					});
 				}
 			});
 		}
