@@ -23,41 +23,39 @@ using System.Text;
 
 namespace Dexer.Core
 {
-    public class FieldReference : IMemberReference
-    {
-        public ClassReference Owner { get; set; }
-        public string Name { get; set; }
-        public TypeReference Type { get; set; }
+	public class FieldReference : IMemberReference
+	{
+		public ClassReference Owner { get; set; }
+		public string Name { get; set; }
+		public TypeReference Type { get; set; }
 
-        internal FieldReference()
-        {
-        }
+		internal FieldReference()
+		{
+		}
 
-        public override string ToString()
-        {
-            var builder = new StringBuilder();
-            builder.Append(Owner);
-            builder.Append("::");
-            builder.Append(Name);
-            builder.Append(" : ");
-            builder.Append(Type);
-            return builder.ToString();
-        }
+		public override string ToString()
+		{
+			var builder = new StringBuilder();
+			builder.Append(Owner);
+			builder.Append("::");
+			builder.Append(Name);
+			builder.Append(" : ");
+			builder.Append(Type);
+			return builder.ToString();
+		}
 
-        #region " IEquatable "
-        public bool Equals(FieldReference other)
-        {
-            return Owner.Equals(other.Owner)
-                && Name.Equals(other.Name)
+		public bool Equals(FieldReference other)
+		{
+			return Owner.Equals(other.Owner)
+				&& Name.Equals(other.Name)
 				&& Type.Equals(other.Type);
-        }
+		}
 
-        public virtual bool Equals(IMemberReference other)
-        {
-            return (other is FieldReference)
-                && Equals(other as FieldReference);
-        }
-        #endregion
+		public virtual bool Equals(IMemberReference other)
+		{
+			return (other is FieldReference)
+				&& Equals(other as FieldReference);
+		}
 
-    }
+	}
 }

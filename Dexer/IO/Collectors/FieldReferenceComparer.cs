@@ -24,17 +24,17 @@ using Dexer.Core;
 
 namespace Dexer.IO.Collectors
 {
-    internal class FieldReferenceComparer : IComparer<FieldReference>
-    {
-        private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
-        private readonly StringComparer _stringComparer = new StringComparer();
+	internal class FieldReferenceComparer : IComparer<FieldReference>
+	{
+		private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
+		private readonly StringComparer _stringComparer = new StringComparer();
 
-        public int Compare(FieldReference x, FieldReference y)
-        {
-            var result = _typeReferenceComparer.Compare(x.Owner, y.Owner);
-            if (result == 0)
-                result = _stringComparer.Compare(x.Name, y.Name);
-            return result;
-        }
-    }
+		public int Compare(FieldReference x, FieldReference y)
+		{
+			var result = _typeReferenceComparer.Compare(x.Owner, y.Owner);
+			if (result == 0)
+				result = _stringComparer.Compare(x.Name, y.Name);
+			return result;
+		}
+	}
 }

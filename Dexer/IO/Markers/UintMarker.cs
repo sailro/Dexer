@@ -25,27 +25,28 @@ using Dexer.Extensions;
 namespace Dexer.IO.Markers
 {
 
-    internal class UIntMarker : Marker<uint>
-    {
-        public override uint Value
-        {
-            set {
+	internal class UIntMarker : Marker<uint>
+	{
+		public override uint Value
+		{
+			set
+			{
 #if !DISABLE_MARKERS || !DEBUG
-                foreach (var position in Positions)
-                {
-                    Writer.PreserveCurrentPosition(position, () => Writer.Write(value));
-                }
+				foreach (var position in Positions)
+				{
+					Writer.PreserveCurrentPosition(position, () => Writer.Write(value));
+				}
 #endif
-            }
-        }
+			}
+		}
 
-        public override void Allocate()
-        {
-            Writer.Write((uint) 0);
-        }
+		public override void Allocate()
+		{
+			Writer.Write((uint)0);
+		}
 
-        public UIntMarker(BinaryWriter writer) : base(writer) { }
+		public UIntMarker(BinaryWriter writer) : base(writer) { }
 
-    }
+	}
 
 }

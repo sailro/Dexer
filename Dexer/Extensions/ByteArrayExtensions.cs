@@ -24,36 +24,36 @@ using System.Text;
 
 namespace Dexer.Extensions
 {
-    public static class ByteArrayExtensions
-    {
+	public static class ByteArrayExtensions
+	{
 
-        public static string ToHexString(this byte[] bytes)
-        {
-            var builder = new StringBuilder();
-            foreach (var b in bytes)
-            {
-                builder.AppendFormat("{0:x2}", b);
-            }
-            return builder.ToString();
-        }
+		public static string ToHexString(this byte[] bytes)
+		{
+			var builder = new StringBuilder();
+			foreach (var b in bytes)
+			{
+				builder.AppendFormat("{0:x2}", b);
+			}
+			return builder.ToString();
+		}
 
-        public static bool Match(this byte[] array, byte[] item, int offset)
-        {
-	        return !item.Where((t, i) => i >= array.Length || (array[i + offset] != t)).Any();
-        }
+		public static bool Match(this byte[] array, byte[] item, int offset)
+		{
+			return !item.Where((t, i) => i >= array.Length || (array[i + offset] != t)).Any();
+		}
 
-	    public static int IndexOf(this byte[] array, byte[] item)
-        {
-            for (var i = 0; i < array.Length; i++)
-            {
-                if (Match(array, item, i))
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
+		public static int IndexOf(this byte[] array, byte[] item)
+		{
+			for (var i = 0; i < array.Length; i++)
+			{
+				if (Match(array, item, i))
+				{
+					return i;
+				}
+			}
+			return -1;
+		}
 
 
-    }
+	}
 }

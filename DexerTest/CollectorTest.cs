@@ -25,20 +25,20 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Dexer.Test
 {
-    [TestClass]
-    public class CollectorTest : BaseCollectorTest
-    {
-        [TestMethod]
-        public void TestStringCollector()
-        {
-            TestCollector<StringCollector, string>(dex => dex.Strings);
-        }
+	[TestClass]
+	public class CollectorTest : BaseCollectorTest
+	{
+		[TestMethod]
+		public void TestStringCollector()
+		{
+			TestCollector<StringCollector, string>(dex => dex.Strings);
+		}
 
-        [TestMethod]
-        public void TestPrototypeCollector()
-        {
-            TestCollector<PrototypeCollector, Prototype>(dex => dex.Prototypes);
-        }
+		[TestMethod]
+		public void TestPrototypeCollector()
+		{
+			TestCollector<PrototypeCollector, Prototype>(dex => dex.Prototypes);
+		}
 
-    }
+	}
 }

@@ -24,131 +24,140 @@ using Dexer.Instructions;
 
 namespace Dexer.Core
 {
-    public class MethodDefinition : MethodReference, IMemberDefinition
-    {
-        public AccessFlags AccessFlags { get; set; }
-        public new ClassDefinition Owner
-        {
-            get { return base.Owner as ClassDefinition; }
-            set { base.Owner = value; }
-        }
-        public List<Annotation> Annotations { get; set; }
-        public MethodBody Body { get; set; }
+	public class MethodDefinition : MethodReference, IMemberDefinition
+	{
+		public AccessFlags AccessFlags { get; set; }
+		public new ClassDefinition Owner
+		{
+			get { return base.Owner as ClassDefinition; }
+			set { base.Owner = value; }
+		}
+		public List<Annotation> Annotations { get; set; }
+		public MethodBody Body { get; set; }
 
-        public MethodDefinition()
-        {
-            Annotations = new List<Annotation>();
-        }
+		public MethodDefinition()
+		{
+			Annotations = new List<Annotation>();
+		}
 
-        // for prefetching
-        internal MethodDefinition(MethodReference mref) : this()
-        {
-            Owner = mref.Owner as ClassDefinition;
-            Name = mref.Name;
-            Prototype = mref.Prototype;
-        }
+		// for prefetching
+		internal MethodDefinition(MethodReference mref) : this()
+		{
+			Owner = mref.Owner as ClassDefinition;
+			Name = mref.Name;
+			Prototype = mref.Prototype;
+		}
 
-        public MethodDefinition(ClassDefinition owner, string name, Prototype prototype) : this()
-        {
-            Owner = owner;
-            Name = name;
-            Prototype = prototype;
-        }
+		public MethodDefinition(ClassDefinition owner, string name, Prototype prototype) : this()
+		{
+			Owner = owner;
+			Name = name;
+			Prototype = prototype;
+		}
 
-        public bool IsVirtual
-        {
-            get;
-            set;
-        }
+		public bool IsVirtual
+		{
+			get;
+			set;
+		}
 
-        #region " AccessFlags "
 		// ReSharper disable ValueParameterNotUsed
 		public bool IsPublic
 		{
-            get { return (AccessFlags & AccessFlags.Public) != 0; }
-            set { AccessFlags |= AccessFlags.Public; }
-        }
+			get { return (AccessFlags & AccessFlags.Public) != 0; }
+			set { AccessFlags |= AccessFlags.Public; }
+		}
 
-        public bool IsPrivate {
-            get { return (AccessFlags & AccessFlags.Private) != 0; }
-            set { AccessFlags |= AccessFlags.Private; }
-        }
+		public bool IsPrivate
+		{
+			get { return (AccessFlags & AccessFlags.Private) != 0; }
+			set { AccessFlags |= AccessFlags.Private; }
+		}
 
-        public bool IsProtected {
-            get { return (AccessFlags & AccessFlags.Protected) != 0; }
-            set { AccessFlags |= AccessFlags.Protected; }
-        }
+		public bool IsProtected
+		{
+			get { return (AccessFlags & AccessFlags.Protected) != 0; }
+			set { AccessFlags |= AccessFlags.Protected; }
+		}
 
-        public bool IsStatic {
-            get { return (AccessFlags & AccessFlags.Static) != 0; }
-            set { AccessFlags |= AccessFlags.Static; }
-        }
+		public bool IsStatic
+		{
+			get { return (AccessFlags & AccessFlags.Static) != 0; }
+			set { AccessFlags |= AccessFlags.Static; }
+		}
 
-        public bool IsFinal {
-            get { return (AccessFlags & AccessFlags.Final) != 0; }
-            set { AccessFlags |= AccessFlags.Final; }
-        }
+		public bool IsFinal
+		{
+			get { return (AccessFlags & AccessFlags.Final) != 0; }
+			set { AccessFlags |= AccessFlags.Final; }
+		}
 
-        public bool IsSynchronized {
-            get { return (AccessFlags & AccessFlags.Synchronized) != 0; }
-            set { AccessFlags |= AccessFlags.Synchronized; }
-        }
+		public bool IsSynchronized
+		{
+			get { return (AccessFlags & AccessFlags.Synchronized) != 0; }
+			set { AccessFlags |= AccessFlags.Synchronized; }
+		}
 
-        public bool IsBridge {
-            get { return (AccessFlags & AccessFlags.Bridge) != 0; }
-            set { AccessFlags |= AccessFlags.Bridge; }
-        }
+		public bool IsBridge
+		{
+			get { return (AccessFlags & AccessFlags.Bridge) != 0; }
+			set { AccessFlags |= AccessFlags.Bridge; }
+		}
 
-        public bool IsVarArgs {
-            get { return (AccessFlags & AccessFlags.VarArgs) != 0; }
-            set { AccessFlags |= AccessFlags.VarArgs; }
-        }
+		public bool IsVarArgs
+		{
+			get { return (AccessFlags & AccessFlags.VarArgs) != 0; }
+			set { AccessFlags |= AccessFlags.VarArgs; }
+		}
 
-        public bool IsNative {
-            get { return (AccessFlags & AccessFlags.Native) != 0; }
-            set { AccessFlags |= AccessFlags.Native; }
-        }
+		public bool IsNative
+		{
+			get { return (AccessFlags & AccessFlags.Native) != 0; }
+			set { AccessFlags |= AccessFlags.Native; }
+		}
 
-        public bool IsAbstract {
-            get { return (AccessFlags & AccessFlags.Abstract) != 0; }
-            set { AccessFlags |= AccessFlags.Abstract; }
-        }
+		public bool IsAbstract
+		{
+			get { return (AccessFlags & AccessFlags.Abstract) != 0; }
+			set { AccessFlags |= AccessFlags.Abstract; }
+		}
 
-        public bool IsSynthetic {
-            get { return (AccessFlags & AccessFlags.Synthetic) != 0; }
-            set { AccessFlags |= AccessFlags.Synthetic; }
-        }
+		public bool IsSynthetic
+		{
+			get { return (AccessFlags & AccessFlags.Synthetic) != 0; }
+			set { AccessFlags |= AccessFlags.Synthetic; }
+		}
 
-        public bool IsStrictFp {
-            get { return (AccessFlags & AccessFlags.StrictFp) != 0; }
-            set { AccessFlags |= AccessFlags.StrictFp; }
-        }
+		public bool IsStrictFp
+		{
+			get { return (AccessFlags & AccessFlags.StrictFp) != 0; }
+			set { AccessFlags |= AccessFlags.StrictFp; }
+		}
 
-        public bool IsConstructor {
-            get { return (AccessFlags & AccessFlags.Constructor) != 0; }
-            set { AccessFlags |= AccessFlags.Constructor; }
-        }
+		public bool IsConstructor
+		{
+			get { return (AccessFlags & AccessFlags.Constructor) != 0; }
+			set { AccessFlags |= AccessFlags.Constructor; }
+		}
 
-        public bool IsDeclaredSynchronized {
-            get { return (AccessFlags & AccessFlags.DeclaredSynchronized) != 0; }
-            set { AccessFlags |= AccessFlags.DeclaredSynchronized; }
-        }
+		public bool IsDeclaredSynchronized
+		{
+			get { return (AccessFlags & AccessFlags.DeclaredSynchronized) != 0; }
+			set { AccessFlags |= AccessFlags.DeclaredSynchronized; }
+		}
 		// ReSharper restore ValueParameterNotUsed
-		#endregion
 
-        #region " IEquatable "
-        public bool Equals(MethodDefinition other)
-        {
-            // Should be enough (ownership)
-            return base.Equals(other);
-        }
+		public bool Equals(MethodDefinition other)
+		{
+			// Should be enough (ownership)
+			return base.Equals(other);
+		}
 
-        public override bool Equals(IMemberReference other)
-        {
-            return (other is MethodDefinition)
-                && Equals(other as MethodDefinition);
-        }
-        #endregion
+		public override bool Equals(IMemberReference other)
+		{
+			return (other is MethodDefinition)
+				&& Equals(other as MethodDefinition);
+		}
 
-    }
+	}
 }

@@ -26,37 +26,35 @@ using System;
 
 namespace Dexer.Core
 {
-    public class AnnotationArgument : IEquatable<AnnotationArgument>
-    {
-        public string Name { get; set; }
-        public object Value { get; set; }
+	public class AnnotationArgument : IEquatable<AnnotationArgument>
+	{
+		public string Name { get; set; }
+		public object Value { get; set; }
 
-        public override string ToString()
-        {
-            var builder = new StringBuilder();
-            builder.Append(Name);
-            builder.Append(":");
-            builder.Append(Value);
-            return builder.ToString();
-        }
+		public override string ToString()
+		{
+			var builder = new StringBuilder();
+			builder.Append(Name);
+			builder.Append(":");
+			builder.Append(Value);
+			return builder.ToString();
+		}
 
-        #region " IEquatable "
-        public bool Equals(AnnotationArgument other)
-        {
-            return Name.Equals(other.Name)
-                && ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
-                && (((ValueFormat.GetFormat(Value) == ValueFormats.Array) && ArrayEquals(Value as Array, other.Value as Array)) || Equals(Value, other.Value));
-        }
+		public bool Equals(AnnotationArgument other)
+		{
+			return Name.Equals(other.Name)
+				&& ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
+				&& (((ValueFormat.GetFormat(Value) == ValueFormats.Array) && ArrayEquals(Value as Array, other.Value as Array)) || Equals(Value, other.Value));
+		}
 
-        internal static bool ArrayEquals(Array array1, Array array2)
-        {
-            if (array1.Length != array2.Length)
-                return false;
+		internal static bool ArrayEquals(Array array1, Array array2)
+		{
+			if (array1.Length != array2.Length)
+				return false;
 
-	        return !array1.Cast<object>().Where((t, i) => !array1.GetValue(i).Equals(array2.GetValue(i))).Any();
-        }
-        #endregion
+			return !array1.Cast<object>().Where((t, i) => !array1.GetValue(i).Equals(array2.GetValue(i))).Any();
+		}
 
-    }
+	}
 }
 

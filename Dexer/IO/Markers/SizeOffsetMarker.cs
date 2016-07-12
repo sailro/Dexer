@@ -25,31 +25,32 @@ using Dexer.Extensions;
 namespace Dexer.IO.Markers
 {
 
-    internal class SizeOffsetMarker : Marker<SizeOffset>
-    {
-        public override SizeOffset Value
-        {
-            set {
+	internal class SizeOffsetMarker : Marker<SizeOffset>
+	{
+		public override SizeOffset Value
+		{
+			set
+			{
 #if !DISABLE_MARKERS || !DEBUG
-                foreach (var position in Positions)
-                {
-                    Writer.PreserveCurrentPosition(position, () =>
-                    {
-                        Writer.Write(value.Size);
-                        Writer.Write(value.Offset);
-                    });
-                }
+				foreach (var position in Positions)
+				{
+					Writer.PreserveCurrentPosition(position, () =>
+					{
+						Writer.Write(value.Size);
+						Writer.Write(value.Offset);
+					});
+				}
 #endif
-            }
-        }
+			}
+		}
 
-        public SizeOffsetMarker(BinaryWriter writer) : base(writer) { }
+		public SizeOffsetMarker(BinaryWriter writer) : base(writer) { }
 
-        public override void Allocate()
-        {
-            Writer.Write((uint)0);
-            Writer.Write((uint)0);
-        }
-    }
+		public override void Allocate()
+		{
+			Writer.Write((uint)0);
+			Writer.Write((uint)0);
+		}
+	}
 
 }

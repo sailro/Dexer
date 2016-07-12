@@ -28,35 +28,35 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Dexer.Test
 {
-    [TestClass]
-    public class BaseCollectorTest : BaseTest
-    {
-        internal void TestCollector<TC,T>(Func<Dex, List<T>> provider) where TC : BaseCollector<T>, new()
-        {
-            foreach (var file in Directory.GetFiles(FilesDirectory))
-            {
-                TestCollector<TC, T>(provider, file);
-            }
-        }
+	[TestClass]
+	public class BaseCollectorTest : BaseTest
+	{
+		internal void TestCollector<TC, T>(Func<Dex, List<T>> provider) where TC : BaseCollector<T>, new()
+		{
+			foreach (var file in Directory.GetFiles(FilesDirectory))
+			{
+				TestCollector<TC, T>(provider, file);
+			}
+		}
 
-        internal TC TestCollector<TC, T>(Func<Dex, List<T>> provider, string file) where TC : BaseCollector<T>, new()
-        {
-            TestContext.WriteLine("Testing {0}", file);
-            var dex = Dex.Read(file);
+		internal TC TestCollector<TC, T>(Func<Dex, List<T>> provider, string file) where TC : BaseCollector<T>, new()
+		{
+			TestContext.WriteLine("Testing {0}", file);
+			var dex = Dex.Read(file);
 
-            var collector = new TC();
-            collector.Collect(dex);
+			var collector = new TC();
+			collector.Collect(dex);
 
-            foreach (var key in provider(dex))
-                Assert.IsTrue(collector.Items.ContainsKey(key), "Item '{0}' not collected", key);
+			foreach (var key in provider(dex))
+				Assert.IsTrue(collector.Items.ContainsKey(key), "Item '{0}' not collected", key);
 
-            foreach (var key in collector.Items.Keys)
-                Assert.IsTrue(provider(dex).Contains(key), "Item '{0}' is 'over' collected", key);
+			foreach (var key in collector.Items.Keys)
+				Assert.IsTrue(provider(dex).Contains(key), "Item '{0}' is 'over' collected", key);
 
-            Assert.AreEqual(provider(dex).Count, collector.Items.Count);
+			Assert.AreEqual(provider(dex).Count, collector.Items.Count);
 
-            return collector;
-        }
+			return collector;
+		}
 
-    }
+	}
 }

@@ -23,13 +23,13 @@ using System;
 
 namespace Dexer.IO
 {
-    public class MalformedException : Exception
-    {
+	public class MalformedException : Exception
+	{
 
-        public MalformedException(String message)
-            : base(message)
-        {
-        }
+		public MalformedException(String message)
+			: base(message)
+		{
+		}
 
-    }
+	}
 }

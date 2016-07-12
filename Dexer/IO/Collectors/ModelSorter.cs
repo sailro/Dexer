@@ -24,51 +24,51 @@ using Dexer.Core;
 
 namespace Dexer.IO.Collectors
 {
-    internal class ModelSorter : BaseCollector<object>
-    {
-        private readonly ClassDefinitionComparer _cdefc;
-        private readonly ClassReferenceComparer _crefc;
-        private readonly MethodDefinitionComparer _mdefc;
-        private readonly FieldDefinitionComparer _fdefc;
-        private readonly AnnotationComparer _ac;
+	internal class ModelSorter : BaseCollector<object>
+	{
+		private readonly ClassDefinitionComparer _cdefc;
+		private readonly ClassReferenceComparer _crefc;
+		private readonly MethodDefinitionComparer _mdefc;
+		private readonly FieldDefinitionComparer _fdefc;
+		private readonly AnnotationComparer _ac;
 
-        public ModelSorter()
-        {
-            _cdefc = new ClassDefinitionComparer();
-            _crefc = new ClassReferenceComparer();
-            _mdefc = new MethodDefinitionComparer();
-            _fdefc = new FieldDefinitionComparer();
-            _ac = new AnnotationComparer();
-        }
+		public ModelSorter()
+		{
+			_cdefc = new ClassDefinitionComparer();
+			_crefc = new ClassReferenceComparer();
+			_mdefc = new MethodDefinitionComparer();
+			_fdefc = new FieldDefinitionComparer();
+			_ac = new AnnotationComparer();
+		}
 
-        public override void Collect(List<ClassDefinition> classes)
-        {
-            classes.Sort(_cdefc);
-            base.Collect(classes);
-        }
+		public override void Collect(List<ClassDefinition> classes)
+		{
+			classes.Sort(_cdefc);
+			base.Collect(classes);
+		}
 
-        public override void Collect(List<ClassReference> classes)
-        {
-            classes.Sort(_crefc);
-            base.Collect(classes);
-        }
+		public override void Collect(List<ClassReference> classes)
+		{
+			classes.Sort(_crefc);
+			base.Collect(classes);
+		}
 
-        public override void Collect(List<MethodDefinition> methods)
-        {
-            methods.Sort(_mdefc);
-            base.Collect(methods);
-        }
+		public override void Collect(List<MethodDefinition> methods)
+		{
+			methods.Sort(_mdefc);
+			base.Collect(methods);
+		}
 
-        public override void Collect(List<FieldDefinition> fields)
-        {
-            fields.Sort(_fdefc);
-            base.Collect(fields);
-        }
+		public override void Collect(List<FieldDefinition> fields)
+		{
+			fields.Sort(_fdefc);
+			base.Collect(fields);
+		}
 
-        public override void Collect(List<Annotation> annotations)
-        {
-            annotations.Sort(_ac);
-            base.Collect(annotations);
-        }
-    }
+		public override void Collect(List<Annotation> annotations)
+		{
+			annotations.Sort(_ac);
+			base.Collect(annotations);
+		}
+	}
 }

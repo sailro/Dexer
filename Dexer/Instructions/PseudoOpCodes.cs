@@ -21,10 +21,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Dexer.Instructions
 {
-    public enum PseudoOpCodes
-    {
-        PackedSwitch = 0x0100,
-        SparseSwitch = 0x0200,
-        FillArrayData = 0x0300
-    }
+	public enum PseudoOpCodes
+	{
+		PackedSwitch = 0x0100,
+		SparseSwitch = 0x0200,
+		FillArrayData = 0x0300
+	}
 }

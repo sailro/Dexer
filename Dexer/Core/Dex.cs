@@ -26,147 +26,148 @@ using Dexer.IO;
 
 namespace Dexer.Core
 {
-    public class Dex
-    {
-        public List<ClassDefinition> Classes { get; internal set; }
+	public class Dex
+	{
+		public List<ClassDefinition> Classes { get; internal set; }
 
-        internal List<TypeReference> TypeReferences { get; set; }
-        internal List<FieldReference> FieldReferences { get; set; }
-        internal List<MethodReference> MethodReferences { get; set; }
+		internal List<TypeReference> TypeReferences { get; set; }
+		internal List<FieldReference> FieldReferences { get; set; }
+		internal List<MethodReference> MethodReferences { get; set; }
 
-        internal List<string> Strings { get; set; }
-        internal List<Prototype> Prototypes { get; set; }
+		internal List<string> Strings { get; set; }
+		internal List<Prototype> Prototypes { get; set; }
 
-        public static Dex Read(string filename)
-        {
-            return Read(filename, true);
-        }
+		public static Dex Read(string filename)
+		{
+			return Read(filename, true);
+		}
 
-        public void Write(string filename)
-        {
-            Write(filename, true);
-        }
+		public void Write(string filename)
+		{
+			Write(filename, true);
+		}
 
-        public static Dex Read(string filename, bool bufferize)
-        {
-            var result = new Dex();
+		public static Dex Read(string filename, bool bufferize)
+		{
+			var result = new Dex();
 
-            using (var filestream = new FileStream(filename, FileMode.Open))
-            {
-                Stream sourcestream = filestream; 
-                if (bufferize)
-                {
-                    var memorystream = new MemoryStream();
-                    filestream.CopyTo(memorystream);
-                    memorystream.Position = 0;
-                    sourcestream = memorystream;
-                }
-
-                using (var binaryReader = new BinaryReader(sourcestream))
-                {
-                    var reader = new DexReader(result);
-                    reader.ReadFrom(binaryReader);
-                    return result;
-                }
-            }
-        }
-
-        public void Write(string filename, bool bufferize)
-        {
-            using (var filestream = new FileStream(filename, FileMode.Create))
-            {
-                Stream deststream = filestream;
-                MemoryStream memorystream = null;
-
-                if (bufferize)
-                {
-                    memorystream = new MemoryStream();
-                    deststream = memorystream;
-                }
-
-                using (var binaryWriter = new BinaryWriter(deststream))
-                {
-                    var writer = new DexWriter(this);
-                    writer.WriteTo(binaryWriter);
-
-	                if (!bufferize)
-						return;
-	                
+			using (var filestream = new FileStream(filename, FileMode.Open))
+			{
+				Stream sourcestream = filestream;
+				if (bufferize)
+				{
+					var memorystream = new MemoryStream();
+					filestream.CopyTo(memorystream);
 					memorystream.Position = 0;
-	                memorystream.CopyTo(filestream);
-                }
+					sourcestream = memorystream;
+				}
 
-            }
-        }
+				using (var binaryReader = new BinaryReader(sourcestream))
+				{
+					var reader = new DexReader(result);
+					reader.ReadFrom(binaryReader);
+					return result;
+				}
+			}
+		}
 
-        public Dex()
-        {
-            Classes = new List<ClassDefinition>();
-            TypeReferences = new List<TypeReference>();
-            FieldReferences = new List<FieldReference>();
-            MethodReferences = new List<MethodReference>();
+		public void Write(string filename, bool bufferize)
+		{
+			using (var filestream = new FileStream(filename, FileMode.Create))
+			{
+				Stream deststream = filestream;
+				MemoryStream memorystream = null;
 
-            Prototypes = new List<Prototype>();
-            Strings = new List<string>();
-        }
+				if (bufferize)
+				{
+					memorystream = new MemoryStream();
+					deststream = memorystream;
+				}
 
-        public ClassDefinition GetClass(string fullname)
-        {
-            return GetClass(fullname, Classes);
-        }
+				using (var binaryWriter = new BinaryWriter(deststream))
+				{
+					var writer = new DexWriter(this);
+					writer.WriteTo(binaryWriter);
 
-        internal ClassDefinition GetClass(string fullname, List<ClassDefinition> container)
-        {
-            foreach (ClassDefinition item in container)
-            {
-                if (fullname.Equals(item.Fullname))
-                    return item;
+					if (!bufferize)
+						return;
 
-                var inner = GetClass(fullname, item.InnerClasses);
-                if (inner != null)
-                    return inner;
-            }
-            return null;
-        }
+					memorystream.Position = 0;
+					memorystream.CopyTo(filestream);
+				}
 
-        internal TypeReference Import(TypeReference tref, bool add)
-        {
-            foreach (TypeReference item in TypeReferences)
-            {
-                if (tref.Equals(item))
-                {
-                    return item;
-                }
-            }
-            if (add)
-            {
-                // if !add see TypeDescriptor comment 
-                TypeReferences.Add(tref);
-            }
-            return tref;
-        }
+			}
+		}
 
-        public ClassReference Import(ClassReference cref)
-        {
-            return (ClassReference)Import(cref, true);
-        }
+		public Dex()
+		{
+			Classes = new List<ClassDefinition>();
+			TypeReferences = new List<TypeReference>();
+			FieldReferences = new List<FieldReference>();
+			MethodReferences = new List<MethodReference>();
 
-        public TypeReference Import(TypeReference tref) {
-            return Import(tref, true);
-        }
+			Prototypes = new List<Prototype>();
+			Strings = new List<string>();
+		}
 
-        public MethodReference Import(MethodReference mref)
-        {
-            foreach (MethodReference item in MethodReferences)
-            {
-                if (mref.Equals(item))
-                {
-                    return item;
-                }
-            }
-            MethodReferences.Add(mref);
-            return mref;
-        }
+		public ClassDefinition GetClass(string fullname)
+		{
+			return GetClass(fullname, Classes);
+		}
 
-    }
+		internal ClassDefinition GetClass(string fullname, List<ClassDefinition> container)
+		{
+			foreach (ClassDefinition item in container)
+			{
+				if (fullname.Equals(item.Fullname))
+					return item;
+
+				var inner = GetClass(fullname, item.InnerClasses);
+				if (inner != null)
+					return inner;
+			}
+			return null;
+		}
+
+		internal TypeReference Import(TypeReference tref, bool add)
+		{
+			foreach (TypeReference item in TypeReferences)
+			{
+				if (tref.Equals(item))
+				{
+					return item;
+				}
+			}
+			if (add)
+			{
+				// if !add see TypeDescriptor comment 
+				TypeReferences.Add(tref);
+			}
+			return tref;
+		}
+
+		public ClassReference Import(ClassReference cref)
+		{
+			return (ClassReference)Import(cref, true);
+		}
+
+		public TypeReference Import(TypeReference tref)
+		{
+			return Import(tref, true);
+		}
+
+		public MethodReference Import(MethodReference mref)
+		{
+			foreach (MethodReference item in MethodReferences)
+			{
+				if (mref.Equals(item))
+				{
+					return item;
+				}
+			}
+			MethodReferences.Add(mref);
+			return mref;
+		}
+
+	}
 }

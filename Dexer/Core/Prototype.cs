@@ -27,97 +27,91 @@ using Dexer.Metadata;
 
 namespace Dexer.Core
 {
-    public class Prototype : ICloneable, IEquatable<Prototype>
+	public class Prototype : ICloneable, IEquatable<Prototype>
 	{
-        public TypeReference ReturnType { get; set; }
-        public List<Parameter> Parameters { get; set; }
+		public TypeReference ReturnType { get; set; }
+		public List<Parameter> Parameters { get; set; }
 
-        public Prototype()
-        {
-            Parameters = new List<Parameter>();
-        }
+		public Prototype()
+		{
+			Parameters = new List<Parameter>();
+		}
 
-        public Prototype(TypeReference returntype, params Parameter[] parameters)
-            : this()
-        {
-            ReturnType = returntype;
-            Parameters = new List<Parameter>(parameters);
-        }
+		public Prototype(TypeReference returntype, params Parameter[] parameters)
+			: this()
+		{
+			ReturnType = returntype;
+			Parameters = new List<Parameter>(parameters);
+		}
 
-        public bool ContainsAnnotation()
-        {
-	        return Parameters.Any(parameter => parameter.Annotations.Count > 0);
-        }
+		public bool ContainsAnnotation()
+		{
+			return Parameters.Any(parameter => parameter.Annotations.Count > 0);
+		}
 
-	    public override string ToString()
-        {
-            var builder = new StringBuilder();
-            builder.Append("(");
-            for (var i = 0; i < Parameters.Count; i++)
-            {
-                if (i>0)
-                    builder.Append(", ");
+		public override string ToString()
+		{
+			var builder = new StringBuilder();
+			builder.Append("(");
+			for (var i = 0; i < Parameters.Count; i++)
+			{
+				if (i > 0)
+					builder.Append(", ");
 
-                builder.Append(Parameters[i]);
-            }
-            builder.Append(")");
-            builder.Append(" : ");
-            builder.Append(ReturnType);
-            return builder.ToString();
-        }
+				builder.Append(Parameters[i]);
+			}
+			builder.Append(")");
+			builder.Append(" : ");
+			builder.Append(ReturnType);
+			return builder.ToString();
+		}
 
-        #region " ICloneable "
-        internal Prototype Clone()
-        {
-            return (Prototype)(this as ICloneable).Clone();
-        }
+		internal Prototype Clone()
+		{
+			return (Prototype)(this as ICloneable).Clone();
+		}
 
-        object ICloneable.Clone()
-        {
-            var result = new Prototype {ReturnType = ReturnType};
+		object ICloneable.Clone()
+		{
+			var result = new Prototype { ReturnType = ReturnType };
 
-	        foreach (var p in Parameters)
-            {
-                result.Parameters.Add(p.Clone());
-            }
+			foreach (var p in Parameters)
+			{
+				result.Parameters.Add(p.Clone());
+			}
 
-            return result;
-        }
-        #endregion
+			return result;
+		}
 
-        #region " IEquatable "
-        public bool Equals(Prototype other)
-        {
-            var result = ReturnType.Equals(other.ReturnType) && Parameters.Count.Equals(other.Parameters.Count);
-            if (result)
-            {
-                for (var i = 0; i < Parameters.Count; i++)
-                    result = result && Parameters[i].Equals(other.Parameters[i]);
-            }
-            return result;
-        }
-        #endregion
+		public bool Equals(Prototype other)
+		{
+			var result = ReturnType.Equals(other.ReturnType) && Parameters.Count.Equals(other.Parameters.Count);
+			if (result)
+			{
+				for (var i = 0; i < Parameters.Count; i++)
+					result = result && Parameters[i].Equals(other.Parameters[i]);
+			}
+			return result;
+		}
 
-        #region " Object "
-        public override bool Equals(object obj)
-        {
-            if (obj is Prototype)
-                return Equals(obj as Prototype);
+		public override bool Equals(object obj)
+		{
+			if (obj is Prototype)
+				return Equals(obj as Prototype);
 
-            return false;
-        }
+			return false;
+		}
 
-        public override int GetHashCode()
-        {
-            var builder = new StringBuilder();
-            builder.AppendLine(TypeDescriptor.Encode(ReturnType));
+		public override int GetHashCode()
+		{
+			var builder = new StringBuilder();
+			builder.AppendLine(TypeDescriptor.Encode(ReturnType));
 
-            foreach (var parameter in Parameters)
-                builder.AppendLine(TypeDescriptor.Encode(parameter.Type));
+			foreach (var parameter in Parameters)
+				builder.AppendLine(TypeDescriptor.Encode(parameter.Type));
 
-            return builder.ToString().GetHashCode();
-        }
-        #endregion
+			return builder.ToString().GetHashCode();
+		}
 
-    }
+	}
 }

@@ -26,9 +26,9 @@ using System.Linq;
 namespace Dexer.IO.Collectors
 {
 
-/* Taken from (great thanks)
- * http://stackoverflow.com/questions/1982592/topological-sorting-using-linq
- */
+	/* Taken from (great thanks)
+	 * http://stackoverflow.com/questions/1982592/topological-sorting-using-linq
+	 */
 
 	interface IPartialComparer<in T>
 	{

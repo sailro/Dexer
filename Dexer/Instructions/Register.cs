@@ -21,18 +21,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Dexer.Instructions
 {
-    public class Register
-    {
-        public int Index { get; set; }
+	public class Register
+	{
+		public int Index { get; set; }
 
-        public Register(int index)
-        {
-            Index = index;
-        }
+		public Register(int index)
+		{
+			Index = index;
+		}
 
-        public override string ToString()
-        {
-            return string.Concat("[", Index, "]");
-        }
-    }
+		public override string ToString()
+		{
+			return string.Concat("[", Index, "]");
+		}
+	}
 }

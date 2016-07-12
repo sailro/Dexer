@@ -23,29 +23,29 @@ using Dexer.Core;
 
 namespace Dexer.IO.Collectors
 {
-    internal class DependencyCollector: BaseCollector<ClassDefinition>
-    {
+	internal class DependencyCollector : BaseCollector<ClassDefinition>
+	{
 
-        public override void Collect(TypeReference tref)
-        {
-	        if (!(tref is ClassDefinition)) 
+		public override void Collect(TypeReference tref)
+		{
+			if (!(tref is ClassDefinition))
 				return;
-	        
+
 			var @class = tref as ClassDefinition;
-	        if (!Items.ContainsKey(@class))
-		        Items.Add(@class, 0);
+			if (!Items.ContainsKey(@class))
+				Items.Add(@class, 0);
 
-	        Items[@class]++;
-        }
+			Items[@class]++;
+		}
 
-        public override void Collect(ClassDefinition @class)
-        {
-            Collect(@class.InnerClasses);
-            Collect(@class.Interfaces);
-            Collect(@class.SuperClass);
-            Collect(@class as ClassReference);
-        }
+		public override void Collect(ClassDefinition @class)
+		{
+			Collect(@class.InnerClasses);
+			Collect(@class.Interfaces);
+			Collect(@class.SuperClass);
+			Collect(@class as ClassReference);
+		}
 
 
-    }
+	}
 }

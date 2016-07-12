@@ -21,9 +21,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Dexer.Core
 {
-    public interface IMemberDefinition : IMemberReference, IAnnotationProvider
-    {
-        AccessFlags AccessFlags { get; set; }
-        ClassDefinition Owner { get; set; }
-    }
+	public interface IMemberDefinition : IMemberReference, IAnnotationProvider
+	{
+		AccessFlags AccessFlags { get; set; }
+		ClassDefinition Owner { get; set; }
+	}
 }

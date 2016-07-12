@@ -25,22 +25,22 @@ using Dexer.IO.Markers;
 
 namespace Dexer.Extensions
 {
-    public static class BinaryWriterExtensions
-    {
-        public static void EnsureAlignment(this BinaryWriter writer, uint sectionOffset, int alignment, Action action)
-        {
-            var position = writer.BaseStream.Position-sectionOffset;
+	public static class BinaryWriterExtensions
+	{
+		public static void EnsureAlignment(this BinaryWriter writer, uint sectionOffset, int alignment, Action action)
+		{
+			var position = writer.BaseStream.Position - sectionOffset;
 
-            while (position % alignment != 0)
-            {
-                writer.Write((byte)0);
-                position++;
-            }
+			while (position % alignment != 0)
+			{
+				writer.Write((byte)0);
+				position++;
+			}
 
-            action();
-        }
+			action();
+		}
 
-        /*public static void EnsureAlignment(this BinaryWriter writer, int alignment, Action action)
+		/*public static void EnsureAlignment(this BinaryWriter writer, int alignment, Action action)
         {
             long position = writer.BaseStream.Position;
 
@@ -50,165 +50,165 @@ namespace Dexer.Extensions
                 writer.Write((byte)0);
         }*/
 
-        public static void PreserveCurrentPosition(this BinaryWriter writer, uint newPosition, Action action)
-        {
-            var position = writer.BaseStream.Position;
-            writer.BaseStream.Seek(newPosition, SeekOrigin.Begin);
+		public static void PreserveCurrentPosition(this BinaryWriter writer, uint newPosition, Action action)
+		{
+			var position = writer.BaseStream.Position;
+			writer.BaseStream.Seek(newPosition, SeekOrigin.Begin);
 
-            action();
+			action();
 
-            writer.BaseStream.Seek(position, SeekOrigin.Begin);
-        }
+			writer.BaseStream.Seek(position, SeekOrigin.Begin);
+		}
 
-        internal static UShortMarker MarkUShort(this BinaryWriter writer)
-        {
-            return new UShortMarker(writer);
-        }
+		internal static UShortMarker MarkUShort(this BinaryWriter writer)
+		{
+			return new UShortMarker(writer);
+		}
 
-        internal static UIntMarker MarkUInt(this BinaryWriter writer)
-        {
-            return new UIntMarker(writer);
-        }
+		internal static UIntMarker MarkUInt(this BinaryWriter writer)
+		{
+			return new UIntMarker(writer);
+		}
 
-        internal static SizeOffsetMarker MarkSizeOffset(this BinaryWriter writer)
-        {
-            return new SizeOffsetMarker(writer);
-        }
+		internal static SizeOffsetMarker MarkSizeOffset(this BinaryWriter writer)
+		{
+			return new SizeOffsetMarker(writer);
+		}
 
-        internal static SignatureMarker MarkSignature(this BinaryWriter writer)
-        {
-            return new SignatureMarker(writer);
-        }
+		internal static SignatureMarker MarkSignature(this BinaryWriter writer)
+		{
+			return new SignatureMarker(writer);
+		}
 
-        public static void WriteULEB128(this BinaryWriter writer, uint value)
-        {
-	        do
-            {
-                var partial = (byte)(value & 0x7f);
-                value >>= 7;
-                if (value != 0) 
-                    partial |= 0x80;
-                writer.Write(partial);
-            } while (value != 0);
-        }
+		public static void WriteULEB128(this BinaryWriter writer, uint value)
+		{
+			do
+			{
+				var partial = (byte)(value & 0x7f);
+				value >>= 7;
+				if (value != 0)
+					partial |= 0x80;
+				writer.Write(partial);
+			} while (value != 0);
+		}
 
-        public static void WriteULEB128P1(this BinaryWriter writer, long value)
-        {
-            WriteULEB128(writer, (uint)(value + 1));
-        }
+		public static void WriteULEB128P1(this BinaryWriter writer, long value)
+		{
+			WriteULEB128(writer, (uint)(value + 1));
+		}
 
-        public static void WriteSLEB128(this BinaryWriter writer, int value)
-        {
+		public static void WriteSLEB128(this BinaryWriter writer, int value)
+		{
 
-            var negative = (value < 0);
-	        var next = true;
+			var negative = (value < 0);
+			var next = true;
 
-            while (next)
-            {
-                var partial = (byte)(value & 0x7f);
-                value >>= 7;
-                if (negative)
-                    value |= -(1 << 24);
+			while (next)
+			{
+				var partial = (byte)(value & 0x7f);
+				value >>= 7;
+				if (negative)
+					value |= -(1 << 24);
 
-                if ((value == 0 && ((partial & 0x40) == 0)) || (value == -1 && ((partial & 0x40) != 0)))
-                    next = false;
-                else
-                    partial |= 0x80;
+				if ((value == 0 && ((partial & 0x40) == 0)) || (value == -1 && ((partial & 0x40) != 0)))
+					next = false;
+				else
+					partial |= 0x80;
 
-                writer.Write(partial);
-            }
-        }
+				writer.Write(partial);
+			}
+		}
 
-        public static void WriteMUTF8String(this BinaryWriter writer, String value)
-        {
-            writer.WriteULEB128((uint)value.Length);
+		public static void WriteMUTF8String(this BinaryWriter writer, String value)
+		{
+			writer.WriteULEB128((uint)value.Length);
 
-            foreach (char c in value)
-            {
-	            if ((c != 0) && (c < 0x80))
-	            {
-		            writer.Write((byte)c);
-	            }
-	            else if (c < 0x800)
-	            {
-		            writer.Write((byte)(((c >> 6) & 0x1f) | 0xc0));
-		            writer.Write((byte)((c & 0x3f) | 0x80));
-	            }
-	            else
-	            {
-		            writer.Write((byte)(((c >> 12) & 0x0f) | 0xe0));
-		            writer.Write((byte)(((c >> 6) & 0x3f) | 0xc0));
-		            writer.Write((byte)((c & 0x3f) | 0x80));
-	            }
-            }
+			foreach (char c in value)
+			{
+				if ((c != 0) && (c < 0x80))
+				{
+					writer.Write((byte)c);
+				}
+				else if (c < 0x800)
+				{
+					writer.Write((byte)(((c >> 6) & 0x1f) | 0xc0));
+					writer.Write((byte)((c & 0x3f) | 0x80));
+				}
+				else
+				{
+					writer.Write((byte)(((c >> 12) & 0x0f) | 0xe0));
+					writer.Write((byte)(((c >> 6) & 0x3f) | 0xc0));
+					writer.Write((byte)((c & 0x3f) | 0x80));
+				}
+			}
 
-            writer.Write((byte) 0); // 0 padded;
-        }
+			writer.Write((byte)0); // 0 padded;
+		}
 
-        private static int NumberOfLeadingZeros(long i)
-        {
-            if (i == 0)
-                return 64;
-            var n = 1;
-            var x = (int) (TripleShift(i, 32));
-            
-            if (x == 0)                     { n += 32; x = (int) i; }
-            if (TripleShift(x, 16) == 0)    { n += 16; x <<= 16; }
-            if (TripleShift(x, 24) == 0)    { n += 8;  x <<= 8; }
-            if (TripleShift(x, 28) == 0)    { n += 4;  x <<= 4; }
-            if (TripleShift(x, 30) == 0)    { n += 2;  x <<= 2; }
-            
-            n -= (int) TripleShift(x, 31);
-            return n;
-        }
+		private static int NumberOfLeadingZeros(long i)
+		{
+			if (i == 0)
+				return 64;
+			var n = 1;
+			var x = (int)(TripleShift(i, 32));
 
-        private static long TripleShift(long n, int s)
-        {
-            if (n >= 0)
-                return n >> s;
-            return (n >> s) + (2 << ~s);
-        }
+			if (x == 0) { n += 32; x = (int)i; }
+			if (TripleShift(x, 16) == 0) { n += 16; x <<= 16; }
+			if (TripleShift(x, 24) == 0) { n += 8; x <<= 8; }
+			if (TripleShift(x, 28) == 0) { n += 4; x <<= 4; }
+			if (TripleShift(x, 30) == 0) { n += 2; x <<= 2; }
 
-        public static int GetByteCountForSignedPackedNumber(this BinaryWriter writer, long value)
-        {
-            var requiredBits = 65 - NumberOfLeadingZeros(value ^ (value >> 63));
-            int result = (byte)((requiredBits + 0x07) >> 3);
+			n -= (int)TripleShift(x, 31);
+			return n;
+		}
 
-            return result;
-        }
+		private static long TripleShift(long n, int s)
+		{
+			if (n >= 0)
+				return n >> s;
+			return (n >> s) + (2 << ~s);
+		}
 
-        public static int GetByteCountForUnsignedPackedNumber(this BinaryWriter writer, long value)
-        {
-            var requiredBits = 64 - NumberOfLeadingZeros(value);
-            if (requiredBits == 0)
-                requiredBits = 1;
+		public static int GetByteCountForSignedPackedNumber(this BinaryWriter writer, long value)
+		{
+			var requiredBits = 65 - NumberOfLeadingZeros(value ^ (value >> 63));
+			int result = (byte)((requiredBits + 0x07) >> 3);
 
-            int result = (byte)((requiredBits + 0x07) >> 3);
+			return result;
+		}
 
-            return result;
-        }
+		public static int GetByteCountForUnsignedPackedNumber(this BinaryWriter writer, long value)
+		{
+			var requiredBits = 64 - NumberOfLeadingZeros(value);
+			if (requiredBits == 0)
+				requiredBits = 1;
 
-        public static void WritePackedSignedNumber(this BinaryWriter writer, long value)
-        {
-            var requiredBytes = GetByteCountForSignedPackedNumber(writer, value);
+			int result = (byte)((requiredBits + 0x07) >> 3);
 
-            for (var i = 0; i < requiredBytes; i++)
-            {
-                writer.Write((byte)value);
-                value >>= 8;
-            }
-        }
+			return result;
+		}
 
-        public static void WriteUnsignedPackedNumber(this BinaryWriter writer, long value)
-        {
-            var requiredBytes = GetByteCountForUnsignedPackedNumber(writer, value);
+		public static void WritePackedSignedNumber(this BinaryWriter writer, long value)
+		{
+			var requiredBytes = GetByteCountForSignedPackedNumber(writer, value);
 
-            for (var i = 0; i < requiredBytes; i++)
-            {
-                writer.Write((byte)value);
-                value >>= 8;
-            }
-        }
+			for (var i = 0; i < requiredBytes; i++)
+			{
+				writer.Write((byte)value);
+				value >>= 8;
+			}
+		}
 
-    }
+		public static void WriteUnsignedPackedNumber(this BinaryWriter writer, long value)
+		{
+			var requiredBytes = GetByteCountForUnsignedPackedNumber(writer, value);
+
+			for (var i = 0; i < requiredBytes; i++)
+			{
+				writer.Write((byte)value);
+				value >>= 8;
+			}
+		}
+
+	}
 }

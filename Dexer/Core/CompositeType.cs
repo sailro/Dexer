@@ -21,8 +21,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Dexer.Core
 {
-    public abstract class CompositeType : TypeReference
-    {
+	public abstract class CompositeType : TypeReference
+	{
 
-    }
+	}
 }

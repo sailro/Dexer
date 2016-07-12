@@ -24,16 +24,14 @@ using System;
 
 namespace Dexer.Core
 {
-    public abstract class TypeReference : IEquatable<TypeReference>
-    {
-        internal TypeDescriptors TypeDescriptor { get; set; }
+	public abstract class TypeReference : IEquatable<TypeReference>
+	{
+		internal TypeDescriptors TypeDescriptor { get; set; }
 
-        #region " IEquatable "
-        public virtual bool Equals(TypeReference other)
-        {
-            return TypeDescriptor == other.TypeDescriptor;
-        }
-        #endregion
+		public virtual bool Equals(TypeReference other)
+		{
+			return TypeDescriptor == other.TypeDescriptor;
+		}
 
-    }
+	}
 }

@@ -25,32 +25,32 @@ using System.Linq;
 
 namespace Dexer.IO.Collectors
 {
-    internal class CatchSetComparer : IComparer<CatchSet>
-    {
-        public List<int> CollectOffsets(CatchSet set)
-        {
-            var result = set.Select(@catch => @catch.Instruction.Offset).ToList();
+	internal class CatchSetComparer : IComparer<CatchSet>
+	{
+		public List<int> CollectOffsets(CatchSet set)
+		{
+			var result = set.Select(@catch => @catch.Instruction.Offset).ToList();
 
-	        if (set.CatchAll != null)
-                result.Add(set.CatchAll.Offset);
+			if (set.CatchAll != null)
+				result.Add(set.CatchAll.Offset);
 
-            return result;
-        }
+			return result;
+		}
 
-        public int Compare(CatchSet x, CatchSet y)
-        {
-            var xOffsets = CollectOffsets(x);
-            var yOffsets = CollectOffsets(y);
+		public int Compare(CatchSet x, CatchSet y)
+		{
+			var xOffsets = CollectOffsets(x);
+			var yOffsets = CollectOffsets(y);
 
-            var minp = Math.Min(xOffsets.Count, yOffsets.Count);
-            for (var i = 0; i < minp; i++)
-            {
-                var cp = xOffsets[i].CompareTo(yOffsets[i]);
-                if (cp != 0)
-                    return cp;
-            }
+			var minp = Math.Min(xOffsets.Count, yOffsets.Count);
+			for (var i = 0; i < minp; i++)
+			{
+				var cp = xOffsets[i].CompareTo(yOffsets[i]);
+				if (cp != 0)
+					return cp;
+			}
 
-            return 0;
-        }
-    }
+			return 0;
+		}
+	}
 }

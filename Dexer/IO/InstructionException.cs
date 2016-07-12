@@ -24,15 +24,15 @@ using Dexer.Instructions;
 
 namespace Dexer.IO
 {
-    public class InstructionException : MalformedException
-    {
-        public Instruction Instruction { get; set; }
+	public class InstructionException : MalformedException
+	{
+		public Instruction Instruction { get; set; }
 
-        public InstructionException(Instruction instruction, String message)
-            : base(message)
-        {
-            Instruction = instruction;
-        }
+		public InstructionException(Instruction instruction, String message)
+			: base(message)
+		{
+			Instruction = instruction;
+		}
 
-    }
+	}
 }

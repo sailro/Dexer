@@ -23,17 +23,17 @@ namespace Dexer.Metadata
 {
 	public class MapItem
 	{
-        public TypeCodes Type { get; set; }
-        public uint Size { get; set; }
-        public uint Offset { get; set; }
+		public TypeCodes Type { get; set; }
+		public uint Size { get; set; }
+		public uint Offset { get; set; }
 
-        public MapItem() { }
+		public MapItem() { }
 
-        public MapItem(TypeCodes type, uint size, uint offset)
-        {
-            Type = type;
-            Size = size;
-            Offset = offset;
-        }
+		public MapItem(TypeCodes type, uint size, uint offset)
+		{
+			Type = type;
+			Size = size;
+			Offset = offset;
+		}
 	}
 }

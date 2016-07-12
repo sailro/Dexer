@@ -23,33 +23,31 @@ using Dexer.Metadata;
 
 namespace Dexer.Core
 {
-    public class ArrayType : CompositeType
-    {
-        public TypeReference ElementType { get; set; }
+	public class ArrayType : CompositeType
+	{
+		public TypeReference ElementType { get; set; }
 
-        public ArrayType()
-        {
-            TypeDescriptor = TypeDescriptors.Array;
-        }
+		public ArrayType()
+		{
+			TypeDescriptor = TypeDescriptors.Array;
+		}
 
-        public override string ToString()
-        {
-            return string.Concat("[", ElementType.ToString(), "]");
-        }
+		public override string ToString()
+		{
+			return string.Concat("[", ElementType.ToString(), "]");
+		}
 
-        #region " IEquatable "
-        public bool Equals(ArrayType other)
-        {
-            return base.Equals(other) 
-                && ElementType.Equals(other.ElementType);
-        }
+		public bool Equals(ArrayType other)
+		{
+			return base.Equals(other)
+				&& ElementType.Equals(other.ElementType);
+		}
 
-        public override bool Equals(TypeReference other)
-        {
-            return (other is ArrayType)
-                && Equals(other as ArrayType);
-        }
-        #endregion
+		public override bool Equals(TypeReference other)
+		{
+			return (other is ArrayType)
+				&& Equals(other as ArrayType);
+		}
 
-    }
+	}
 }

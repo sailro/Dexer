@@ -23,13 +23,13 @@ using System.Collections.Generic;
 
 namespace Dexer.Instructions
 {
-    public class SparseSwitchData
-    {
-        public SortedDictionary<int, Instruction> Targets { get; set; }
+	public class SparseSwitchData
+	{
+		public SortedDictionary<int, Instruction> Targets { get; set; }
 
-        public SparseSwitchData()
-        {
-            Targets = new SortedDictionary<int, Instruction>();
-        }
-    }
+		public SparseSwitchData()
+		{
+			Targets = new SortedDictionary<int, Instruction>();
+		}
+	}
 }

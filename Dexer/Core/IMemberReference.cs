@@ -23,8 +23,8 @@ using System;
 
 namespace Dexer.Core
 {
-    public interface IMemberReference : IEquatable<IMemberReference>
-    {
-        string Name { get; set; }
-    }
+	public interface IMemberReference : IEquatable<IMemberReference>
+	{
+		string Name { get; set; }
+	}
 }

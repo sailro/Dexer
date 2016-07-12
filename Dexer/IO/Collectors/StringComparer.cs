@@ -23,11 +23,11 @@ using System.Collections.Generic;
 
 namespace Dexer.IO.Collectors
 {
-    internal class StringComparer : IComparer<string>
-    {
-        public int Compare(string x, string y)
-        {
-            return string.CompareOrdinal(x, y);
-        }
-    }
+	internal class StringComparer : IComparer<string>
+	{
+		public int Compare(string x, string y)
+		{
+			return string.CompareOrdinal(x, y);
+		}
+	}
 }

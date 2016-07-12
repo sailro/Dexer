@@ -24,16 +24,16 @@ using Dexer.Core;
 
 namespace Dexer.IO.Collectors
 {
-    internal class MethodDefinitionComparer : MethodReferenceComparer, IComparer<MethodDefinition>
-    {
-        public int Compare(MethodDefinition x, MethodDefinition y)
-        {
-            var result = x.IsVirtual.CompareTo(y.IsVirtual);
+	internal class MethodDefinitionComparer : MethodReferenceComparer, IComparer<MethodDefinition>
+	{
+		public int Compare(MethodDefinition x, MethodDefinition y)
+		{
+			var result = x.IsVirtual.CompareTo(y.IsVirtual);
 
-            if (result == 0)
-                result = base.Compare(x, y);
+			if (result == 0)
+				result = base.Compare(x, y);
 
-            return result;
-        }
-    }
+			return result;
+		}
+	}
 }

@@ -25,27 +25,28 @@ using Dexer.Extensions;
 namespace Dexer.IO.Markers
 {
 
-    internal class UShortMarker : Marker<ushort>
-    {
-        public override ushort Value
-        {
-            set {
+	internal class UShortMarker : Marker<ushort>
+	{
+		public override ushort Value
+		{
+			set
+			{
 #if !DISABLE_MARKERS || !DEBUG
-                foreach (var position in Positions)
-                {
-                    Writer.PreserveCurrentPosition(position, () => Writer.Write(value));
-                }
+				foreach (var position in Positions)
+				{
+					Writer.PreserveCurrentPosition(position, () => Writer.Write(value));
+				}
 #endif
-            }
-        }
+			}
+		}
 
-        public override void Allocate()
-        {
-            Writer.Write((ushort) 0);
-        }
+		public override void Allocate()
+		{
+			Writer.Write((ushort)0);
+		}
 
-        public UShortMarker(BinaryWriter writer) : base(writer) { }
+		public UShortMarker(BinaryWriter writer) : base(writer) { }
 
-    }
+	}
 
 }

@@ -23,8 +23,8 @@ using System.Collections.Generic;
 
 namespace Dexer.Core
 {
-    public interface IAnnotationProvider
-    {
-        List<Annotation> Annotations { get; set; }
-    }
+	public interface IAnnotationProvider
+	{
+		List<Annotation> Annotations { get; set; }
+	}
 }

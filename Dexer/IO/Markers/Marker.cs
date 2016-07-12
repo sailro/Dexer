@@ -25,28 +25,28 @@ using System.Collections.Generic;
 namespace Dexer.IO.Markers
 {
 
-    internal abstract class Marker<T>
-    {
-        public BinaryWriter Writer { get; set; }
-        public List<uint> Positions { get; set; }
+	internal abstract class Marker<T>
+	{
+		public BinaryWriter Writer { get; set; }
+		public List<uint> Positions { get; set; }
 
-        public abstract T Value { set; }
+		public abstract T Value { set; }
 
-        public abstract void Allocate();
+		public abstract void Allocate();
 
-        public void CloneMarker()
-        {
-            var position = (uint)Writer.BaseStream.Position;
-            Positions.Add(position);
-            Allocate();
-        }
+		public void CloneMarker()
+		{
+			var position = (uint)Writer.BaseStream.Position;
+			Positions.Add(position);
+			Allocate();
+		}
 
-	    protected Marker(BinaryWriter writer)
-        {
-            Writer = writer;
-            Positions = new List<uint>();
-            CloneMarker();
-        }
-    }
+		protected Marker(BinaryWriter writer)
+		{
+			Writer = writer;
+			Positions = new List<uint>();
+			CloneMarker();
+		}
+	}
 
 }

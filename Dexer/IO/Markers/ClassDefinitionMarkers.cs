@@ -22,12 +22,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 namespace Dexer.IO.Markers
 {
 
-    internal class ClassDefinitionMarkers
-    {
-        public UIntMarker InterfacesMarker { get; set; }
-        public UIntMarker AnnotationsMarker { get; set; }
-        public UIntMarker ClassDataMarker { get; set; }
-        public UIntMarker StaticValuesMarker { get; set; }
-    }
+	internal class ClassDefinitionMarkers
+	{
+		public UIntMarker InterfacesMarker { get; set; }
+		public UIntMarker AnnotationsMarker { get; set; }
+		public UIntMarker ClassDataMarker { get; set; }
+		public UIntMarker StaticValuesMarker { get; set; }
+	}
 
 }

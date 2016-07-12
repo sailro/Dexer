@@ -28,54 +28,54 @@ using Dexer.Instructions;
 
 namespace Dexer.Test
 {
-    [TestClass]
-    public class InstructionTest : BaseCollectorTest
-    {
-        [TestMethod]
-        public void TestUpdateInstructionOffsets()
-        {
-            var coverage = new Dictionary<OpCodes, int>();
+	[TestClass]
+	public class InstructionTest : BaseCollectorTest
+	{
+		[TestMethod]
+		public void TestUpdateInstructionOffsets()
+		{
+			var coverage = new Dictionary<OpCodes, int>();
 
-            foreach (var file in Directory.GetFiles(FilesDirectory))
-            {
-                TestContext.WriteLine("Testing {0}", file);
+			foreach (var file in Directory.GetFiles(FilesDirectory))
+			{
+				TestContext.WriteLine("Testing {0}", file);
 
-                var dex = Dex.Read(file);
+				var dex = Dex.Read(file);
 
-                foreach (var @class in dex.Classes)
-                {
-                    foreach (var method in @class.Methods)
-                    {
-	                    if (method.Body == null)
+				foreach (var @class in dex.Classes)
+				{
+					foreach (var method in @class.Methods)
+					{
+						if (method.Body == null)
 							continue;
-	                    
+
 						var offsets = new List<int>();
-	                    foreach (var ins in method.Body.Instructions)
-	                    {
-		                    if (!coverage.ContainsKey(ins.OpCode))
-			                    coverage.Add(ins.OpCode, 0);
-		                    offsets.Add(ins.Offset);
-		                    coverage[ins.OpCode]++;
-	                    }
-                            
-	                    method.Body.UpdateInstructionOffsets();
-	                    for (var i = 0; i < offsets.Count; i++)
-		                    Assert.AreEqual(offsets[i], method.Body.Instructions[i].Offset, "Check OpCode {0}", method.Body.Instructions[i==0?i:i-1].OpCode);
-                    }
-                }
-            }
+						foreach (var ins in method.Body.Instructions)
+						{
+							if (!coverage.ContainsKey(ins.OpCode))
+								coverage.Add(ins.OpCode, 0);
+							offsets.Add(ins.Offset);
+							coverage[ins.OpCode]++;
+						}
 
-            bool isInconclusive = false;
-            foreach (OpCodes opcode in Enum.GetValues(typeof(OpCodes)))
-                if (!coverage.ContainsKey(opcode))
-                {
-                    isInconclusive = true;
-                    TestContext.WriteLine("OpCode {0} was not covered", opcode);
-                }
+						method.Body.UpdateInstructionOffsets();
+						for (var i = 0; i < offsets.Count; i++)
+							Assert.AreEqual(offsets[i], method.Body.Instructions[i].Offset, "Check OpCode {0}", method.Body.Instructions[i == 0 ? i : i - 1].OpCode);
+					}
+				}
+			}
 
-            if (isInconclusive)
-                Assert.Inconclusive("Some OpCode(s) were not covered ({0:P} coverage) , see test details", ((double) coverage.Count) / (Enum.GetNames(typeof(OpCodes)).Length) );
-        }
+			bool isInconclusive = false;
+			foreach (OpCodes opcode in Enum.GetValues(typeof(OpCodes)))
+				if (!coverage.ContainsKey(opcode))
+				{
+					isInconclusive = true;
+					TestContext.WriteLine("OpCode {0} was not covered", opcode);
+				}
 
-    }
+			if (isInconclusive)
+				Assert.Inconclusive("Some OpCode(s) were not covered ({0:P} coverage) , see test details", ((double)coverage.Count) / (Enum.GetNames(typeof(OpCodes)).Length));
+		}
+
+	}
 }

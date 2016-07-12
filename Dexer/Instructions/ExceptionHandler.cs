@@ -23,16 +23,16 @@ using System.Collections.Generic;
 
 namespace Dexer.Instructions
 {
-    public class ExceptionHandler
-    {
-        public Instruction TryStart { get; set; }
-        public Instruction TryEnd { get; set; }
-        public Instruction CatchAll { get; set; }
-        public List<Catch> Catches { get; set; }
+	public class ExceptionHandler
+	{
+		public Instruction TryStart { get; set; }
+		public Instruction TryEnd { get; set; }
+		public Instruction CatchAll { get; set; }
+		public List<Catch> Catches { get; set; }
 
-        public ExceptionHandler()
-        {
-            Catches = new List<Catch>();
-        }
-    }
+		public ExceptionHandler()
+		{
+			Catches = new List<Catch>();
+		}
+	}
 }

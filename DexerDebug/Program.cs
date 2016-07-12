@@ -24,13 +24,13 @@ using Dexer.Core;
 
 namespace Dexer.Debug
 {
-    class Program
-    {
-        static void Main()
-        {
-            var dex = Dex.Read("classes.dex");
-            dex.Write("output.dex");
-            Console.ReadLine();
-        }
-    }
+	class Program
+	{
+		static void Main()
+		{
+			var dex = Dex.Read("classes.dex");
+			dex.Write("output.dex");
+			Console.ReadLine();
+		}
+	}
 }

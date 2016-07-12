@@ -24,38 +24,38 @@ using Dexer.Core;
 
 namespace Dexer.IO.Collectors
 {
-    internal class ClassDefinitionComparer : ClassReferenceComparer, IPartialComparer<ClassDefinition>, IComparer<ClassDefinition>
-    {
-        public int Compare(ClassDefinition x, ClassDefinition y)
-        {
-            return base.Compare(x, y);
-        }
+	internal class ClassDefinitionComparer : ClassReferenceComparer, IPartialComparer<ClassDefinition>, IComparer<ClassDefinition>
+	{
+		public int Compare(ClassDefinition x, ClassDefinition y)
+		{
+			return base.Compare(x, y);
+		}
 
-        public List<ClassDefinition> CollectDependencies(ClassDefinition cdef)
-        {
-            var collector = new DependencyCollector();
-            collector.Collect(cdef);
-            var result = collector.ToList();
-            result.Remove(cdef);
-            return result;
-        }
+		public List<ClassDefinition> CollectDependencies(ClassDefinition cdef)
+		{
+			var collector = new DependencyCollector();
+			collector.Collect(cdef);
+			var result = collector.ToList();
+			result.Remove(cdef);
+			return result;
+		}
 
-        public int? PartialCompare(ClassDefinition x, ClassDefinition y)
-        {
-            var xdependencies = CollectDependencies(x);
-            var ydependencies = CollectDependencies(y);
+		public int? PartialCompare(ClassDefinition x, ClassDefinition y)
+		{
+			var xdependencies = CollectDependencies(x);
+			var ydependencies = CollectDependencies(y);
 
-            if (ydependencies.Contains(x))
-            {
-                if (xdependencies.Contains(y))
-                    return 0;
-                return -1;
-            }
+			if (ydependencies.Contains(x))
+			{
+				if (xdependencies.Contains(y))
+					return 0;
+				return -1;
+			}
 
-            if (xdependencies.Contains(y))
-                return 1;
+			if (xdependencies.Contains(y))
+				return 1;
 
-            return null;
-        }
-    }
+			return null;
+		}
+	}
 }

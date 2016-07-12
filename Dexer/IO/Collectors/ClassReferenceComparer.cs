@@ -24,11 +24,11 @@ using Dexer.Core;
 
 namespace Dexer.IO.Collectors
 {
-    internal class ClassReferenceComparer : TypeReferenceComparer, IComparer<ClassReference>
-    {
-        public int Compare(ClassReference x, ClassReference y)
-        {
-            return base.Compare(x, y);
-        }
-    }
+	internal class ClassReferenceComparer : TypeReferenceComparer, IComparer<ClassReference>
+	{
+		public int Compare(ClassReference x, ClassReference y)
+		{
+			return base.Compare(x, y);
+		}
+	}
 }

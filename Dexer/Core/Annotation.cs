@@ -26,83 +26,80 @@ using System;
 
 namespace Dexer.Core
 {
-    public class Annotation : IEquatable<Annotation>
-    {
-        public ClassReference Type { get; set; }
-        public List<AnnotationArgument> Arguments { get; set; }
-        public AnnotationVisibility Visibility { get; set; }
+	public class Annotation : IEquatable<Annotation>
+	{
+		public ClassReference Type { get; set; }
+		public List<AnnotationArgument> Arguments { get; set; }
+		public AnnotationVisibility Visibility { get; set; }
 
-        public Annotation()
-        {
-            Arguments = new List<AnnotationArgument>();
-        }
+		public Annotation()
+		{
+			Arguments = new List<AnnotationArgument>();
+		}
 
-        public override string ToString()
-        {
-            var builder = new StringBuilder();
-            builder.Append(Type);
-            builder.Append("(");
-            for (var i = 0; i < Arguments.Count; i++)
-            {
-                if (i > 0)
-                    builder.Append(", ");
+		public override string ToString()
+		{
+			var builder = new StringBuilder();
+			builder.Append(Type);
+			builder.Append("(");
+			for (var i = 0; i < Arguments.Count; i++)
+			{
+				if (i > 0)
+					builder.Append(", ");
 
-                builder.Append(Arguments[i]);
-            }
-            builder.Append(")");
-            return builder.ToString();
-        }
+				builder.Append(Arguments[i]);
+			}
+			builder.Append(")");
+			return builder.ToString();
+		}
 
-        #region " IEquatable "
-        public bool Equals(Annotation other)
-        {
-            var result = Type.Equals(other.Type) && Arguments.Count.Equals(other.Arguments.Count);
-            if (result)
-            {
-                for (var i = 0; i < Arguments.Count; i++)
-                    result = result && Arguments[i].Equals(other.Arguments[i]);
-            }
-            return result;
-        }
-        #endregion
+		public bool Equals(Annotation other)
+		{
+			var result = Type.Equals(other.Type) && Arguments.Count.Equals(other.Arguments.Count);
+			if (result)
+			{
+				for (var i = 0; i < Arguments.Count; i++)
+					result = result && Arguments[i].Equals(other.Arguments[i]);
+			}
+			return result;
+		}
 
-        #region " Object "
-        public override bool Equals(object obj)
-        {
-            if (obj is Annotation)
-                return Equals(obj as Annotation);
+		public override bool Equals(object obj)
+		{
+			if (obj is Annotation)
+				return Equals(obj as Annotation);
 
-            return false;
-        }
+			return false;
+		}
 
-        public override int GetHashCode()
-        {
-            var builder = new StringBuilder();
-            builder.AppendLine(TypeDescriptor.Encode(Type));
+		public override int GetHashCode()
+		{
+			var builder = new StringBuilder();
+			builder.AppendLine(TypeDescriptor.Encode(Type));
 
-            foreach (var argument in Arguments)
-            {
-                builder.Append(String.Format("{0}=", argument.Name));
-                if (ValueFormat.GetFormat(argument.Value) == ValueFormats.Array)
-                {
-                    var array = argument.Value as Array;
+			foreach (var argument in Arguments)
+			{
+				builder.Append(String.Format("{0}=", argument.Name));
+				if (ValueFormat.GetFormat(argument.Value) == ValueFormats.Array)
+				{
+					var array = argument.Value as Array;
 					if (array == null)
 						throw new ArgumentException();
 
-                    for (var i = 0; i < array.Length; i++)
-                    {
-                        if (i > 0)
-                            builder.Append(",");
-                        builder.Append(array.GetValue(i));
-                    }
-                } else
-                    builder.Append(argument.Value);
-                builder.AppendLine();
-            }
+					for (var i = 0; i < array.Length; i++)
+					{
+						if (i > 0)
+							builder.Append(",");
+						builder.Append(array.GetValue(i));
+					}
+				}
+				else
+					builder.Append(argument.Value);
+				builder.AppendLine();
+			}
 
-            return builder.ToString().GetHashCode();
-        }
-        #endregion
+			return builder.ToString().GetHashCode();
+		}
 
-    }
+	}
 }

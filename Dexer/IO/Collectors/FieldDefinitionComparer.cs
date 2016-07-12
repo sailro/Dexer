@@ -24,16 +24,16 @@ using Dexer.Core;
 
 namespace Dexer.IO.Collectors
 {
-    internal class FieldDefinitionComparer : FieldReferenceComparer, IComparer<FieldDefinition>
-    {
-        public int Compare(FieldDefinition x, FieldDefinition y)
-        {
-            var result = y.IsStatic.CompareTo(x.IsStatic);
+	internal class FieldDefinitionComparer : FieldReferenceComparer, IComparer<FieldDefinition>
+	{
+		public int Compare(FieldDefinition x, FieldDefinition y)
+		{
+			var result = y.IsStatic.CompareTo(x.IsStatic);
 
-            if (result == 0)
-                result = base.Compare(x, y);
+			if (result == 0)
+				result = base.Compare(x, y);
 
-            return result;
-        }
-    }
+			return result;
+		}
+	}
 }

@@ -24,27 +24,27 @@ using System.Text;
 
 namespace Dexer.Instructions
 {
-    public class DebugInstruction
-    {
-        public DebugOpCodes OpCode { get; set; }
-        public List<object> Operands { get; set; }
+	public class DebugInstruction
+	{
+		public DebugOpCodes OpCode { get; set; }
+		public List<object> Operands { get; set; }
 
-        public DebugInstruction()
-        {
-            Operands = new List<object>();
-        }
+		public DebugInstruction()
+		{
+			Operands = new List<object>();
+		}
 
-        public override string ToString()
-        {
-            var builder = new StringBuilder();
-            builder.Append(OpCode);
-            foreach (var operand in Operands)
-            {
-	            builder.Append(" ");
-	            builder.Append(operand);
-            }
-            return builder.ToString();
-        }
+		public override string ToString()
+		{
+			var builder = new StringBuilder();
+			builder.Append(OpCode);
+			foreach (var operand in Operands)
+			{
+				builder.Append(" ");
+				builder.Append(operand);
+			}
+			return builder.ToString();
+		}
 
-    }
+	}
 }

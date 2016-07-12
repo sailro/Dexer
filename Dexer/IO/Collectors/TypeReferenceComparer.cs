@@ -25,11 +25,11 @@ using Dexer.Metadata;
 
 namespace Dexer.IO.Collectors
 {
-    internal class TypeReferenceComparer : IComparer<TypeReference>
-    {
-        public int Compare(TypeReference x, TypeReference y)
-        {
-            return string.CompareOrdinal(TypeDescriptor.Encode(x), TypeDescriptor.Encode(y));
-        }
-    }
+	internal class TypeReferenceComparer : IComparer<TypeReference>
+	{
+		public int Compare(TypeReference x, TypeReference y)
+		{
+			return string.CompareOrdinal(TypeDescriptor.Encode(x), TypeDescriptor.Encode(y));
+		}
+	}
 }

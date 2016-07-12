@@ -27,44 +27,44 @@ using Dexer.Instructions;
 
 namespace Dexer.IO
 {
-    internal class CatchSet : List<Catch>, IEquatable<CatchSet>
-    {
-        public Instruction CatchAll { get; set; }
+	internal class CatchSet : List<Catch>, IEquatable<CatchSet>
+	{
+		public Instruction CatchAll { get; set; }
 
-        public CatchSet(ExceptionHandler handler)
-        {
-            AddRange(handler.Catches);
-            CatchAll = handler.CatchAll;
-        }
+		public CatchSet(ExceptionHandler handler)
+		{
+			AddRange(handler.Catches);
+			CatchAll = handler.CatchAll;
+		}
 
-        public override bool Equals(object obj)
-        {
-            if (obj is CatchSet)
-                return Equals(obj as CatchSet);
-            
-            return false;
-        }
+		public override bool Equals(object obj)
+		{
+			if (obj is CatchSet)
+				return Equals(obj as CatchSet);
 
-        public override int GetHashCode()
-        {
-            var builder = new StringBuilder();
-            builder.AppendLine(CatchAll == null ? "0" : CatchAll.Offset.ToString(CultureInfo.InvariantCulture));
-            foreach (var @catch in this)
-                builder.AppendLine(@catch.GetHashCode().ToString(CultureInfo.InvariantCulture));
-            return builder.ToString().GetHashCode();
-        }
+			return false;
+		}
 
-        public bool Equals(CatchSet other)
-        {
-            var result = Count == other.Count && Equals(CatchAll, other.CatchAll);
+		public override int GetHashCode()
+		{
+			var builder = new StringBuilder();
+			builder.AppendLine(CatchAll == null ? "0" : CatchAll.Offset.ToString(CultureInfo.InvariantCulture));
+			foreach (var @catch in this)
+				builder.AppendLine(@catch.GetHashCode().ToString(CultureInfo.InvariantCulture));
+			return builder.ToString().GetHashCode();
+		}
 
-            if (result)
-            {
-                for (var i = 0; i < Count; i++)
-                    result &= this[i].Equals(other[i]);
-            }
+		public bool Equals(CatchSet other)
+		{
+			var result = Count == other.Count && Equals(CatchAll, other.CatchAll);
 
-            return result;
-        }
-    }
+			if (result)
+			{
+				for (var i = 0; i < Count; i++)
+					result &= this[i].Equals(other[i]);
+			}
+
+			return result;
+		}
+	}
 }

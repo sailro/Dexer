@@ -23,18 +23,18 @@ using System.Collections.Generic;
 
 namespace Dexer.Instructions
 {
-    public class DebugInfo
-    {
-        public List<string> Parameters { get; set; }
-        public List<DebugInstruction> DebugInstructions { get; set; }
-        public uint LineStart { get; set; }
-        public MethodBody Owner { get; set; }
+	public class DebugInfo
+	{
+		public List<string> Parameters { get; set; }
+		public List<DebugInstruction> DebugInstructions { get; set; }
+		public uint LineStart { get; set; }
+		public MethodBody Owner { get; set; }
 
-        public DebugInfo(MethodBody body)
-        {
-            Owner = body;
-            Parameters = new List<string>();
-            DebugInstructions = new List<DebugInstruction>();
-        }
-    }
+		public DebugInfo(MethodBody body)
+		{
+			Owner = body;
+			Parameters = new List<string>();
+			DebugInstructions = new List<DebugInstruction>();
+		}
+	}
 }

@@ -25,35 +25,35 @@ using Dexer.Core;
 
 namespace Dexer.IO.Collectors
 {
-    internal class AnnotationComparer : IComparer<Annotation>
-    {
-        private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
-        private readonly ArgumentComparer _argumentComparer = new ArgumentComparer();
+	internal class AnnotationComparer : IComparer<Annotation>
+	{
+		private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
+		private readonly ArgumentComparer _argumentComparer = new ArgumentComparer();
 
-        public int Compare(Annotation x, Annotation y)
-        {
-            int result = _typeReferenceComparer.Compare(x.Type, y.Type);
+		public int Compare(Annotation x, Annotation y)
+		{
+			int result = _typeReferenceComparer.Compare(x.Type, y.Type);
 
-            if (result == 0)
-                result = x.Visibility.CompareTo(y.Visibility);
+			if (result == 0)
+				result = x.Visibility.CompareTo(y.Visibility);
 
-            if (result != 0)
-                return result;
+			if (result != 0)
+				return result;
 
-            for (var i = 0; i < Math.Min(x.Arguments.Count, y.Arguments.Count); i++)
-            {
-                result = _argumentComparer.Compare(x.Arguments[i], y.Arguments[i]);
-                if (result != 0)
-                    return result;
-            }
+			for (var i = 0; i < Math.Min(x.Arguments.Count, y.Arguments.Count); i++)
+			{
+				result = _argumentComparer.Compare(x.Arguments[i], y.Arguments[i]);
+				if (result != 0)
+					return result;
+			}
 
-            if (x.Arguments.Count > y.Arguments.Count)
-                return 1;
+			if (x.Arguments.Count > y.Arguments.Count)
+				return 1;
 
-            if (y.Arguments.Count > x.Arguments.Count)
-                return -1;
-            
-            return result;
-        }
-    }
+			if (y.Arguments.Count > x.Arguments.Count)
+				return -1;
+
+			return result;
+		}
+	}
 }

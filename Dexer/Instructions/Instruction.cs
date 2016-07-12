@@ -25,70 +25,68 @@ using System;
 
 namespace Dexer.Instructions
 {
-    public class Instruction : IEquatable<Instruction>
-    {
-        public OpCodes OpCode { get; set; }
-        public int Offset { get; set; }
-        public List<Register> Registers { get; set; }
-        public object Operand { get; set; }
+	public class Instruction : IEquatable<Instruction>
+	{
+		public OpCodes OpCode { get; set; }
+		public int Offset { get; set; }
+		public List<Register> Registers { get; set; }
+		public object Operand { get; set; }
 
-        public Instruction()
-        {
-            Registers = new List<Register>();
-        }
+		public Instruction()
+		{
+			Registers = new List<Register>();
+		}
 
-        public Instruction(OpCodes opcode, params Register[] registers)
-            : this(opcode, null, registers)
-        {
-        }
+		public Instruction(OpCodes opcode, params Register[] registers)
+			: this(opcode, null, registers)
+		{
+		}
 
-        public Instruction(OpCodes opcode)
-            : this(opcode, null, null)
-        {
-        }
+		public Instruction(OpCodes opcode)
+			: this(opcode, null, null)
+		{
+		}
 
-        public Instruction(OpCodes opcode, object operand)
-            : this(opcode, operand, null)
-        {
-        }
+		public Instruction(OpCodes opcode, object operand)
+			: this(opcode, operand, null)
+		{
+		}
 
-        public Instruction(OpCodes opcode, object operand, params Register[] registers) : this()
-        {
-            OpCode = opcode;
-            Operand = operand;
+		public Instruction(OpCodes opcode, object operand, params Register[] registers) : this()
+		{
+			OpCode = opcode;
+			Operand = operand;
 
-            if (registers != null)
-                Registers = new List<Register>(registers);
-        }
+			if (registers != null)
+				Registers = new List<Register>(registers);
+		}
 
-        public override string ToString()
-        {
-            var builder = new StringBuilder();
-            builder.Append(OpCode.ToString());
-            foreach (var register in Registers)
-            {
-	            builder.Append(" ");
-	            builder.Append(register);
-            }
-            builder.Append(" ");
-            if (Operand is Instruction)
-                builder.Append(string.Concat("=> {", (Operand as Instruction).Offset,"}"));
-            else
-                if (Operand is string)
-                    builder.Append(string.Concat("\"",Operand,"\""));
-                else
-                    builder.Append(Operand);
+		public override string ToString()
+		{
+			var builder = new StringBuilder();
+			builder.Append(OpCode.ToString());
+			foreach (var register in Registers)
+			{
+				builder.Append(" ");
+				builder.Append(register);
+			}
+			builder.Append(" ");
+			if (Operand is Instruction)
+				builder.Append(string.Concat("=> {", (Operand as Instruction).Offset, "}"));
+			else
+				if (Operand is string)
+				builder.Append(string.Concat("\"", Operand, "\""));
+			else
+				builder.Append(Operand);
 
-            return builder.ToString();
-        }
+			return builder.ToString();
+		}
 
-        #region " IEquatable "
-        public bool Equals(Instruction other)
-        {
-            // Should be OK because we only use this after proper computation of offsets.
-            // Mainly used by CatchSet to detect dupe lists.
-            return Offset == other.Offset;
-        }
-        #endregion
-    }
+		public bool Equals(Instruction other)
+		{
+			// Should be OK because we only use this after proper computation of offsets.
+			// Mainly used by CatchSet to detect dupe lists.
+			return Offset == other.Offset;
+		}
+	}
 }

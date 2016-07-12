@@ -25,37 +25,37 @@ using Dexer.Extensions;
 
 namespace Dexer.IO.Collectors
 {
-    internal class ModelShuffler : BaseCollector<object>
-    {
-        public override void Collect(List<ClassDefinition> classes)
-        {
-            classes.Shuffle();
-            base.Collect(classes);
-        }
+	internal class ModelShuffler : BaseCollector<object>
+	{
+		public override void Collect(List<ClassDefinition> classes)
+		{
+			classes.Shuffle();
+			base.Collect(classes);
+		}
 
-        public override void Collect(List<ClassReference> classes)
-        {
-            classes.Shuffle(); 
-            base.Collect(classes);
-        }
+		public override void Collect(List<ClassReference> classes)
+		{
+			classes.Shuffle();
+			base.Collect(classes);
+		}
 
-        public override void Collect(List<MethodDefinition> methods)
-        {
-            methods.Shuffle(); 
-            base.Collect(methods);
-        }
+		public override void Collect(List<MethodDefinition> methods)
+		{
+			methods.Shuffle();
+			base.Collect(methods);
+		}
 
-        public override void Collect(List<FieldDefinition> fields)
-        {
-            fields.Shuffle();
-            base.Collect(fields);
-        }
+		public override void Collect(List<FieldDefinition> fields)
+		{
+			fields.Shuffle();
+			base.Collect(fields);
+		}
 
-        public override void Collect(List<Annotation> annotations)
-        {
-            annotations.Shuffle();
-            base.Collect(annotations);
-        }
+		public override void Collect(List<Annotation> annotations)
+		{
+			annotations.Shuffle();
+			base.Collect(annotations);
+		}
 
-    }
+	}
 }

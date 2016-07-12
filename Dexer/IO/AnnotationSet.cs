@@ -27,40 +27,40 @@ using System.Text;
 
 namespace Dexer.IO
 {
-    internal class AnnotationSet : List<Annotation>, IEquatable<AnnotationSet>
-    {
-        public AnnotationSet(IAnnotationProvider provider)
-        {
-            AddRange(provider.Annotations);
-        }
+	internal class AnnotationSet : List<Annotation>, IEquatable<AnnotationSet>
+	{
+		public AnnotationSet(IAnnotationProvider provider)
+		{
+			AddRange(provider.Annotations);
+		}
 
-        public override bool Equals(object obj)
-        {
-            if (obj is AnnotationSet)
-                return Equals(obj as AnnotationSet);
-            
-            return false;
-        }
+		public override bool Equals(object obj)
+		{
+			if (obj is AnnotationSet)
+				return Equals(obj as AnnotationSet);
 
-        public override int GetHashCode()
-        {
-            var builder = new StringBuilder();
-            foreach (var annotation in this)
-                builder.AppendLine(annotation.GetHashCode().ToString(CultureInfo.InvariantCulture));
-            return builder.ToString().GetHashCode();
-        }
+			return false;
+		}
 
-        public bool Equals(AnnotationSet other)
-        {
-            var result = Count == other.Count;
+		public override int GetHashCode()
+		{
+			var builder = new StringBuilder();
+			foreach (var annotation in this)
+				builder.AppendLine(annotation.GetHashCode().ToString(CultureInfo.InvariantCulture));
+			return builder.ToString().GetHashCode();
+		}
 
-            if (result)
-            {
-                for (var i = 0; i < Count; i++)
-                    result &= this[i].Equals(other[i]);
-            }
+		public bool Equals(AnnotationSet other)
+		{
+			var result = Count == other.Count;
 
-            return result;
-        }
-    }
+			if (result)
+			{
+				for (var i = 0; i < Count; i++)
+					result &= this[i].Equals(other[i]);
+			}
+
+			return result;
+		}
+	}
 }

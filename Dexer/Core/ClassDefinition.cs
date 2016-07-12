@@ -27,158 +27,160 @@ using Dexer.IO;
 
 namespace Dexer.Core
 {
-    public class ClassDefinition : ClassReference, IMemberDefinition
+	public class ClassDefinition : ClassReference, IMemberDefinition
 	{
-        public AccessFlags AccessFlags { get; set; }
-        public ClassReference SuperClass { get; set; }
-        public List<ClassDefinition> InnerClasses { get; set; }
-        public List<ClassReference> Interfaces { get; set; }
-        public string SourceFile { get; set; }
-        public List<Annotation> Annotations { get; set; }
-        public List<FieldDefinition> Fields { get; set; }
-        public List<MethodDefinition> Methods { get; set; }
-        public ClassDefinition Owner { get; set; }
+		public AccessFlags AccessFlags { get; set; }
+		public ClassReference SuperClass { get; set; }
+		public List<ClassDefinition> InnerClasses { get; set; }
+		public List<ClassReference> Interfaces { get; set; }
+		public string SourceFile { get; set; }
+		public List<Annotation> Annotations { get; set; }
+		public List<FieldDefinition> Fields { get; set; }
+		public List<MethodDefinition> Methods { get; set; }
+		public ClassDefinition Owner { get; set; }
 
-        internal ClassDefinition()
-        {
-            TypeDescriptor = TypeDescriptors.FullyQualifiedName;
+		internal ClassDefinition()
+		{
+			TypeDescriptor = TypeDescriptors.FullyQualifiedName;
 
-            Interfaces = new List<ClassReference>();
-            Annotations = new List<Annotation>();
-            Fields = new List<FieldDefinition>();
-            Methods = new List<MethodDefinition>();
-            InnerClasses = new List<ClassDefinition>();
-        }
+			Interfaces = new List<ClassReference>();
+			Annotations = new List<Annotation>();
+			Fields = new List<FieldDefinition>();
+			Methods = new List<MethodDefinition>();
+			InnerClasses = new List<ClassDefinition>();
+		}
 
-        internal ClassDefinition(ClassReference cref)
-            : this()
-        {
-            Fullname = cref.Fullname;
-            Namespace = cref.Namespace;
-            Name = cref.Name;
-        }
+		internal ClassDefinition(ClassReference cref)
+			: this()
+		{
+			Fullname = cref.Fullname;
+			Namespace = cref.Namespace;
+			Name = cref.Name;
+		}
 
-        public IEnumerable<MethodDefinition> GetMethods(string name)
-        {
-	        return Methods.Where(mdef => mdef.Name == name);
-        }
+		public IEnumerable<MethodDefinition> GetMethods(string name)
+		{
+			return Methods.Where(mdef => mdef.Name == name);
+		}
 
-	    public MethodDefinition GetMethod(string name)
-        {
-            return GetMethods(name).FirstOrDefault();
-        }
+		public MethodDefinition GetMethod(string name)
+		{
+			return GetMethods(name).FirstOrDefault();
+		}
 
-        public FieldDefinition GetField(string name)
-        {
-	        return Fields.FirstOrDefault(fdef => fdef.Name == name);
-        }
+		public FieldDefinition GetField(string name)
+		{
+			return Fields.FirstOrDefault(fdef => fdef.Name == name);
+		}
 
-	    #region " AccessFlags "
 		// ReSharper disable ValueParameterNotUsed
 		public bool IsPublic
 		{
-            get { return (AccessFlags & AccessFlags.Public) != 0; }
-            set { AccessFlags |= AccessFlags.Public; }
-        }
+			get { return (AccessFlags & AccessFlags.Public) != 0; }
+			set { AccessFlags |= AccessFlags.Public; }
+		}
 
-        public bool IsPrivate {
-            get { return (AccessFlags & AccessFlags.Private) != 0; }
-            set { AccessFlags |= AccessFlags.Private; }
-        }
+		public bool IsPrivate
+		{
+			get { return (AccessFlags & AccessFlags.Private) != 0; }
+			set { AccessFlags |= AccessFlags.Private; }
+		}
 
-        public bool IsProtected {
-            get { return (AccessFlags & AccessFlags.Protected) != 0; }
-            set { AccessFlags |= AccessFlags.Protected; }
-        }
+		public bool IsProtected
+		{
+			get { return (AccessFlags & AccessFlags.Protected) != 0; }
+			set { AccessFlags |= AccessFlags.Protected; }
+		}
 
-        public bool IsStatic {
-            get { return (AccessFlags & AccessFlags.Static) != 0; }
-            set { AccessFlags |= AccessFlags.Static; }
-        }
+		public bool IsStatic
+		{
+			get { return (AccessFlags & AccessFlags.Static) != 0; }
+			set { AccessFlags |= AccessFlags.Static; }
+		}
 
-        public bool IsFinal {
-            get { return (AccessFlags & AccessFlags.Final) != 0; }
-            set { AccessFlags |= AccessFlags.Final; }
-        }
+		public bool IsFinal
+		{
+			get { return (AccessFlags & AccessFlags.Final) != 0; }
+			set { AccessFlags |= AccessFlags.Final; }
+		}
 
-        public bool IsInterface {
-            get { return (AccessFlags & AccessFlags.Interface) != 0; }
-            set { AccessFlags |= AccessFlags.Interface; }
-        }
+		public bool IsInterface
+		{
+			get { return (AccessFlags & AccessFlags.Interface) != 0; }
+			set { AccessFlags |= AccessFlags.Interface; }
+		}
 
-        public bool IsAbstract {
-            get { return (AccessFlags & AccessFlags.Abstract) != 0; }
-            set { AccessFlags |= AccessFlags.Abstract; }
-        }
+		public bool IsAbstract
+		{
+			get { return (AccessFlags & AccessFlags.Abstract) != 0; }
+			set { AccessFlags |= AccessFlags.Abstract; }
+		}
 
-        public bool IsSynthetic {
-            get { return (AccessFlags & AccessFlags.Synthetic) != 0; }
-            set { AccessFlags |= AccessFlags.Synthetic; }
-        }
+		public bool IsSynthetic
+		{
+			get { return (AccessFlags & AccessFlags.Synthetic) != 0; }
+			set { AccessFlags |= AccessFlags.Synthetic; }
+		}
 
-        public bool IsAnnotation
-        {
-            get { return (AccessFlags & AccessFlags.Annotation) != 0; }
-            set { AccessFlags |= AccessFlags.Annotation; }
-        }
+		public bool IsAnnotation
+		{
+			get { return (AccessFlags & AccessFlags.Annotation) != 0; }
+			set { AccessFlags |= AccessFlags.Annotation; }
+		}
 
-        public bool IsEnum {
-            get { return (AccessFlags & AccessFlags.Enum) != 0; }
-            set { AccessFlags |= AccessFlags.Enum; }
-        }
+		public bool IsEnum
+		{
+			get { return (AccessFlags & AccessFlags.Enum) != 0; }
+			set { AccessFlags |= AccessFlags.Enum; }
+		}
 		// ReSharper restore ValueParameterNotUsed
-		#endregion
 
-        #region " IEquatable "
-        public bool Equals(ClassDefinition other)
-        {
-            // Should be enough (ownership)
-            return base.Equals(other);
-        }
+		public bool Equals(ClassDefinition other)
+		{
+			// Should be enough (ownership)
+			return base.Equals(other);
+		}
 
-        public override bool Equals(TypeReference other)
-        {
-            return (other is ClassDefinition)
-                && Equals(other as ClassDefinition);
-        }
-        #endregion
+		public override bool Equals(TypeReference other)
+		{
+			return (other is ClassDefinition)
+				&& Equals(other as ClassDefinition);
+		}
 
-        #region " Static utilities "
-        static internal List<ClassDefinition> Flattenize(List<ClassDefinition> container)
-        {
-            var result = new List<ClassDefinition>();
-            foreach (var cdef in container)
-            {
-                result.Add(cdef);
-                result.AddRange(Flattenize(cdef.InnerClasses));
-            }
-            return result;
-        }
+		static internal List<ClassDefinition> Flattenize(List<ClassDefinition> container)
+		{
+			var result = new List<ClassDefinition>();
+			foreach (var cdef in container)
+			{
+				result.Add(cdef);
+				result.AddRange(Flattenize(cdef.InnerClasses));
+			}
+			return result;
+		}
 
-        static internal List<ClassDefinition> Hierarchicalize(List<ClassDefinition> container, Dex dex)
-        {
-            var result = new List<ClassDefinition>();
-            foreach (var cdef in container)
-            {
-                if (cdef.Fullname.Contains(DexConsts.InnerClassMarker.ToString(CultureInfo.InvariantCulture)))
-                {
-                    var items = cdef.Fullname.Split(DexConsts.InnerClassMarker);
-                    var fullname = items[0];
-                    //var name = items[1];
-                    var owner = dex.GetClass(fullname);
-                    if (owner != null)
-                    {
-                        owner.InnerClasses.Add(cdef);
-                        cdef.Owner = owner;
-                    }
-                }
-                else
-                {
-                    result.Add(cdef);
-                }
-            }
-            return result;
-        }
-        #endregion
-    }
+		static internal List<ClassDefinition> Hierarchicalize(List<ClassDefinition> container, Dex dex)
+		{
+			var result = new List<ClassDefinition>();
+			foreach (var cdef in container)
+			{
+				if (cdef.Fullname.Contains(DexConsts.InnerClassMarker.ToString(CultureInfo.InvariantCulture)))
+				{
+					var items = cdef.Fullname.Split(DexConsts.InnerClassMarker);
+					var fullname = items[0];
+					//var name = items[1];
+					var owner = dex.GetClass(fullname);
+					if (owner != null)
+					{
+						owner.InnerClasses.Add(cdef);
+						cdef.Owner = owner;
+					}
+				}
+				else
+				{
+					result.Add(cdef);
+				}
+			}
+			return result;
+		}
+	}
 }

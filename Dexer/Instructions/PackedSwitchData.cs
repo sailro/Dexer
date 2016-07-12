@@ -23,14 +23,14 @@ using System.Collections.Generic;
 
 namespace Dexer.Instructions
 {
-    public class PackedSwitchData
-    {
-        public int FirstKey { get; set; }
-        public List<Instruction> Targets { get; set; }
+	public class PackedSwitchData
+	{
+		public int FirstKey { get; set; }
+		public List<Instruction> Targets { get; set; }
 
-        public PackedSwitchData()
-        {
-            Targets = new List<Instruction>();
-        }
-    }
+		public PackedSwitchData()
+		{
+			Targets = new List<Instruction>();
+		}
+	}
 }
