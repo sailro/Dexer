@@ -98,6 +98,11 @@ namespace Dexer.IO
 			return (short)Codes[codeUnitOffset++];
 		}
 
+		private ushort ReadUShort(ref int codeUnitOffset)
+		{
+			return (ushort)Codes[codeUnitOffset++];
+		}
+
 		private int ReadInt(ref int codeUnitOffset)
 		{
 			// don't reuse ReadShort to keep bit sign
@@ -119,6 +124,11 @@ namespace Dexer.IO
 		private sbyte ReadSByte()
 		{
 			return (sbyte)Upper[_ip++];
+		}
+
+		private byte ReadUByte()
+		{
+			return (byte)Upper[_ip++];
 		}
 
 		public void ReadFrom(BinaryReader reader)
@@ -286,12 +296,12 @@ namespace Dexer.IO
 					case OpCodes.ConstWideHigh16:
 						// vAA, #+BBBB000000000000
 						ReadvAA(ins);
-						ins.Operand = ((long)ReadShort(ref _ip)) << 48;
+						ins.Operand = ((long)ReadUShort(ref _ip)) << 48;
 						break;
 					case OpCodes.ConstString:
 						// vAA, string@BBBB
 						ReadvAA(ins);
-						ins.Operand = Dex.Strings[ReadShort(ref _ip)];
+						ins.Operand = Dex.Strings[ReadUShort(ref _ip)];
 						break;
 					case OpCodes.ConstStringJumbo:
 						// vAA, string@BBBBBBBB
@@ -452,7 +462,7 @@ namespace Dexer.IO
 						// vA, vB, field@CCCC
 						ReadvA(ins);
 						ReadvB(ins);
-						ins.Operand = Dex.FieldReferences[ReadShort(ref _ip)];
+						ins.Operand = Dex.FieldReferences[ReadUShort(ref _ip)];
 						break;
 					case OpCodes.Sget:
 					case OpCodes.SgetWide:
@@ -470,7 +480,7 @@ namespace Dexer.IO
 					case OpCodes.SputShort:
 						// vAA, field@BBBB
 						ReadvAA(ins);
-						ins.Operand = Dex.FieldReferences[ReadShort(ref _ip)];
+						ins.Operand = Dex.FieldReferences[ReadUShort(ref _ip)];
 						break;
 					case OpCodes.InvokeVirtual:
 					case OpCodes.InvokeSuper:
@@ -479,7 +489,7 @@ namespace Dexer.IO
 					case OpCodes.InvokeInterface:
 						// {vD, vE, vF, vG, vA}, meth@CCCC
 						registerMask = Upper[_ip++] << 16;
-						ins.Operand = Dex.MethodReferences[ReadShort(ref _ip)];
+						ins.Operand = Dex.MethodReferences[ReadUShort(ref _ip)];
 						registerMask |= Codes[_ip++];
 						SetRegistersByMask(ins, registerMask);
 						break;
@@ -490,7 +500,7 @@ namespace Dexer.IO
 					case OpCodes.InvokeInterfaceRange:
 						// {vCCCC .. vNNNN}, meth@BBBB
 						registerCount = ReadSByte();
-						ins.Operand = Dex.MethodReferences[ReadShort(ref _ip)];
+						ins.Operand = Dex.MethodReferences[ReadUShort(ref _ip)];
 						ReadvBBBB(ins);
 						for (var i = 1; i < registerCount; i++)
 							ins.Registers.Add(registers[i + ins.Registers[0].Index]);
