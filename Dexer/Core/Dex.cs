@@ -39,7 +39,7 @@ namespace Dexer.Core
 
 		public static Dex Read(string filename)
 		{
-			return Read(filename, true);
+			return Read(filename, true, true);
 		}
 
 		public void Write(string filename)
@@ -47,7 +47,7 @@ namespace Dexer.Core
 			Write(filename, true);
 		}
 
-		public static Dex Read(string filename, bool bufferize)
+		public static Dex Read(string filename, bool bufferize, bool hierarchialize)
 		{
 			var result = new Dex();
 
@@ -65,7 +65,7 @@ namespace Dexer.Core
 				using (var binaryReader = new BinaryReader(sourcestream))
 				{
 					var reader = new DexReader(result);
-					reader.ReadFrom(binaryReader);
+					reader.ReadFrom(binaryReader, hierarchialize);
 					return result;
 				}
 			}

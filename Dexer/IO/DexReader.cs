@@ -794,7 +794,7 @@ namespace Dexer.IO
 		}
 		#endregion
 
-		public void ReadFrom(BinaryReader reader)
+		public void ReadFrom(BinaryReader reader,bool hierarchialize)
 		{
 			ReadHeader(reader);
 			ReadMapList(reader);
@@ -810,8 +810,8 @@ namespace Dexer.IO
 
 			PrefetchClassDefinitions(reader, true);
 			ReadClassDefinitions(reader);
-
-			Dex.Classes = ClassDefinition.Hierarchicalize(Dex.Classes, Dex);
+            if (hierarchialize)
+			    Dex.Classes = ClassDefinition.Hierarchicalize(Dex.Classes, Dex);
 		}
 
 	}
