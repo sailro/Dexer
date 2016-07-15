@@ -282,6 +282,8 @@ namespace Dexer.IO.Collectors
 				Collect(obj as MethodReference);
 			else if (obj is TypeReference)
 				Collect(obj as TypeReference);
+			else if (obj is Annotation)
+				Collect(obj as Annotation);
 
 			else if (obj is string)
 				Collect(obj as string);
