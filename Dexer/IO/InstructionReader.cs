@@ -247,6 +247,7 @@ namespace Dexer.IO
 						ReadvBBBB(ins);
 						break;
 					case OpCodes.Move16:
+					case OpCodes.MoveWide16:
 					case OpCodes.MoveObject16:
 						// vAAAA, vBBBB
 						ReadvAAAA(ins);
