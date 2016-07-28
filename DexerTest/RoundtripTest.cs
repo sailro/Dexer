@@ -42,7 +42,7 @@ namespace Dexer.Test
 
 			using (Stream fs = new FileStream(file, FileMode.Open))
 			using (var reader = new BinaryReader(fs))
-				dexreader.ReadFrom(reader);
+				dexreader.ReadFrom(reader,true);
 
 			dexwriter = new DexWriter(dex);
 			dexwriter.WriteTo(new BinaryWriter(new MemoryStream()));
