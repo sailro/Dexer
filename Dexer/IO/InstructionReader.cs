@@ -332,7 +332,7 @@ namespace Dexer.IO
 						break;
 					case OpCodes.FilledNewArrayRange:
 						// {vCCCC .. vNNNN}, type@BBBB
-						registerCount = Upper[_ip++] << 16;
+						registerCount = ReadUByte();
 						ins.Operand = Dex.TypeReferences[ReadShort(ref _ip)];
 						ReadvBBBB(ins);
 						for (var i = 1; i < registerCount; i++)
