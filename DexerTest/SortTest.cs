@@ -36,7 +36,7 @@ namespace Dexer.Test
 
 		public void TestGlobalSort<T>(Func<Dex, List<T>> provider, IComparer<T> comparer)
 		{
-			foreach (var file in Directory.GetFiles(FilesDirectory))
+			foreach (var file in GetTestFiles())
 			{
 				TestContext.WriteLine("Testing {0}", file);
 
@@ -82,7 +82,7 @@ namespace Dexer.Test
 		[TestMethod]
 		public void TestMethodDefinitionSort()
 		{
-			foreach (var file in Directory.GetFiles(FilesDirectory))
+			foreach (var file in GetTestFiles())
 			{
 				TestContext.WriteLine("Testing {0}", file);
 				var dex = Dex.Read(file);
@@ -95,7 +95,7 @@ namespace Dexer.Test
 		[TestMethod]
 		public void TestAnnotationSort()
 		{
-			foreach (var file in Directory.GetFiles(FilesDirectory))
+			foreach (var file in GetTestFiles())
 			{
 				TestContext.WriteLine("Testing {0}", file);
 				var dex = Dex.Read(file);
@@ -122,7 +122,7 @@ namespace Dexer.Test
 		[TestMethod]
 		public void TestFieldDefinitionSort()
 		{
-			foreach (var file in Directory.GetFiles(FilesDirectory))
+			foreach (var file in GetTestFiles())
 			{
 				TestContext.WriteLine("Testing {0}", file);
 				var dex = Dex.Read(file);

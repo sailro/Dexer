@@ -35,6 +35,11 @@ namespace Dexer.Test
 			get { return _filesDirectory; }
 		}
 
+		public string[] GetTestFiles()
+		{
+			return Directory.GetFiles(FilesDirectory, "*.dex");
+		}
+
 		public TestContext TestContext
 		{
 			get

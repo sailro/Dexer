@@ -33,7 +33,7 @@ namespace Dexer.Test
 	{
 		internal void TestCollector<TC, T>(Func<Dex, List<T>> provider) where TC : BaseCollector<T>, new()
 		{
-			foreach (var file in Directory.GetFiles(FilesDirectory))
+			foreach (var file in GetTestFiles())
 			{
 				TestCollector<TC, T>(provider, file);
 			}

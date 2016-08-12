@@ -27,6 +27,9 @@ using Dexer.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Dexer.IO;
 using Dexer.Metadata;
+using System;
+using System.Reflection;
+using System.Collections;
 
 namespace Dexer.Test
 {
@@ -45,13 +48,16 @@ namespace Dexer.Test
 				dexreader.ReadFrom(reader);
 
 			dexwriter = new DexWriter(dex);
-			dexwriter.WriteTo(new BinaryWriter(new MemoryStream()));
+
+			using (Stream fs = new FileStream(file + ".out", FileMode.Create))
+			using (var writer = new BinaryWriter(fs))
+				dexwriter.WriteTo(writer);
 		}
 
 		[TestMethod]
 		public void TestMap()
 		{
-			foreach (var file in Directory.GetFiles(FilesDirectory))
+			foreach (var file in GetTestFiles())
 			{
 				DexReader dexreader;
 				DexWriter dexwriter;
@@ -82,7 +88,7 @@ namespace Dexer.Test
 		[TestMethod]
 		public void TestCheckSum()
 		{
-			foreach (var file in Directory.GetFiles(FilesDirectory))
+			foreach (var file in GetTestFiles())
 			{
 				DexReader dexreader;
 				DexWriter dexwriter;
@@ -95,7 +101,7 @@ namespace Dexer.Test
 		[TestMethod]
 		public void TestSignature()
 		{
-			foreach (var file in Directory.GetFiles(FilesDirectory))
+			foreach (var file in GetTestFiles())
 			{
 				DexReader dexreader;
 				DexWriter dexwriter;
@@ -104,6 +110,5 @@ namespace Dexer.Test
 				Assert.IsTrue(dexreader.Header.Signature.Match(dexwriter.Signature, 0));
 			}
 		}
-
 	}
 }

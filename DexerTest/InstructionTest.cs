@@ -36,7 +36,7 @@ namespace Dexer.Test
 		{
 			var coverage = new Dictionary<OpCodes, int>();
 
-			foreach (var file in Directory.GetFiles(FilesDirectory))
+			foreach (var file in GetTestFiles())
 			{
 				TestContext.WriteLine("Testing {0}", file);
 
