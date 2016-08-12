@@ -67,9 +67,9 @@ namespace Dexer.Test
 
 				foreach (var tc in dexwriter.Map.Keys.Where(tc => dexreader.Map.ContainsKey(tc)))
 				{
-					if (dexreader.Map[tc].Size != dexwriter.Map[tc].Size)
+					if (dexreader.Map[tc].Count != dexwriter.Map[tc].Count)
 					{
-						TestContext.WriteLine("{0} Size differs expected={1}, actual={2}", tc, dexreader.Map[tc].Size, dexwriter.Map[tc].Size);
+						TestContext.WriteLine("{0} Count differs expected={1}, actual={2}", tc, dexreader.Map[tc].Count, dexwriter.Map[tc].Count);
 						if (!checklist.ContainsKey(tc))
 							checklist.Add(tc, tc.ToString());
 					}

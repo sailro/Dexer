@@ -24,16 +24,21 @@ namespace Dexer.Metadata
 	public class MapItem
 	{
 		public TypeCodes Type { get; set; }
-		public uint Size { get; set; }
+		public uint Count { get; set; }
 		public uint Offset { get; set; }
 
 		public MapItem() { }
 
-		public MapItem(TypeCodes type, uint size, uint offset)
+		public MapItem(TypeCodes type, uint count, uint offset)
 		{
 			Type = type;
-			Size = size;
+			Count = count;
 			Offset = offset;
+		}
+
+		public override string ToString()
+		{
+			return string.Format("{0}:{1} @0x{2:x}", Type, Count, Offset);
 		}
 	}
 }

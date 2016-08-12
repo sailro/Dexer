@@ -100,7 +100,7 @@ namespace Dexer.IO
 				{
 					var item = new MapItem { Type = (TypeCodes)reader.ReadUInt16() };
 					reader.ReadUInt16(); // unused
-					item.Size = reader.ReadUInt32();
+					item.Count = reader.ReadUInt32();
 					item.Offset = reader.ReadUInt32();
 					Map.Add(item.Type, item);
 				}

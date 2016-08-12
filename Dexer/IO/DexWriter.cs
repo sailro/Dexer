@@ -1075,7 +1075,7 @@ namespace Dexer.IO
 			{
 				writer.Write((ushort) item.Type);
 				writer.Write((ushort) 0); // unused
-				writer.Write(item.Size);
+				writer.Write(item.Count);
 				writer.Write(item.Offset);
 			}
 
@@ -1124,7 +1124,6 @@ namespace Dexer.IO
 		public void WriteTo(BinaryWriter writer)
 		{
 			new ModelSorter().Collect(Dex);
-			//new ModelShuffler().Collect(Dex);
 			Map.Clear();
 
 			StringLookup = CollectStrings();
@@ -1132,12 +1131,7 @@ namespace Dexer.IO
 			MethodLookup = CollectMethods();
 			FieldLookup = CollectFields();
 			PrototypeLookup = CollectPrototypes();
-			FlatClasses = ClassDefinition.Flattenize(Dex.Classes);
-
-			// Standard sort then topological sort
-			var tsorter = new TopologicalSorter();
-			FlatClasses.Sort(new ClassDefinitionComparer());
-			FlatClasses = new List<ClassDefinition>(tsorter.TopologicalSort(FlatClasses, new ClassDefinitionComparer()));
+			FlatClasses = ClassDefinition.FlattenizeAndSort(Dex.Classes);
 
 			WriteHeader(writer);
 			WriteStringId(writer);

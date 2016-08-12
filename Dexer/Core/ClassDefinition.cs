@@ -24,6 +24,7 @@ using System.Globalization;
 using Dexer.Metadata;
 using System.Linq;
 using Dexer.IO;
+using Dexer.IO.Collectors;
 
 namespace Dexer.Core
 {
@@ -147,7 +148,7 @@ namespace Dexer.Core
 				&& Equals(other as ClassDefinition);
 		}
 
-		static internal List<ClassDefinition> Flattenize(List<ClassDefinition> container)
+		private static List<ClassDefinition> Flattenize(List<ClassDefinition> container)
 		{
 			var result = new List<ClassDefinition>();
 			foreach (var cdef in container)
@@ -158,7 +159,17 @@ namespace Dexer.Core
 			return result;
 		}
 
-		static internal List<ClassDefinition> Hierarchicalize(List<ClassDefinition> container, Dex dex)
+		internal static List<ClassDefinition> FlattenizeAndSort(List<ClassDefinition> container)
+		{
+			container = Flattenize(container);
+
+			// Standard sort then topological sort
+			var tsorter = new TopologicalSorter();
+			container.Sort(new ClassDefinitionComparer());
+			return new List<ClassDefinition>(tsorter.TopologicalSort(container, new ClassDefinitionComparer()));
+		}
+
+		internal static List<ClassDefinition> Hierarchicalize(List<ClassDefinition> container, Dex dex)
 		{
 			var result = new List<ClassDefinition>();
 			foreach (var cdef in container)
@@ -169,11 +180,11 @@ namespace Dexer.Core
 					var fullname = items[0];
 					//var name = items[1];
 					var owner = dex.GetClass(fullname);
-					if (owner != null)
-					{
-						owner.InnerClasses.Add(cdef);
-						cdef.Owner = owner;
-					}
+					if (owner == null)
+						continue;
+
+					owner.InnerClasses.Add(cdef);
+					cdef.Owner = owner;
 				}
 				else
 				{
@@ -182,5 +193,6 @@ namespace Dexer.Core
 			}
 			return result;
 		}
+
 	}
 }

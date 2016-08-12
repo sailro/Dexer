@@ -31,7 +31,7 @@ namespace Dexer.IO.Collectors
 			if (!(tref is ClassDefinition))
 				return;
 
-			var @class = tref as ClassDefinition;
+			var @class = (ClassDefinition) tref;
 			if (!Items.ContainsKey(@class))
 				Items.Add(@class, 0);
 
@@ -45,7 +45,6 @@ namespace Dexer.IO.Collectors
 			Collect(@class.SuperClass);
 			Collect(@class as ClassReference);
 		}
-
 
 	}
 }
