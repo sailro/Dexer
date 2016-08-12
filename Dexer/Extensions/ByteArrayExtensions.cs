@@ -54,6 +54,5 @@ namespace Dexer.Extensions
 			return -1;
 		}
 
-
 	}
 }
