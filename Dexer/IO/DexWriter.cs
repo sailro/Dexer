@@ -84,31 +84,31 @@ namespace Dexer.IO
 		}
 
 		#region Header
+
 		private void WriteHeader(BinaryWriter writer)
 		{
-			var sectionOffset = (uint)writer.BaseStream.Position;
+			var sectionOffset = (uint) writer.BaseStream.Position;
+			writer.EnsureSectionAlignment(ref sectionOffset, 4);
 			Map.Add(TypeCodes.Header, new MapItem(TypeCodes.Header, 1, sectionOffset));
 
-			writer.EnsureAlignment(sectionOffset, 4, () =>
-			{
-				writer.Write(DexConsts.FileMagic);
-				HeaderMarkers.CheckSumMarker = writer.MarkUInt();
-				HeaderMarkers.SignatureMarker = writer.MarkSignature();
-				HeaderMarkers.FileSizeMarker = writer.MarkUInt();
-				writer.Write(DexConsts.HeaderSize);
-				writer.Write(DexConsts.Endian);
-				HeaderMarkers.LinkMarker = writer.MarkSizeOffset();
-				HeaderMarkers.MapMarker = writer.MarkUInt();
+			writer.Write(DexConsts.FileMagic);
+			HeaderMarkers.CheckSumMarker = writer.MarkUInt();
+			HeaderMarkers.SignatureMarker = writer.MarkSignature();
+			HeaderMarkers.FileSizeMarker = writer.MarkUInt();
+			writer.Write(DexConsts.HeaderSize);
+			writer.Write(DexConsts.Endian);
+			HeaderMarkers.LinkMarker = writer.MarkSizeOffset();
+			HeaderMarkers.MapMarker = writer.MarkUInt();
 
-				HeaderMarkers.StringsMarker = writer.MarkSizeOffset();
-				HeaderMarkers.TypeReferencesMarker = writer.MarkSizeOffset();
-				HeaderMarkers.PrototypesMarker = writer.MarkSizeOffset();
-				HeaderMarkers.FieldReferencesMarker = writer.MarkSizeOffset();
-				HeaderMarkers.MethodReferencesMarker = writer.MarkSizeOffset();
-				HeaderMarkers.ClassDefinitionsMarker = writer.MarkSizeOffset();
-				HeaderMarkers.DataMarker = writer.MarkSizeOffset();
-			});
+			HeaderMarkers.StringsMarker = writer.MarkSizeOffset();
+			HeaderMarkers.TypeReferencesMarker = writer.MarkSizeOffset();
+			HeaderMarkers.PrototypesMarker = writer.MarkSizeOffset();
+			HeaderMarkers.FieldReferencesMarker = writer.MarkSizeOffset();
+			HeaderMarkers.MethodReferencesMarker = writer.MarkSizeOffset();
+			HeaderMarkers.ClassDefinitionsMarker = writer.MarkSizeOffset();
+			HeaderMarkers.DataMarker = writer.MarkSizeOffset();
 		}
+
 		#endregion
 
 		#region StringId
@@ -194,7 +194,7 @@ namespace Dexer.IO
 		#endregion
 
 		#region TypeList
-		private void WriteTypeList(BinaryWriter writer, uint sectionOffset, ushort[] typelist, UIntMarker marker)
+		private void WriteTypeList(BinaryWriter writer, ref uint sectionOffset, ushort[] typelist, UIntMarker marker)
 		{
 			if (typelist.Length <= 0)
 				return;
@@ -202,16 +202,14 @@ namespace Dexer.IO
 			var key = GetTypeListAsString(typelist);
 			if (!TypeLists.ContainsKey(key))
 			{
+				writer.EnsureSectionAlignment(ref sectionOffset, 4);
+				writer.EnsureAlignmentWithSection(sectionOffset, 4);
 
-				writer.EnsureAlignment(sectionOffset, 4, () =>
-				{
-					TypeLists.Add(key, (uint)writer.BaseStream.Position);
+				TypeLists.Add(key, (uint)writer.BaseStream.Position);
+				writer.Write((uint)typelist.Length);
 
-					writer.Write((uint)typelist.Length);
-
-					foreach (var item in typelist)
-						writer.Write(item);
-				});
+				foreach (var item in typelist)
+					writer.Write(item);
 			}
 			if (marker != null)
 				marker.Value = TypeLists[key];
@@ -219,20 +217,19 @@ namespace Dexer.IO
 
 		private void WriteTypeLists(BinaryWriter writer)
 		{
-			var offset = (uint)writer.BaseStream.Position;
+			var sectionOffset = (uint)writer.BaseStream.Position;
 
 			for (var i = 0; i < FlatClasses.Count; i++)
-				WriteTypeList(writer, offset, ComputeTypeList(FlatClasses[i].Interfaces),
+				WriteTypeList(writer, ref sectionOffset, ComputeTypeList(FlatClasses[i].Interfaces),
 							ClassDefinitionsMarkers[i].InterfacesMarker);
 
 			for (var i = 0; i < Dex.Prototypes.Count; i++)
-				WriteTypeList(writer, offset, ComputeTypeList(Dex.Prototypes[i].Parameters),
+				WriteTypeList(writer, ref sectionOffset, ComputeTypeList(Dex.Prototypes[i].Parameters),
 							PrototypeTypeListMarkers[i]);
 
 			if (TypeLists.Count > 0)
 				Map.Add(TypeCodes.TypeList,
-						new MapItem(TypeCodes.TypeList, (uint)TypeLists.Count, offset));
-
+						new MapItem(TypeCodes.TypeList, (uint)TypeLists.Count, sectionOffset));
 		}
 
 		private static string GetTypeListAsString(IEnumerable<ushort> typelist)
@@ -307,30 +304,31 @@ namespace Dexer.IO
 		#region ClassDef
 		private void WriteClassDef(BinaryWriter writer)
 		{
+			var sectionOffset = (uint)writer.BaseStream.Position;
+
 			if (FlatClasses.Count > 0)
 			{
-				HeaderMarkers.ClassDefinitionsMarker.Value = new SizeOffset((uint)FlatClasses.Count, (uint)writer.BaseStream.Position);
-				Map.Add(TypeCodes.ClassDef, new MapItem(TypeCodes.ClassDef, (uint)FlatClasses.Count, (uint)writer.BaseStream.Position));
+				writer.EnsureSectionAlignment(ref sectionOffset, 4);
+				HeaderMarkers.ClassDefinitionsMarker.Value = new SizeOffset((uint)FlatClasses.Count, sectionOffset);
+				Map.Add(TypeCodes.ClassDef, new MapItem(TypeCodes.ClassDef, (uint)FlatClasses.Count, sectionOffset));
 			}
 
-			var sectionOffset = (uint)writer.BaseStream.Position;
 			foreach (var flatclass in FlatClasses)
 			{
-				var @class = flatclass;
-				writer.EnsureAlignment(sectionOffset, 4, () =>
-				{
-					var markers = new ClassDefinitionMarkers();
-					ClassDefinitionsMarkers.Add(markers);
+				writer.EnsureAlignmentWithSection(sectionOffset, 4);
 
-					writer.Write(TypeLookup[@class]);
-					writer.Write((uint)@class.AccessFlags);
-					writer.Write(@class.SuperClass == null ? DexConsts.NoIndex : (uint)TypeLookup[@class.SuperClass]);
-					markers.InterfacesMarker = writer.MarkUInt();
-					writer.Write(String.IsNullOrEmpty(@class.SourceFile) ? DexConsts.NoIndex : (uint)StringLookup[@class.SourceFile]);
-					markers.AnnotationsMarker = writer.MarkUInt();
-					markers.ClassDataMarker = writer.MarkUInt();
-					markers.StaticValuesMarker = writer.MarkUInt();
-				});
+				var @class = flatclass;
+				var markers = new ClassDefinitionMarkers();
+				ClassDefinitionsMarkers.Add(markers);
+
+				writer.Write(TypeLookup[@class]);
+				writer.Write((uint) @class.AccessFlags);
+				writer.Write(@class.SuperClass == null ? DexConsts.NoIndex : (uint) TypeLookup[@class.SuperClass]);
+				markers.InterfacesMarker = writer.MarkUInt();
+				writer.Write(string.IsNullOrEmpty(@class.SourceFile) ? DexConsts.NoIndex : (uint) StringLookup[@class.SourceFile]);
+				markers.AnnotationsMarker = writer.MarkUInt();
+				markers.ClassDataMarker = writer.MarkUInt();
+				markers.StaticValuesMarker = writer.MarkUInt();
 			}
 		}
 		#endregion
@@ -342,17 +340,17 @@ namespace Dexer.IO
 
 			foreach (var flatclass in FlatClasses)
 			{
+				writer.EnsureSectionAlignment(ref sectionOffset, 4);
+				writer.EnsureAlignmentWithSection(sectionOffset, 4);
+
 				var @class = flatclass;
-				writer.EnsureAlignment(sectionOffset, 4, () =>
+				foreach (var mdef in @class.Methods.Where(mdef => (mdef.Prototype.ContainsAnnotation())))
 				{
-					foreach (var mdef in @class.Methods.Where(mdef => (mdef.Prototype.ContainsAnnotation())))
-					{
-						AnnotationSetRefLists.Add(mdef, (uint)writer.BaseStream.Position);
-						writer.Write(mdef.Prototype.Parameters.Count);
-						foreach (var parameter in mdef.Prototype.Parameters)
-							AnnotationSetRefListMarkers.Add(parameter, writer.MarkUInt());
-					}
-				});
+					AnnotationSetRefLists.Add(mdef, (uint) writer.BaseStream.Position);
+					writer.Write(mdef.Prototype.Parameters.Count);
+					foreach (var parameter in mdef.Prototype.Parameters)
+						AnnotationSetRefListMarkers.Add(parameter, writer.MarkUInt());
+				}
 			}
 
 			if (AnnotationSetRefLists.Count > 0)
@@ -396,24 +394,23 @@ namespace Dexer.IO
 
 			if (!AnnotationSets.ContainsKey(key))
 			{
-				writer.EnsureAlignment(sectionOffset, 4, () =>
-				{
-					offset = (uint)writer.BaseStream.Position;
+				writer.EnsureAlignmentWithSection(sectionOffset, 4);
 
-					if (provider.Annotations.Count > 0 || writezero)
-						writer.Write(provider.Annotations.Count);
+				offset = (uint) writer.BaseStream.Position;
 
-					foreach (var annotation in provider.Annotations)
-						if (AnnotationSetMarkers.ContainsKey(annotation))
-							AnnotationSetMarkers[annotation].CloneMarker();
-						else
-							AnnotationSetMarkers.Add(annotation, writer.MarkUInt());
+				if (provider.Annotations.Count > 0 || writezero)
+					writer.Write(provider.Annotations.Count);
 
-					if (provider.Annotations.Count > 0 || writezero)
-						AnnotationSets.Add(key, offset);
+				foreach (var annotation in provider.Annotations)
+					if (AnnotationSetMarkers.ContainsKey(annotation))
+						AnnotationSetMarkers[annotation].CloneMarker();
 					else
-						offset = DexConsts.NoIndex;
-				});
+						AnnotationSetMarkers.Add(annotation, writer.MarkUInt());
+
+				if (provider.Annotations.Count > 0 || writezero)
+					AnnotationSets.Add(key, offset);
+				else
+					offset = DexConsts.NoIndex;
 			}
 			else
 				offset = AnnotationSets[key];
@@ -590,9 +587,10 @@ namespace Dexer.IO
 		#endregion
 
 		#region AnnotationsDirectory
+
 		private void WriteAnnotationsDirectory(BinaryWriter writer)
 		{
-			var sectionOffset = (uint)writer.BaseStream.Position;
+			var sectionOffset = (uint) writer.BaseStream.Position;
 			uint count = 0;
 
 			var classAnnotationSets = new Dictionary<AnnotationSet, uint>();
@@ -602,154 +600,157 @@ namespace Dexer.IO
 				var i = index;
 				var @class = FlatClasses[i];
 
-				writer.EnsureAlignment(sectionOffset, 4, () =>
+				writer.EnsureSectionAlignment(ref sectionOffset, 4);
+				writer.EnsureAlignmentWithSection(sectionOffset, 4);
+
+				var annotatedMethods = new List<MethodDefinition>(); // by method index
+				var annotatedParametersList = new List<MethodDefinition>(); // by method index
+				var annotatedFields = @class.Fields.Where(field => field.Annotations.Count > 0).ToList(); // by field index
+
+				foreach (var method in @class.Methods)
 				{
-					var annotatedMethods = new List<MethodDefinition>();                                        // by method index
-					var annotatedParametersList = new List<MethodDefinition>();                                 // by method index
-					var annotatedFields = @class.Fields.Where(field => field.Annotations.Count > 0).ToList();   // by field index
+					if (method.Annotations.Count > 0)
+						annotatedMethods.Add(method);
+					if (method.Prototype.ContainsAnnotation())
+						annotatedParametersList.Add(method);
+				}
 
-					foreach (var method in @class.Methods)
+				var total = @class.Annotations.Count + annotatedFields.Count + annotatedMethods.Count +
+				            annotatedParametersList.Count;
+				if (total <= 0)
+					continue;
+
+				// all datas except class annotations are specific.
+				if (total == @class.Annotations.Count)
+				{
+					var set = new AnnotationSet(@class);
+					if (classAnnotationSets.ContainsKey(set))
 					{
-						if (method.Annotations.Count > 0)
-							annotatedMethods.Add(method);
-						if (method.Prototype.ContainsAnnotation())
-							annotatedParametersList.Add(method);
+						ClassDefinitionsMarkers[i].AnnotationsMarker.Value = classAnnotationSets[set];
+						continue;
 					}
 
-					var total = @class.Annotations.Count + annotatedFields.Count + annotatedMethods.Count + annotatedParametersList.Count;
-					if (total <= 0)
-						return;
+					classAnnotationSets.Add(set, (uint) writer.BaseStream.Position);
+				}
 
-					// all datas except class annotations are specific.
-					if (total == @class.Annotations.Count)
-					{
-						var set = new AnnotationSet(@class);
-						if (classAnnotationSets.ContainsKey(set))
-						{
-							ClassDefinitionsMarkers[i].AnnotationsMarker.Value = classAnnotationSets[set];
-							return;
-						}
+				ClassDefinitionsMarkers[i].AnnotationsMarker.Value = (uint) writer.BaseStream.Position;
+				count++;
 
-						classAnnotationSets.Add(set, (uint)writer.BaseStream.Position);
-					}
+				if (@class.Annotations.Count > 0)
+					writer.Write(AnnotationSets[new AnnotationSet(@class)]);
+				else
+					writer.Write((uint) 0);
 
-					ClassDefinitionsMarkers[i].AnnotationsMarker.Value = (uint)writer.BaseStream.Position;
-					count++;
+				writer.Write(annotatedFields.Count);
+				writer.Write(annotatedMethods.Count);
+				writer.Write(annotatedParametersList.Count);
 
-					if (@class.Annotations.Count > 0)
-						writer.Write(AnnotationSets[new AnnotationSet(@class)]);
-					else
-						writer.Write((uint)0);
+				var fields = new List<FieldReference>(annotatedFields.Cast<FieldReference>());
+				fields.Sort(new FieldReferenceComparer());
+				foreach (var field in fields)
+				{
+					writer.Write(FieldLookup[field]);
+					writer.Write(AnnotationSets[new AnnotationSet(field as IAnnotationProvider)]);
+				}
 
-					writer.Write(annotatedFields.Count);
-					writer.Write(annotatedMethods.Count);
-					writer.Write(annotatedParametersList.Count);
+				var methods = new List<MethodReference>(annotatedMethods.Cast<MethodReference>());
+				methods.Sort(new MethodReferenceComparer());
+				foreach (var method in methods)
+				{
+					writer.Write(MethodLookup[method]);
+					writer.Write(AnnotationSets[new AnnotationSet(method as IAnnotationProvider)]);
+				}
 
-					var fields = new List<FieldReference>(annotatedFields.Cast<FieldReference>());
-					fields.Sort(new FieldReferenceComparer());
-					foreach (FieldDefinition field in fields)
-					{
-						writer.Write(FieldLookup[field]);
-						writer.Write(AnnotationSets[new AnnotationSet(field)]);
-					}
-
-					var methods = new List<MethodReference>(annotatedMethods.Cast<MethodReference>());
-					methods.Sort(new MethodReferenceComparer());
-					foreach (MethodDefinition method in methods)
-					{
-						writer.Write(MethodLookup[method]);
-						writer.Write(AnnotationSets[new AnnotationSet(method)]);
-					}
-
-					methods = new List<MethodReference>(annotatedParametersList.Cast<MethodReference>());
-					methods.Sort(new MethodReferenceComparer());
-					foreach (MethodDefinition method in methods)
-					{
-						writer.Write(MethodLookup[method]);
-						writer.Write(AnnotationSetRefLists[method]);
-					}
-				});
+				methods = new List<MethodReference>(annotatedParametersList.Cast<MethodReference>());
+				methods.Sort(new MethodReferenceComparer());
+				foreach (var method in methods)
+				{
+					writer.Write(MethodLookup[method]);
+					writer.Write(AnnotationSetRefLists[(MethodDefinition) method]);
+				}
 			}
 
 			if (count > 0)
 				Map.Add(TypeCodes.AnnotationDirectory, new MapItem(TypeCodes.AnnotationDirectory, count, sectionOffset));
 		}
+
 		#endregion
 
 		#region Code
+
 		private void WriteCode(BinaryWriter writer)
 		{
 			var sectionOffset = (uint)writer.BaseStream.Position;
 			uint count = 0;
 
-			foreach (var loopmethod in FlatClasses.SelectMany(@class => @class.Methods))
+			foreach (var method in FlatClasses.SelectMany(@class => @class.Methods))
 			{
-				var method = loopmethod;
-
 				Codes.Add(method, 0);
 				var body = method.Body;
-				if (body != null)
+				if (body == null)
+					continue;
+
+				writer.EnsureSectionAlignment(ref sectionOffset, 4);
+				writer.EnsureAlignmentWithSection(sectionOffset, 4);
+
+				Codes[method] = (uint)writer.BaseStream.Position;
+				count++;
+
+				writer.Write((ushort)body.Registers.Count);
+				writer.Write(body.IncomingArguments);
+				writer.Write(body.OutgoingArguments);
+				writer.Write((ushort)body.Exceptions.Count);
+				DebugMarkers.Add(method, writer.MarkUInt());
+
+				var iwriter = new InstructionWriter(this, method);
+				iwriter.WriteTo(writer);
+
+				if ((body.Exceptions.Count != 0) && (iwriter.Codes.Length % 2 != 0))
+					writer.Write((ushort)0); // padding (tries 4-byte alignment)
+
+				var catchHandlers = new Dictionary<CatchSet, List<ExceptionHandler>>();
+				var exceptionsMarkers = new Dictionary<ExceptionHandler, UShortMarker>();
+				foreach (var handler in body.Exceptions)
 				{
-					writer.EnsureAlignment(sectionOffset, 4, () =>
-						{
-							Codes[method] = (uint)writer.BaseStream.Position;
-							count++;
+					writer.Write(handler.TryStart.Offset);
+					writer.Write((ushort)(iwriter.LookupLast[handler.TryEnd] - handler.TryStart.Offset + 1));
+					exceptionsMarkers.Add(handler, writer.MarkUShort());
 
-							writer.Write((ushort)body.Registers.Count);
-							writer.Write(body.IncomingArguments);
-							writer.Write(body.OutgoingArguments);
-							writer.Write((ushort)body.Exceptions.Count);
-							DebugMarkers.Add(method, writer.MarkUInt());
+					var set = new CatchSet(handler);
+					if (!catchHandlers.ContainsKey(set))
+						catchHandlers.Add(set, new List<ExceptionHandler>());
 
-							var iwriter = new InstructionWriter(this, method);
-							iwriter.WriteTo(writer);
+					catchHandlers[set].Add(handler);
+				}
 
-							if ((body.Exceptions.Count != 0) && (iwriter.Codes.Length % 2 != 0))
-								writer.Write((ushort)0); // padding (tries 4-byte alignment)
+				var catchSets = catchHandlers.Keys.ToList();
+				catchSets.Sort(new CatchSetComparer());
 
-							var catchHandlers = new Dictionary<CatchSet, List<ExceptionHandler>>();
-							var exceptionsMarkers = new Dictionary<ExceptionHandler, UShortMarker>();
-							foreach (var handler in body.Exceptions)
-							{
-								writer.Write(handler.TryStart.Offset);
-								writer.Write((ushort)(iwriter.LookupLast[handler.TryEnd] - handler.TryStart.Offset + 1));
-								exceptionsMarkers.Add(handler, writer.MarkUShort());
+				if (catchSets.Count <= 0)
+					continue;
 
-								var set = new CatchSet(handler);
-								if (!catchHandlers.ContainsKey(set))
-									catchHandlers.Add(set, new List<ExceptionHandler>());
+				var baseOffset = writer.BaseStream.Position;
+				writer.WriteULEB128((uint)catchSets.Count);
+				foreach (var set in catchSets)
+				{
+					var itemoffset = writer.BaseStream.Position - baseOffset;
 
-								catchHandlers[set].Add(handler);
-							}
+					if (set.CatchAll != null)
+						writer.WriteSLEB128(-set.Count);
+					else
+						writer.WriteSLEB128(set.Count);
 
-							var catchSets = catchHandlers.Keys.ToList();
-							catchSets.Sort(new CatchSetComparer());
+					foreach (var handler in catchHandlers[set])
+						exceptionsMarkers[handler].Value = (ushort)itemoffset;
 
-							if (catchSets.Count <= 0) return;
-							var baseOffset = writer.BaseStream.Position;
-							writer.WriteULEB128((uint)catchSets.Count);
-							foreach (var set in catchSets)
-							{
-								var itemoffset = writer.BaseStream.Position - baseOffset;
+					foreach (var @catch in set)
+					{
+						writer.WriteULEB128((uint)TypeLookup[@catch.Type]);
+						writer.WriteULEB128((uint)@catch.Instruction.Offset);
+					}
 
-								if (set.CatchAll != null)
-									writer.WriteSLEB128(-set.Count);
-								else
-									writer.WriteSLEB128(set.Count);
-
-								foreach (var handler in catchHandlers[set])
-									exceptionsMarkers[handler].Value = (ushort)itemoffset;
-
-								foreach (var @catch in set)
-								{
-									writer.WriteULEB128((uint)TypeLookup[@catch.Type]);
-									writer.WriteULEB128((uint)@catch.Instruction.Offset);
-								}
-
-								if (set.CatchAll != null)
-									writer.WriteULEB128((uint)set.CatchAll.Offset);
-							}
-						});
+					if (set.CatchAll != null)
+						writer.WriteULEB128((uint)set.CatchAll.Offset);
 				}
 			}
 
@@ -1060,25 +1061,25 @@ namespace Dexer.IO
 		#endregion
 
 		#region MapList
+
 		private void WriteMapList(BinaryWriter writer)
 		{
-			var sectionOffset = (uint)writer.BaseStream.Position;
+			var sectionOffset = (uint) writer.BaseStream.Position;
+			writer.EnsureSectionAlignment(ref sectionOffset, 4);
+
 			HeaderMarkers.MapMarker.Value = sectionOffset;
 			Map.Add(TypeCodes.MapList, new MapItem(TypeCodes.MapList, 1, sectionOffset));
 
-			writer.EnsureAlignment(sectionOffset, 4, () =>
+			writer.Write(Map.Count);
+			foreach (var item in Map.Values)
 			{
-				writer.Write(Map.Count);
-				foreach (var item in Map.Values)
-				{
-					writer.Write((ushort)item.Type);
-					writer.Write((ushort)0); // unused
-					writer.Write(item.Size);
-					writer.Write(item.Offset);
-				}
-			});
+				writer.Write((ushort) item.Type);
+				writer.Write((ushort) 0); // unused
+				writer.Write(item.Size);
+				writer.Write(item.Offset);
+			}
 
-			var filesize = (uint)writer.BaseStream.Position;
+			var filesize = (uint) writer.BaseStream.Position;
 			HeaderMarkers.FileSizeMarker.Value = filesize;
 
 			var lastEntry = TypeCodes.Header;
@@ -1090,6 +1091,7 @@ namespace Dexer.IO
 				lastEntry = type;
 			}
 		}
+
 		#endregion
 
 		#region Signature & CheckSum
