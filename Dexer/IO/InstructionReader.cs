@@ -29,9 +29,9 @@ namespace Dexer.IO
 {
 	internal class InstructionReader
 	{
-		private MethodDefinition MethodDefinition { get; set; }
-		private List<Action> LazyInstructionsSetters { get; set; }
-		private Dex Dex { get; set; }
+		private MethodDefinition MethodDefinition { get; }
+		private List<Action> LazyInstructionsSetters { get; }
+		private Dex Dex { get; }
 
 		internal int[] Codes { get; set; }
 		private int[] Lower { get; set; }

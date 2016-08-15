@@ -51,10 +51,10 @@ namespace Dexer.Instructions
 
 		internal static void CheckArrayData(Instruction ins, out Array elements, out Type elementtype, out int elementsize)
 		{
-			if (!(ins.Operand is Array) || (ins.Operand as Array).Length == 0)
+			if (!(ins.Operand is Array) || ((Array) ins.Operand).Length == 0)
 				throw new InstructionException(ins, "Expecting non empty Array");
 
-			elements = ins.Operand as Array;
+			elements = (Array) ins.Operand;
 			elementtype = elements.GetValue(0).GetType();
 			elementsize = Marshal.SizeOf(elementtype);
 
@@ -161,6 +161,7 @@ namespace Dexer.Instructions
 						ip += 2;
 						break;
 					case OpCodes.Move16:
+					case OpCodes.MoveWide16:
 					case OpCodes.MoveObject16:
 						// vAAAA, vBBBB
 						ip += 3;
@@ -245,7 +246,7 @@ namespace Dexer.Instructions
 						// vAA, +BBBBBBBB
 						if (!(ins.Operand is PackedSwitchData))
 							throw new InstructionException(ins, "Expecting PackedSwitchData");
-						var pdata = ins.Operand as PackedSwitchData;
+						var pdata = (PackedSwitchData) ins.Operand;
 
 						ip += 3;
 						extra += (pdata.Targets.Count * 2) + 4;
@@ -254,7 +255,7 @@ namespace Dexer.Instructions
 						// vAA, +BBBBBBBB
 						if (!(ins.Operand is SparseSwitchData))
 							throw new InstructionException(ins, "Expecting SparseSwitchData");
-						var sdata = ins.Operand as SparseSwitchData;
+						var sdata = (SparseSwitchData) ins.Operand;
 
 						ip += 3;
 						extra += (sdata.Targets.Count * 4) + 2;

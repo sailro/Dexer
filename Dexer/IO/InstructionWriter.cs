@@ -29,8 +29,8 @@ namespace Dexer.IO
 {
 	internal class InstructionWriter
 	{
-		private DexWriter DexWriter { get; set; }
-		private MethodDefinition MethodDefinition { get; set; }
+		private DexWriter DexWriter { get; }
+		private MethodDefinition MethodDefinition { get; }
 		internal ushort[] Codes { get; set; }
 		private int _ip;
 		private int _extraOffset;
@@ -48,7 +48,7 @@ namespace Dexer.IO
 
 		public void WriteTo(BinaryWriter writer)
 		{
-			OffsetStatistics stats = MethodDefinition.Body.UpdateInstructionOffsets();
+			var stats = MethodDefinition.Body.UpdateInstructionOffsets();
 			_extraOffset = stats.CodeUnits;
 			Codes = new ushort[stats.CodeUnits + stats.ExtraCodeUnits];
 
@@ -148,6 +148,7 @@ namespace Dexer.IO
 						WritevBBBB(ins);
 						break;
 					case OpCodes.Move16:
+					case OpCodes.MoveWide16:
 					case OpCodes.MoveObject16:
 						// vAAAA, vBBBB
 						WritevAAAA(ins);
