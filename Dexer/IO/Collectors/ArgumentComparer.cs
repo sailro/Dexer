@@ -28,7 +28,7 @@ namespace Dexer.IO.Collectors
 {
 	internal class ArgumentComparer : IComparer<AnnotationArgument>
 	{
-		private static int CompareValue(Object x, Object y)
+		private static int CompareValue(object x, object y)
 		{
 			var xf = ValueFormat.GetFormat(x);
 			var yf = ValueFormat.GetFormat(y);
@@ -65,7 +65,7 @@ namespace Dexer.IO.Collectors
 
 					var ax = (Array)x;
 					var ay = (Array)y;
-					for (int i = 0; i < Math.Min(ax.Length, ay.Length); i++)
+					for (var i = 0; i < Math.Min(ax.Length, ay.Length); i++)
 					{
 						result = CompareValue(ax.GetValue(i), ay.GetValue(i));
 						if (result != 0)

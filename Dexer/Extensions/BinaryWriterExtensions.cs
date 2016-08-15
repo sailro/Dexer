@@ -151,7 +151,7 @@ namespace Dexer.Extensions
 			if (i == 0)
 				return 64;
 			var n = 1;
-			var x = (int) (TripleShift(i, 32));
+			var x = (int) TripleShift(i, 32);
 
 			if (x == 0)
 			{

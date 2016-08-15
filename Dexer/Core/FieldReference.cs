@@ -53,8 +53,8 @@ namespace Dexer.Core
 
 		public virtual bool Equals(IMemberReference other)
 		{
-			return (other is FieldReference)
-				&& Equals(other as FieldReference);
+			return other is FieldReference
+				&& Equals((FieldReference) other);
 		}
 
 	}

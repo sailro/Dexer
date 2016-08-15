@@ -32,7 +32,7 @@ namespace Dexer.IO
 {
 	public class DexReader
 	{
-		private Dex Dex { get; set; }
+		private Dex Dex { get; }
 		internal Map Map { get; set; }
 		internal DexHeader Header { get; set; }
 

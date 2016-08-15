@@ -47,8 +47,7 @@ namespace Dexer.Instructions
 		{
 		}
 
-		public Instruction(OpCodes opcode, object operand)
-			: this(opcode, operand, null)
+		public Instruction(OpCodes opcode, object operand) : this(opcode, operand, null)
 		{
 		}
 
@@ -64,7 +63,7 @@ namespace Dexer.Instructions
 		public override string ToString()
 		{
 			var builder = new StringBuilder();
-			builder.Append(OpCode.ToString());
+			builder.Append(OpCode);
 			foreach (var register in Registers)
 			{
 				builder.Append(" ");
@@ -72,7 +71,7 @@ namespace Dexer.Instructions
 			}
 			builder.Append(" ");
 			if (Operand is Instruction)
-				builder.Append(string.Concat("=> {", (Operand as Instruction).Offset, "}"));
+				builder.Append(string.Concat("=> {", ((Instruction) Operand).Offset, "}"));
 			else
 				if (Operand is string)
 				builder.Append(string.Concat("\"", Operand, "\""));

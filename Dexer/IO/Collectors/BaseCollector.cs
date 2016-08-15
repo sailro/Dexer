@@ -201,11 +201,13 @@ namespace Dexer.IO.Collectors
 		{
 			Collect(member.Name);
 
-			if (member is FieldReference)
-				Collect((member as FieldReference).Owner);
+			var fieldReference = member as FieldReference;
+			if (fieldReference != null)
+				Collect(fieldReference.Owner);
 
-			if (member is MethodReference)
-				Collect((member as MethodReference).Owner);
+			var methodReference = member as MethodReference;
+			if (methodReference != null)
+				Collect(methodReference.Owner);
 		}
 
 		public virtual void Collect(ArrayType array)
@@ -216,11 +218,13 @@ namespace Dexer.IO.Collectors
 
 		public virtual void Collect(CompositeType composite)
 		{
-			if (composite is ClassReference)
-				Collect(composite as ClassReference);
+			var classReference = composite as ClassReference;
+			if (classReference != null)
+				Collect(classReference);
 
-			if (composite is ArrayType)
-				Collect(composite as ArrayType);
+			var arrayType = composite as ArrayType;
+			if (arrayType != null)
+				Collect(arrayType);
 		}
 
 		public virtual void Collect(Annotation annotation)
@@ -239,6 +243,7 @@ namespace Dexer.IO.Collectors
 		{
 			if (body.DebugInfo != null)
 				Collect(body.DebugInfo);
+
 			Collect(body.Instructions);
 			Collect(body.Exceptions);
 		}

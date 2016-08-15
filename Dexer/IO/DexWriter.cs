@@ -390,7 +390,7 @@ namespace Dexer.IO
 		private uint WriteAnnotationSet(BinaryWriter writer, uint sectionOffset, IAnnotationProvider provider, bool writezero)
 		{
 			var key = new AnnotationSet(provider);
-			uint offset = 0;
+			uint offset;
 
 			if (!AnnotationSets.ContainsKey(key))
 			{

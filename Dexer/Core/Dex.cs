@@ -117,7 +117,7 @@ namespace Dexer.Core
 
 		internal ClassDefinition GetClass(string fullname, List<ClassDefinition> container)
 		{
-			foreach (ClassDefinition item in container)
+			foreach (var item in container)
 			{
 				if (fullname.Equals(item.Fullname))
 					return item;
@@ -131,7 +131,7 @@ namespace Dexer.Core
 
 		internal TypeReference Import(TypeReference tref, bool add)
 		{
-			foreach (TypeReference item in TypeReferences)
+			foreach (var item in TypeReferences)
 			{
 				if (tref.Equals(item))
 				{
@@ -158,7 +158,7 @@ namespace Dexer.Core
 
 		public MethodReference Import(MethodReference mref)
 		{
-			foreach (MethodReference item in MethodReferences)
+			foreach (var item in MethodReferences)
 			{
 				if (mref.Equals(item))
 				{

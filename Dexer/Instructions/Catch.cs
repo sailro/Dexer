@@ -51,10 +51,8 @@ namespace Dexer.Instructions
 
 		public override bool Equals(object obj)
 		{
-			if (obj is Catch)
-				return Equals(obj as Catch);
-
-			return false;
+			var other = obj as Catch;
+			return other != null && Equals(other);
 		}
 
 		public override int GetHashCode()

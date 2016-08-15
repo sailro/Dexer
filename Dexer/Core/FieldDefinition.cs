@@ -112,8 +112,8 @@ namespace Dexer.Core
 
 		public override bool Equals(IMemberReference other)
 		{
-			return (other is FieldDefinition)
-				&& Equals(other as FieldDefinition);
+			return other is FieldDefinition
+				&& Equals((FieldDefinition) other);
 		}
 
 	}

@@ -51,8 +51,7 @@ namespace Dexer.Core
 			InnerClasses = new List<ClassDefinition>();
 		}
 
-		internal ClassDefinition(ClassReference cref)
-			: this()
+		internal ClassDefinition(ClassReference cref) : this()
 		{
 			Fullname = cref.Fullname;
 			Namespace = cref.Namespace;
@@ -144,8 +143,8 @@ namespace Dexer.Core
 
 		public override bool Equals(TypeReference other)
 		{
-			return (other is ClassDefinition)
-				&& Equals(other as ClassDefinition);
+			return other is ClassDefinition
+				&& Equals((ClassDefinition) other);
 		}
 
 		private static List<ClassDefinition> Flattenize(List<ClassDefinition> container)

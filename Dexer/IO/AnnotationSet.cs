@@ -36,10 +36,8 @@ namespace Dexer.IO
 
 		public override bool Equals(object obj)
 		{
-			if (obj is AnnotationSet)
-				return Equals(obj as AnnotationSet);
-
-			return false;
+			var annotationSet = obj as AnnotationSet;
+			return annotationSet != null && Equals(annotationSet);
 		}
 
 		public override int GetHashCode()

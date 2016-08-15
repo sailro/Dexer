@@ -53,8 +53,8 @@ namespace Dexer.Core
 
 		public override bool Equals(TypeReference other)
 		{
-			return (other is PrimitiveType)
-				&& Equals(other as PrimitiveType);
+			return other is PrimitiveType
+				&& Equals((PrimitiveType) other);
 		}
 
 	}

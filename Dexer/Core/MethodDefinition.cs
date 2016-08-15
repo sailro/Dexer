@@ -155,8 +155,8 @@ namespace Dexer.Core
 
 		public override bool Equals(IMemberReference other)
 		{
-			return (other is MethodDefinition)
-				&& Equals(other as MethodDefinition);
+			return other is MethodDefinition
+				&& Equals((MethodDefinition) other);
 		}
 
 	}

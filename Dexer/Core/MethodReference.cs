@@ -59,8 +59,8 @@ namespace Dexer.Core
 
 		public virtual bool Equals(IMemberReference other)
 		{
-			return (other is MethodReference)
-				&& Equals(other as MethodReference);
+			return other is MethodReference
+				&& Equals((MethodReference) other);
 		}
 	}
 }

@@ -85,14 +85,14 @@ namespace Dexer.Core
 
 		public override bool Equals(TypeReference other)
 		{
-			return (other is ClassReference)
-				&& Equals(other as ClassReference);
+			return other is ClassReference
+				&& Equals((ClassReference) other);
 		}
 
 		public bool Equals(IMemberReference other)
 		{
-			return (other is ClassReference)
-				&& Equals(other as ClassReference);
+			return other is ClassReference
+				&& Equals((ClassReference) other);
 		}
 	}
 }
