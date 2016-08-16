@@ -490,7 +490,7 @@ namespace Dexer.IO
 			if (!(ins.Operand is FieldReference))
 				throw new InstructionException(ins, "Expecting FieldReference");
 
-			WriteShort(DexWriter.FieldLookup[ins.Operand as FieldReference], ref _ip);
+			WriteUShort(DexWriter.FieldLookup[ins.Operand as FieldReference], ref _ip);
 		}
 
 		private void WriteShortMethodIndex(Instruction ins)
@@ -498,15 +498,15 @@ namespace Dexer.IO
 			if (!(ins.Operand is MethodReference))
 				throw new InstructionException(ins, "Expecting MethodReference");
 
-			WriteShort(DexWriter.MethodLookup[ins.Operand as MethodReference], ref _ip);
+			WriteUShort(DexWriter.MethodLookup[ins.Operand as MethodReference], ref _ip);
 		}
 
 		private void WriteShortStringIndex(Instruction ins)
 		{
-			if (!(ins.Operand is String))
+			if (!(ins.Operand is string))
 				throw new InstructionException(ins, "Expecting String");
 
-			WriteShort(DexWriter.StringLookup[ins.Operand as String], ref _ip);
+			WriteUShort(DexWriter.StringLookup[(string) ins.Operand], ref _ip);
 		}
 
 		private void WriteShortTypeIndex(Instruction ins)
@@ -514,12 +514,12 @@ namespace Dexer.IO
 			if (!(ins.Operand is TypeReference))
 				throw new InstructionException(ins, "Expecting TypeReference");
 
-			WriteShort(DexWriter.TypeLookup[ins.Operand as TypeReference], ref _ip);
+			WriteUShort(DexWriter.TypeLookup[ins.Operand as TypeReference], ref _ip);
 		}
 
 		private void WriteShort(Instruction ins, int shift)
 		{
-			long value = Convert.ToInt64(ins.Operand) >> shift;
+			var value = Convert.ToInt64(ins.Operand) >> shift;
 			WriteShort(value, ref _ip);
 		}
 
@@ -533,7 +533,11 @@ namespace Dexer.IO
 			Codes[codeUnitOffset++] = (ushort)Convert.ToInt16(value);
 		}
 
-		// ReSharper disable UnusedParameter.Local
+		private void WriteUShort(object value, ref int codeUnitOffset)
+		{
+			Codes[codeUnitOffset++] = Convert.ToUInt16(value);
+		}
+
 		private void WriteIntInstructionOffset(Instruction ins)
 		{
 			if (!(ins.Operand is Instruction))
@@ -542,15 +546,24 @@ namespace Dexer.IO
 			WriteInt((ins.Operand as Instruction).Offset - ins.Offset, ref _ip);
 		}
 
-		private static void WriteIntStringIndex(Instruction ins)
+		private void WriteIntStringIndex(Instruction ins)
 		{
-			throw new NotImplementedException();
+			if (!(ins.Operand is string))
+				throw new InstructionException(ins, "Expecting String");
+
+			WriteUInt(DexWriter.StringLookup[(string)ins.Operand], ref _ip);
 		}
-		// ReSharper restore UnusedParameter.Local
 
 		private void WriteInt(object value, ref int codeUnitOffset)
 		{
-			int result = Convert.ToInt32(value);
+			var result = Convert.ToInt32(value);
+			Codes[codeUnitOffset++] = (ushort)(result & 0xffff);
+			Codes[codeUnitOffset++] = (ushort)(result >> 16);
+		}
+
+		private void WriteUInt(object value, ref int codeUnitOffset)
+		{
+			var result = Convert.ToUInt32(value);
 			Codes[codeUnitOffset++] = (ushort)(result & 0xffff);
 			Codes[codeUnitOffset++] = (ushort)(result >> 16);
 		}
