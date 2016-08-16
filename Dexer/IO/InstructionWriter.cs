@@ -50,6 +50,7 @@ namespace Dexer.IO
 		{
 			var stats = MethodDefinition.Body.UpdateInstructionOffsets();
 			_extraOffset = stats.CodeUnits;
+
 			Codes = new ushort[stats.CodeUnits + stats.ExtraCodeUnits];
 
 			foreach (var ins in MethodDefinition.Body.Instructions)
@@ -174,6 +175,11 @@ namespace Dexer.IO
 					case OpCodes.FillArrayData:
 						// vAA, #+BBBBBBBB
 						WritevAA(ins);
+
+						// Keep 4-byte alignment for this block
+						if (_extraOffset%2 != 0)
+							_extraOffset++;
+
 						WriteInt(_extraOffset - ins.Offset, ref _ip);
 						WriteArrayData(ins);
 						break;

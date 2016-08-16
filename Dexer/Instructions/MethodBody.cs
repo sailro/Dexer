@@ -189,6 +189,10 @@ namespace Dexer.Instructions
 						int elementsize;
 						CheckArrayData(ins, out elements, out elementtype, out elementsize);
 
+						// Keep 4-byte alignment for this block
+						if (extra%2 != 0)
+							extra++;
+
 						extra += (elements.Length * elementsize + 1) / 2 + 4;
 						break;
 					case OpCodes.ConstHigh16:
