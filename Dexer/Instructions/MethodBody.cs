@@ -228,7 +228,7 @@ namespace Dexer.Instructions
 						break;
 					case OpCodes.FilledNewArrayRange:
 						// {vCCCC .. vNNNN}, type@BBBB
-						ip += 4;
+						ip += 3;
 						break;
 					case OpCodes.Goto:
 						// +AA

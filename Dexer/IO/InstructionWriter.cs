@@ -224,13 +224,10 @@ namespace Dexer.IO
 						Codes[_ip++] |= (ushort)(registerMask << 12 >> 12);
 						break;
 					case OpCodes.FilledNewArrayRange:
-						// {vCCCC .. vNNNN}, type@BBBB
-						/*registerCount = Upper[Ip++] << 16;
-                        ins.Operand = Dex.TypeReferences[ReadShort(ref Ip)];
-                        ReadvBBBB(ins);
-                        for (int i = 1; i < registerCount; i++)
-                            ins.Registers.Add(registers[i + ins.Registers[0].Index]);*/
-						throw new NotImplementedException();
+						WriteSByte(ins.Registers.Count);
+						WriteShortTypeIndex(ins);
+						Codes[_ip++] |= (ushort)CheckRegister(ins, 0, 0xFFFF);
+						break;
 					case OpCodes.Goto:
 						// +AA
 						WriteSbyteInstructionOffset(ins);
@@ -531,9 +528,12 @@ namespace Dexer.IO
 		}
 
 		// ReSharper disable UnusedParameter.Local
-		private static void WriteIntInstructionOffset(Instruction ins)
+		private void WriteIntInstructionOffset(Instruction ins)
 		{
-			throw new NotImplementedException();
+			if (!(ins.Operand is Instruction))
+				throw new InstructionException(ins, "Expecting Instruction");
+
+			WriteInt((ins.Operand as Instruction).Offset - ins.Offset, ref _ip);
 		}
 
 		private static void WriteIntStringIndex(Instruction ins)
