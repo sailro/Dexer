@@ -120,6 +120,10 @@ namespace Dexer.IO
 			collector.Collect(Dex.FieldReferences);
 			collector.Collect(Dex.TypeReferences);
 
+			var @this = "this";
+			if (Dex.Strings.Contains(@this))
+				collector.Collect(@this);
+
 			var strings = new List<string>(collector.Items.Keys);
 			strings.Sort(new StringComparer());
 			Dex.Strings = strings;

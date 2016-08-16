@@ -28,14 +28,6 @@ namespace Dexer.IO.Collectors
 	internal class StringCollector : BaseCollector<string>
 	{
 
-		public override void Collect(DebugInfo debugInfo)
-		{
-			base.Collect(debugInfo);
-
-			if (debugInfo != null && debugInfo.Owner != null && debugInfo.Owner.Owner != null && !debugInfo.Owner.Owner.IsStatic)
-				Collect("this");
-		}
-
 		public override void Collect(Prototype prototype)
 		{
 			base.Collect(prototype);
