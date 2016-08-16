@@ -344,11 +344,16 @@ namespace Dexer.IO
 
 			foreach (var flatclass in FlatClasses)
 			{
-				writer.EnsureSectionAlignment(ref sectionOffset, 4);
-				writer.EnsureAlignmentWithSection(sectionOffset, 4);
-
 				var @class = flatclass;
-				foreach (var mdef in @class.Methods.Where(mdef => (mdef.Prototype.ContainsAnnotation())))
+				var annotatedMethods = @class.Methods.Where(mdef => mdef.Prototype.ContainsAnnotation()).ToList();
+
+				if (annotatedMethods.Count > 0)
+				{
+					writer.EnsureSectionAlignment(ref sectionOffset, 4);
+					writer.EnsureAlignmentWithSection(sectionOffset, 4);
+				}
+
+				foreach (var mdef in annotatedMethods)
 				{
 					AnnotationSetRefLists.Add(mdef, (uint) writer.BaseStream.Position);
 					writer.Write(mdef.Prototype.Parameters.Count);
@@ -604,9 +609,6 @@ namespace Dexer.IO
 				var i = index;
 				var @class = FlatClasses[i];
 
-				writer.EnsureSectionAlignment(ref sectionOffset, 4);
-				writer.EnsureAlignmentWithSection(sectionOffset, 4);
-
 				var annotatedMethods = new List<MethodDefinition>(); // by method index
 				var annotatedParametersList = new List<MethodDefinition>(); // by method index
 				var annotatedFields = @class.Fields.Where(field => field.Annotations.Count > 0).ToList(); // by field index
@@ -623,6 +625,10 @@ namespace Dexer.IO
 				            annotatedParametersList.Count;
 				if (total <= 0)
 					continue;
+
+				writer.EnsureSectionAlignment(ref sectionOffset, 4);
+				writer.EnsureAlignmentWithSection(sectionOffset, 4);
+
 
 				// all datas except class annotations are specific.
 				if (total == @class.Annotations.Count)
