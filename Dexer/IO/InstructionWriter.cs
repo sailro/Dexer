@@ -668,12 +668,11 @@ namespace Dexer.IO
 			Codes[_ip++] |= (ushort)(CheckRegister(ins, 0, 0xFF) << 8);
 		}
 
-		// ReSharper disable UnusedParameter.Local
-		private static void WritevAAAA(Instruction ins)
+		private void WritevAAAA(Instruction ins)
 		{
-			throw new NotImplementedException();
+			_ip++;
+			Codes[_ip++] |= (ushort)CheckRegister(ins, 0, 0xFFFF);
 		}
-		// ReSharper restore UnusedParameter.Local
 
 		private void WritevB(Instruction ins)
 		{
