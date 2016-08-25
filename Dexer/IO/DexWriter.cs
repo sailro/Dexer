@@ -38,7 +38,7 @@ namespace Dexer.IO
 {
 	internal class DexWriter
 	{
-		private Dex Dex { get; set; }
+		internal Dex Dex { get; set; }
 		internal Map Map { get; set; }
 		private List<ClassDefinition> FlatClasses { get; set; }
 
@@ -1141,7 +1141,7 @@ namespace Dexer.IO
 			MethodLookup = CollectMethods();
 			FieldLookup = CollectFields();
 			PrototypeLookup = CollectPrototypes();
-			FlatClasses = ClassDefinition.FlattenizeAndSort(Dex.Classes);
+			FlatClasses = ClassDefinition.SortAndFlattenize(Dex.Classes);
 
 			WriteHeader(writer);
 			WriteStringId(writer);

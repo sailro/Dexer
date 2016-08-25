@@ -147,25 +147,24 @@ namespace Dexer.Core
 				&& Equals((ClassDefinition) other);
 		}
 
-		private static List<ClassDefinition> Flattenize(List<ClassDefinition> container)
+		internal static List<ClassDefinition> Flattenize(List<ClassDefinition> container)
 		{
 			var result = new List<ClassDefinition>();
 			foreach (var cdef in container)
 			{
-				result.Add(cdef);
 				result.AddRange(Flattenize(cdef.InnerClasses));
+				result.Add(cdef);
 			}
 			return result;
 		}
 
-		internal static List<ClassDefinition> FlattenizeAndSort(List<ClassDefinition> container)
+		internal static List<ClassDefinition> SortAndFlattenize(List<ClassDefinition> container)
 		{
-			container = Flattenize(container);
-
-			// Standard sort then topological sort
 			var tsorter = new TopologicalSorter();
 			container.Sort(new ClassDefinitionComparer());
-			return new List<ClassDefinition>(tsorter.TopologicalSort(container, new ClassDefinitionComparer()));
+			container = new List<ClassDefinition>(tsorter.TopologicalSort(container, new ClassDefinitionComparer()));
+
+			return Flattenize(container);
 		}
 
 		internal static List<ClassDefinition> Hierarchicalize(List<ClassDefinition> container, Dex dex)

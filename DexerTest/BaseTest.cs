@@ -19,7 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Dexer.Test
@@ -29,6 +31,9 @@ namespace Dexer.Test
 	{
 		private TestContext _testContextInstance;
 		private string _filesDirectory;
+
+		// Set to true to provide more details as text files.
+		protected bool Extralog = false;
 
 		public string FilesDirectory
 		{
@@ -53,6 +58,15 @@ namespace Dexer.Test
 				_filesDirectory = Path.Combine(_filesDirectory, @"DexerTest\Files");
 				_filesDirectory = Path.GetFullPath(_filesDirectory);
 			}
+		}
+
+		public void DumpList<T>(string filename, List<T> list)
+		{
+			var output = new StringBuilder();
+			foreach (var item in list)
+				output.AppendLine(item.ToString());
+
+			File.WriteAllText(filename, output.ToString());
 		}
 	}
 }

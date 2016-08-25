@@ -21,7 +21,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Dexer.Core;
 using Dexer.Extensions;
 using Dexer.IO.Collectors;
@@ -41,7 +40,8 @@ namespace Dexer.Test
 				TestContext.WriteLine("Testing {0}", file);
 
 				var dex = Dex.Read(file);
-				var items = new List<T>(provider(dex));
+				var list = provider(dex);
+				var items = new List<T>(list);
 				items.Shuffle();
 				items.Sort(comparer);
 
@@ -51,8 +51,19 @@ namespace Dexer.Test
 					items = new List<T>(tsorter.TopologicalSort(items, comparer as IPartialComparer<T>));
 				}
 
+				if (Extralog)
+				{
+					DumpList(string.Concat(file, comparer.ToString(), ".expected.txt") , items);
+					DumpList(string.Concat(file, comparer.ToString(), ".actual.txt"), list);
+				}
+
 				for (var i = 0; i < items.Count; i++)
-					Assert.AreEqual(items[i], provider(dex)[i]);
+				{
+					var expected = items[i];
+					var actual = list[i];
+
+					Assert.AreEqual(expected, actual);
+				}
 
 			}
 		}

@@ -27,9 +27,6 @@ using Dexer.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Dexer.IO;
 using Dexer.Metadata;
-using System;
-using System.Reflection;
-using System.Collections;
 
 namespace Dexer.Test
 {
@@ -49,16 +46,22 @@ namespace Dexer.Test
 
 			dexwriter = new DexWriter(dex);
 
-            /*using (Stream fs = new FileStream(file + ".out", FileMode.Create))
-			using (var writer = new BinaryWriter(fs))
-				dexwriter.WriteTo(writer);*/
+			if (Extralog)
+			{
+				using (Stream fs = new FileStream(file + ".out", FileMode.Create))
+				using (var writer = new BinaryWriter(fs))
+					dexwriter.WriteTo(writer);
+			}
+			else
+			{
+				using (Stream fs = new MemoryStream())
+				using (var writer = new BinaryWriter(fs))
+					dexwriter.WriteTo(writer);
+			}
 
-            using (Stream fs = new MemoryStream())
-			using (var writer = new BinaryWriter(fs))
-				dexwriter.WriteTo(writer);
-        }
+		}
 
-        [TestMethod]
+		[TestMethod]
 		public void TestMap()
 		{
 			foreach (var file in GetTestFiles())
