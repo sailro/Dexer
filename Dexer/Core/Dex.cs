@@ -37,6 +37,16 @@ namespace Dexer.Core
 		internal List<string> Strings { get; set; }
 		internal List<Prototype> Prototypes { get; set; }
 
+		public static Dex Read(Stream stream)
+		{
+			return Read(stream, true);
+		}
+
+		public void Write(Stream stream)
+		{
+			Write(stream, true);
+		}
+
 		public static Dex Read(string filename)
 		{
 			return Read(filename, true);
@@ -47,56 +57,61 @@ namespace Dexer.Core
 			Write(filename, true);
 		}
 
-		public static Dex Read(string filename, bool bufferize)
+		public static Dex Read(Stream stream, bool bufferize)
 		{
 			var result = new Dex();
 
-			using (var filestream = new FileStream(filename, FileMode.Open))
+			if (bufferize)
 			{
-				Stream sourcestream = filestream;
-				if (bufferize)
-				{
-					var memorystream = new MemoryStream();
-					filestream.CopyTo(memorystream);
-					memorystream.Position = 0;
-					sourcestream = memorystream;
-				}
+				var memorystream = new MemoryStream();
+				stream.CopyTo(memorystream);
+				memorystream.Position = 0;
+				stream = memorystream;
+			}
 
-				using (var binaryReader = new BinaryReader(sourcestream))
-				{
-					var reader = new DexReader(result);
-					reader.ReadFrom(binaryReader);
-					return result;
-				}
+			using (var binaryReader = new BinaryReader(stream))
+			{
+				var reader = new DexReader(result);
+				reader.ReadFrom(binaryReader);
+				return result;
+			}
+		}
+
+
+		public static Dex Read(string filename, bool bufferize)
+		{
+			using (var stream = new FileStream(filename, FileMode.Open))
+				return Read(stream, bufferize);
+		}
+
+		public void Write(Stream stream, bool bufferize)
+		{
+			var deststream = stream;
+			MemoryStream memorystream = null;
+
+			if (bufferize)
+			{
+				memorystream = new MemoryStream();
+				deststream = memorystream;
+			}
+
+			using (var binaryWriter = new BinaryWriter(deststream))
+			{
+				var writer = new DexWriter(this);
+				writer.WriteTo(binaryWriter);
+
+				if (!bufferize)
+					return;
+
+				memorystream.Position = 0;
+				memorystream.CopyTo(stream);
 			}
 		}
 
 		public void Write(string filename, bool bufferize)
 		{
-			using (var filestream = new FileStream(filename, FileMode.Create))
-			{
-				Stream deststream = filestream;
-				MemoryStream memorystream = null;
-
-				if (bufferize)
-				{
-					memorystream = new MemoryStream();
-					deststream = memorystream;
-				}
-
-				using (var binaryWriter = new BinaryWriter(deststream))
-				{
-					var writer = new DexWriter(this);
-					writer.WriteTo(binaryWriter);
-
-					if (!bufferize)
-						return;
-
-					memorystream.Position = 0;
-					memorystream.CopyTo(filestream);
-				}
-
-			}
+			using (var stream = new FileStream(filename, FileMode.Create))
+				Write(stream, bufferize);
 		}
 
 		public Dex()
