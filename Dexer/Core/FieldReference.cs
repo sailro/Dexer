@@ -47,15 +47,13 @@ namespace Dexer.Core
 		public bool Equals(FieldReference other)
 		{
 			return Owner.Equals(other.Owner)
-				&& Name.Equals(other.Name)
-				&& Type.Equals(other.Type);
+			       && Name.Equals(other.Name)
+			       && Type.Equals(other.Type);
 		}
 
 		public virtual bool Equals(IMemberReference other)
 		{
-			return other is FieldReference
-				&& Equals((FieldReference) other);
+			return other is FieldReference reference && Equals(reference);
 		}
-
 	}
 }

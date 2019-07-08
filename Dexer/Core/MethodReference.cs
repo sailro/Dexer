@@ -53,14 +53,13 @@ namespace Dexer.Core
 		public bool Equals(MethodReference other)
 		{
 			return Owner.Equals(other.Owner)
-				&& Name.Equals(other.Name)
-				&& Prototype.Equals(other.Prototype);
+			       && Name.Equals(other.Name)
+			       && Prototype.Equals(other.Prototype);
 		}
 
 		public virtual bool Equals(IMemberReference other)
 		{
-			return other is MethodReference
-				&& Equals((MethodReference) other);
+			return other is MethodReference reference && Equals(reference);
 		}
 	}
 }

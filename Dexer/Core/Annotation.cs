@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Text;
 using Dexer.Metadata;
 using System;
+using System.Linq;
 
 namespace Dexer.Core
 {
@@ -49,27 +50,25 @@ namespace Dexer.Core
 
 				builder.Append(Arguments[i]);
 			}
+
 			builder.Append(")");
 			return builder.ToString();
 		}
 
 		public bool Equals(Annotation other)
 		{
-			var result = Type.Equals(other.Type) && Arguments.Count.Equals(other.Arguments.Count);
-			if (result)
-			{
-				for (var i = 0; i < Arguments.Count; i++)
-					result = result && Arguments[i].Equals(other.Arguments[i]);
-			}
-			return result;
+			if (other == null)
+				return false;
+
+			if (!Type.Equals(other.Type) || !Arguments.Count.Equals(other.Arguments.Count))
+				return false;
+
+			return !Arguments.Where((t, i) => !t.Equals(other.Arguments[i])).Any();
 		}
 
 		public override bool Equals(object obj)
 		{
-			if (obj is Annotation)
-				return Equals(obj as Annotation);
-
-			return false;
+			return obj is Annotation annotation && Equals(annotation);
 		}
 
 		public override int GetHashCode()
@@ -79,11 +78,10 @@ namespace Dexer.Core
 
 			foreach (var argument in Arguments)
 			{
-				builder.Append(String.Format("{0}=", argument.Name));
+				builder.Append($"{argument.Name}=");
 				if (ValueFormat.GetFormat(argument.Value) == ValueFormats.Array)
 				{
-					var array = argument.Value as Array;
-					if (array == null)
+					if (!(argument.Value is Array array))
 						throw new ArgumentException();
 
 					for (var i = 0; i < array.Length; i++)
@@ -95,11 +93,11 @@ namespace Dexer.Core
 				}
 				else
 					builder.Append(argument.Value);
+
 				builder.AppendLine();
 			}
 
 			return builder.ToString().GetHashCode();
 		}
-
 	}
 }

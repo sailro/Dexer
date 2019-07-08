@@ -81,12 +81,22 @@ namespace Dexer.IO.Collectors
 					return 0;
 				default:
 					throw new NotImplementedException(xf.ToString());
-
 			}
 		}
 
 		public int Compare(AnnotationArgument x, AnnotationArgument y)
 		{
+			switch (x)
+			{
+				case null when y == null:
+					return 0;
+				case null:
+					return -1;
+			}
+
+			if (y == null)
+				return 1;
+
 			var result = string.Compare(x.Name, y.Name, StringComparison.Ordinal);
 			return result != 0 ? result : CompareValue(x.Value, y.Value);
 		}

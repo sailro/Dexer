@@ -24,7 +24,6 @@ using Dexer.Extensions;
 
 namespace Dexer.IO.Markers
 {
-
 	internal class SizeOffsetMarker : Marker<SizeOffset>
 	{
 		public override SizeOffset Value
@@ -52,5 +51,4 @@ namespace Dexer.IO.Markers
 			Writer.Write((uint)0);
 		}
 	}
-
 }

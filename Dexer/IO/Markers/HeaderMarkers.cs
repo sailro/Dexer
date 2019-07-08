@@ -21,7 +21,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Dexer.IO.Markers
 {
-
 	internal class HeaderMarkers
 	{
 		public UIntMarker CheckSumMarker { get; set; }
@@ -37,5 +36,4 @@ namespace Dexer.IO.Markers
 		public SizeOffsetMarker ClassDefinitionsMarker { get; set; }
 		public SizeOffsetMarker DataMarker { get; set; }
 	}
-
 }

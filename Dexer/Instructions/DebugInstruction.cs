@@ -43,8 +43,8 @@ namespace Dexer.Instructions
 				builder.Append(" ");
 				builder.Append(operand);
 			}
+
 			return builder.ToString();
 		}
-
 	}
 }

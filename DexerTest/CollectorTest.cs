@@ -39,6 +39,5 @@ namespace Dexer.Test
 		{
 			TestCollector<PrototypeCollector, Prototype>(dex => dex.Prototypes);
 		}
-
 	}
 }

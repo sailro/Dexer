@@ -31,25 +31,36 @@ namespace Dexer.IO.Collectors
 
 		public int Compare(Prototype x, Prototype y)
 		{
-			var crt = _typeReferenceComparer.Compare(x.ReturnType, y.ReturnType);
-			if (crt == 0)
+			switch (x)
 			{
-				if (x.Parameters.Count == 0 && y.Parameters.Count != 0)
+				case null when y == null:
+					return 0;
+				case null:
 					return -1;
-
-				if (y.Parameters.Count == 0 && x.Parameters.Count != 0)
-					return 1;
-
-				var minp = Math.Min(x.Parameters.Count, y.Parameters.Count);
-				for (var i = 0; i < minp; i++)
-				{
-					var cp = _typeReferenceComparer.Compare(x.Parameters[i].Type, y.Parameters[i].Type);
-					if (cp != 0)
-						return cp;
-				}
-				return x.Parameters.Count.CompareTo(y.Parameters.Count);
 			}
-			return crt;
+
+			if (y == null)
+				return 1;
+
+			var crt = _typeReferenceComparer.Compare(x.ReturnType, y.ReturnType);
+			if (crt != 0)
+				return crt;
+
+			if (x.Parameters.Count == 0 && y.Parameters.Count != 0)
+				return -1;
+
+			if (y.Parameters.Count == 0 && x.Parameters.Count != 0)
+				return 1;
+
+			var minp = Math.Min(x.Parameters.Count, y.Parameters.Count);
+			for (var i = 0; i < minp; i++)
+			{
+				var cp = _typeReferenceComparer.Compare(x.Parameters[i].Type, y.Parameters[i].Type);
+				if (cp != 0)
+					return cp;
+			}
+
+			return x.Parameters.Count.CompareTo(y.Parameters.Count);
 		}
 	}
 }

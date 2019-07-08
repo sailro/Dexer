@@ -42,18 +42,18 @@ namespace Dexer.IO
 		internal Map Map { get; set; }
 		private List<ClassDefinition> FlatClasses { get; set; }
 
-		private HeaderMarkers HeaderMarkers { get; set; }
-		private List<UIntMarker> StringMarkers { get; set; }
-		private List<UIntMarker> PrototypeTypeListMarkers { get; set; }
-		private List<ClassDefinitionMarkers> ClassDefinitionsMarkers { get; set; }
-		private Dictionary<Parameter, UIntMarker> AnnotationSetRefListMarkers { get; set; }
-		private Dictionary<Annotation, UIntMarker> AnnotationSetMarkers { get; set; }
-		private Dictionary<MethodDefinition, UIntMarker> DebugMarkers { get; set; }
+		private HeaderMarkers HeaderMarkers { get; }
+		private List<UIntMarker> StringMarkers { get; }
+		private List<UIntMarker> PrototypeTypeListMarkers { get; }
+		private List<ClassDefinitionMarkers> ClassDefinitionsMarkers { get; }
+		private Dictionary<Parameter, UIntMarker> AnnotationSetRefListMarkers { get; }
+		private Dictionary<Annotation, UIntMarker> AnnotationSetMarkers { get; }
+		private Dictionary<MethodDefinition, UIntMarker> DebugMarkers { get; }
 
-		private Dictionary<string, uint> TypeLists { get; set; }
-		private Dictionary<AnnotationSet, uint> AnnotationSets { get; set; }
-		private Dictionary<MethodDefinition, uint> AnnotationSetRefLists { get; set; }
-		private Dictionary<MethodDefinition, uint> Codes { get; set; }
+		private Dictionary<string, uint> TypeLists { get; }
+		private Dictionary<AnnotationSet, uint> AnnotationSets { get; }
+		private Dictionary<MethodDefinition, uint> AnnotationSetRefLists { get; }
+		private Dictionary<MethodDefinition, uint> Codes { get; }
 
 		internal Dictionary<string, int> StringLookup { get; set; }
 		internal Dictionary<Prototype, int> PrototypeLookup { get; set; }
@@ -87,7 +87,7 @@ namespace Dexer.IO
 
 		private void WriteHeader(BinaryWriter writer)
 		{
-			var sectionOffset = (uint) writer.BaseStream.Position;
+			var sectionOffset = (uint)writer.BaseStream.Position;
 			writer.EnsureSectionAlignment(ref sectionOffset, 4);
 			Map.Add(TypeCodes.Header, new MapItem(TypeCodes.Header, 1, sectionOffset));
 
@@ -112,6 +112,7 @@ namespace Dexer.IO
 		#endregion
 
 		#region StringId
+
 		private Dictionary<string, int> CollectStrings()
 		{
 			var collector = new StringCollector();
@@ -146,9 +147,11 @@ namespace Dexer.IO
 			for (var i = 0; i < Dex.Strings.Count; i++)
 				StringMarkers.Add(writer.MarkUInt());
 		}
+
 		#endregion
 
 		#region StringData
+
 		private void WriteStringData(BinaryWriter writer)
 		{
 			if (Dex.Strings.Count > 0)
@@ -160,9 +163,11 @@ namespace Dexer.IO
 				writer.WriteMUTF8String(Dex.Strings[i]);
 			}
 		}
+
 		#endregion
 
 		#region PrototypeId
+
 		private Dictionary<Prototype, int> CollectPrototypes()
 		{
 			var collector = new PrototypeCollector();
@@ -195,9 +200,11 @@ namespace Dexer.IO
 				PrototypeTypeListMarkers.Add(writer.MarkUInt());
 			}
 		}
+
 		#endregion
 
 		#region TypeList
+
 		private void WriteTypeList(BinaryWriter writer, ref uint sectionOffset, ushort[] typelist, UIntMarker marker)
 		{
 			if (typelist.Length <= 0)
@@ -215,6 +222,7 @@ namespace Dexer.IO
 				foreach (var item in typelist)
 					writer.Write(item);
 			}
+
 			if (marker != null)
 				marker.Value = TypeLists[key];
 		}
@@ -225,15 +233,15 @@ namespace Dexer.IO
 
 			for (var i = 0; i < FlatClasses.Count; i++)
 				WriteTypeList(writer, ref sectionOffset, ComputeTypeList(FlatClasses[i].Interfaces),
-							ClassDefinitionsMarkers[i].InterfacesMarker);
+					ClassDefinitionsMarkers[i].InterfacesMarker);
 
 			for (var i = 0; i < Dex.Prototypes.Count; i++)
 				WriteTypeList(writer, ref sectionOffset, ComputeTypeList(Dex.Prototypes[i].Parameters),
-							PrototypeTypeListMarkers[i]);
+					PrototypeTypeListMarkers[i]);
 
 			if (TypeLists.Count > 0)
 				Map.Add(TypeCodes.TypeList,
-						new MapItem(TypeCodes.TypeList, (uint)TypeLists.Count, sectionOffset));
+					new MapItem(TypeCodes.TypeList, (uint)TypeLists.Count, sectionOffset));
 		}
 
 		private static string GetTypeListAsString(IEnumerable<ushort> typelist)
@@ -253,9 +261,11 @@ namespace Dexer.IO
 		{
 			return classes.Select(@class => (ushort)TypeLookup[@class]).ToArray();
 		}
+
 		#endregion
 
 		#region FieldId
+
 		private void WriteFieldId(BinaryWriter writer)
 		{
 			if (Dex.FieldReferences.Count > 0)
@@ -271,9 +281,11 @@ namespace Dexer.IO
 				writer.Write((uint)StringLookup[field.Name]);
 			}
 		}
+
 		#endregion
 
 		#region MethodId
+
 		private void WriteMethodId(BinaryWriter writer)
 		{
 			if (Dex.MethodReferences.Count > 0)
@@ -289,9 +301,11 @@ namespace Dexer.IO
 				writer.Write((uint)StringLookup[method.Name]);
 			}
 		}
+
 		#endregion
 
 		#region TypeId
+
 		private void WriteTypeId(BinaryWriter writer)
 		{
 			if (Dex.TypeReferences.Count > 0)
@@ -303,9 +317,11 @@ namespace Dexer.IO
 			foreach (var tref in Dex.TypeReferences)
 				writer.Write((uint)StringLookup[TypeDescriptor.Encode(tref)]);
 		}
+
 		#endregion
 
 		#region ClassDef
+
 		private void WriteClassDef(BinaryWriter writer)
 		{
 			var sectionOffset = (uint)writer.BaseStream.Position;
@@ -326,18 +342,20 @@ namespace Dexer.IO
 				ClassDefinitionsMarkers.Add(markers);
 
 				writer.Write(TypeLookup[@class]);
-				writer.Write((uint) @class.AccessFlags);
-				writer.Write(@class.SuperClass == null ? DexConsts.NoIndex : (uint) TypeLookup[@class.SuperClass]);
+				writer.Write((uint)@class.AccessFlags);
+				writer.Write(@class.SuperClass == null ? DexConsts.NoIndex : (uint)TypeLookup[@class.SuperClass]);
 				markers.InterfacesMarker = writer.MarkUInt();
-				writer.Write(string.IsNullOrEmpty(@class.SourceFile) ? DexConsts.NoIndex : (uint) StringLookup[@class.SourceFile]);
+				writer.Write(string.IsNullOrEmpty(@class.SourceFile) ? DexConsts.NoIndex : (uint)StringLookup[@class.SourceFile]);
 				markers.AnnotationsMarker = writer.MarkUInt();
 				markers.ClassDataMarker = writer.MarkUInt();
 				markers.StaticValuesMarker = writer.MarkUInt();
 			}
 		}
+
 		#endregion
 
 		#region AnnotationSetRefList
+
 		private void WriteAnnotationSetRefList(BinaryWriter writer)
 		{
 			var sectionOffset = (uint)writer.BaseStream.Position;
@@ -355,7 +373,7 @@ namespace Dexer.IO
 
 				foreach (var mdef in annotatedMethods)
 				{
-					AnnotationSetRefLists.Add(mdef, (uint) writer.BaseStream.Position);
+					AnnotationSetRefLists.Add(mdef, (uint)writer.BaseStream.Position);
 					writer.Write(mdef.Prototype.Parameters.Count);
 					foreach (var parameter in mdef.Prototype.Parameters)
 						AnnotationSetRefListMarkers.Add(parameter, writer.MarkUInt());
@@ -365,9 +383,11 @@ namespace Dexer.IO
 			if (AnnotationSetRefLists.Count > 0)
 				Map.Add(TypeCodes.AnnotationSetRefList, new MapItem(TypeCodes.AnnotationSetRefList, (uint)AnnotationSetRefLists.Count, sectionOffset));
 		}
+
 		#endregion
 
 		#region AnnotationSet
+
 		private void WriteAnnotationSet(BinaryWriter writer)
 		{
 			var sectionOffset = (uint)writer.BaseStream.Position;
@@ -381,7 +401,6 @@ namespace Dexer.IO
 
 				foreach (MethodDefinition method in @class.Methods)
 					WriteAnnotationSet(writer, sectionOffset, method, false);
-
 			}
 
 			foreach (var @class in FlatClasses)
@@ -405,7 +424,7 @@ namespace Dexer.IO
 			{
 				writer.EnsureAlignmentWithSection(sectionOffset, 4);
 
-				offset = (uint) writer.BaseStream.Position;
+				offset = (uint)writer.BaseStream.Position;
 
 				if (provider.Annotations.Count > 0 || writezero)
 					writer.Write(provider.Annotations.Count);
@@ -426,9 +445,11 @@ namespace Dexer.IO
 
 			return offset;
 		}
+
 		#endregion
 
 		#region Annotations
+
 		private void WriteAnnotation(BinaryWriter writer, Annotation annotation)
 		{
 			writer.Write((byte)annotation.Visibility);
@@ -565,9 +586,11 @@ namespace Dexer.IO
 			if (annotations.Count > 0)
 				Map.Add(TypeCodes.Annotation, new MapItem(TypeCodes.Annotation, (uint)annotations.Count, offset));
 		}
+
 		#endregion
 
 		#region Collect and sort
+
 		public Dictionary<T, int> Collect<T>(List<T> container, IComparer<T> comparer)
 		{
 			var result = new Dictionary<T, int>();
@@ -593,13 +616,14 @@ namespace Dexer.IO
 		{
 			return Collect(Dex.FieldReferences, new FieldReferenceComparer());
 		}
+
 		#endregion
 
 		#region AnnotationsDirectory
 
 		private void WriteAnnotationsDirectory(BinaryWriter writer)
 		{
-			var sectionOffset = (uint) writer.BaseStream.Position;
+			var sectionOffset = (uint)writer.BaseStream.Position;
 			uint count = 0;
 
 			var classAnnotationSets = new Dictionary<AnnotationSet, uint>();
@@ -640,16 +664,16 @@ namespace Dexer.IO
 						continue;
 					}
 
-					classAnnotationSets.Add(set, (uint) writer.BaseStream.Position);
+					classAnnotationSets.Add(set, (uint)writer.BaseStream.Position);
 				}
 
-				ClassDefinitionsMarkers[i].AnnotationsMarker.Value = (uint) writer.BaseStream.Position;
+				ClassDefinitionsMarkers[i].AnnotationsMarker.Value = (uint)writer.BaseStream.Position;
 				count++;
 
 				if (@class.Annotations.Count > 0)
 					writer.Write(AnnotationSets[new AnnotationSet(@class)]);
 				else
-					writer.Write((uint) 0);
+					writer.Write((uint)0);
 
 				writer.Write(annotatedFields.Count);
 				writer.Write(annotatedMethods.Count);
@@ -676,7 +700,7 @@ namespace Dexer.IO
 				foreach (var method in methods)
 				{
 					writer.Write(MethodLookup[method]);
-					writer.Write(AnnotationSetRefLists[(MethodDefinition) method]);
+					writer.Write(AnnotationSetRefLists[(MethodDefinition)method]);
 				}
 			}
 
@@ -767,13 +791,15 @@ namespace Dexer.IO
 			if (Codes.Count > 0)
 				Map.Add(TypeCodes.Code, new MapItem(TypeCodes.Code, count, sectionOffset));
 		}
+
 		#endregion
 
 		#region DebugInfo
+
 		private static void CheckOperand(DebugInstruction ins, int operandCount, params Type[] types)
 		{
 			if (ins.Operands.Count != operandCount)
-				throw new DebugInstructionException(ins, string.Format("Expecting {0} operands", operandCount));
+				throw new DebugInstructionException(ins, $"Expecting {operandCount} operands");
 
 			for (int i = 0; i < ins.Operands.Count; i++)
 			{
@@ -787,7 +813,7 @@ namespace Dexer.IO
 				}
 				catch (Exception)
 				{
-					throw new DebugInstructionException(ins, string.Format("Expecting '{0}' Type (or compatible) for Operands[{1}]", types[i], i));
+					throw new DebugInstructionException(ins, $"Expecting '{types[i]}' Type (or compatible) for Operands[{i}]");
 				}
 			}
 		}
@@ -802,7 +828,7 @@ namespace Dexer.IO
 				foreach (var method in @class.Methods)
 				{
 					var body = method.Body;
-					if (body == null || body.DebugInfo == null)
+					if (body?.DebugInfo == null)
 						continue;
 
 					DebugMarkers[method].Value = (uint)writer.BaseStream.Position;
@@ -826,7 +852,7 @@ namespace Dexer.IO
 
 					foreach (var ins in debugInfo.DebugInstructions)
 					{
-						String name;
+						string name;
 
 						writer.Write((byte)ins.OpCode);
 						switch (ins.OpCode)
@@ -891,13 +917,13 @@ namespace Dexer.IO
 								}
 
 								break;
-								//case DebugOpCodes.EndSequence:
-								//case DebugOpCodes.Special:
-								// between 0x0a and 0xff (inclusive)
-								//case DebugOpCodes.SetPrologueEnd:
-								//case DebugOpCodes.SetEpilogueBegin:
-								//default:
-								//    break;
+							//case DebugOpCodes.EndSequence:
+							//case DebugOpCodes.Special:
+							// between 0x0a and 0xff (inclusive)
+							//case DebugOpCodes.SetPrologueEnd:
+							//case DebugOpCodes.SetEpilogueBegin:
+							//default:
+							//    break;
 						}
 					}
 				}
@@ -906,9 +932,11 @@ namespace Dexer.IO
 			if (count > 0)
 				Map.Add(TypeCodes.DebugInfo, new MapItem(TypeCodes.DebugInfo, count, offset));
 		}
+
 		#endregion
 
 		#region EncodedArray
+
 		// this is really test code, need to optimize
 		private string GetByteArrayAsString(IEnumerable<byte> bytes)
 		{
@@ -970,6 +998,7 @@ namespace Dexer.IO
 							default:
 								throw new ArgumentException();
 						}
+
 						values.Add(field.Value);
 					}
 
@@ -997,9 +1026,11 @@ namespace Dexer.IO
 			if (count > 0)
 				Map.Add(TypeCodes.EncodedArray, new MapItem(TypeCodes.EncodedArray, count, offset));
 		}
+
 		#endregion
 
 		#region ClassData
+
 		private void WriteClassData(BinaryWriter writer)
 		{
 			var offset = (uint)writer.BaseStream.Position;
@@ -1074,7 +1105,7 @@ namespace Dexer.IO
 
 		private void WriteMapList(BinaryWriter writer)
 		{
-			var sectionOffset = (uint) writer.BaseStream.Position;
+			var sectionOffset = (uint)writer.BaseStream.Position;
 			writer.EnsureSectionAlignment(ref sectionOffset, 4);
 
 			HeaderMarkers.MapMarker.Value = sectionOffset;
@@ -1083,13 +1114,13 @@ namespace Dexer.IO
 			writer.Write(Map.Count);
 			foreach (var item in Map.Values)
 			{
-				writer.Write((ushort) item.Type);
-				writer.Write((ushort) 0); // unused
+				writer.Write((ushort)item.Type);
+				writer.Write((ushort)0); // unused
 				writer.Write(item.Count);
 				writer.Write(item.Offset);
 			}
 
-			var filesize = (uint) writer.BaseStream.Position;
+			var filesize = (uint)writer.BaseStream.Position;
 			HeaderMarkers.FileSizeMarker.Value = filesize;
 
 			var lastEntry = TypeCodes.Header;
@@ -1105,6 +1136,7 @@ namespace Dexer.IO
 		#endregion
 
 		#region Signature & CheckSum
+
 		private byte[] ComputeSHA1Signature(BinaryWriter writer)
 		{
 			writer.Seek((int)HeaderMarkers.SignatureMarker.Positions[0] + DexConsts.SignatureSize, SeekOrigin.Begin);
@@ -1125,10 +1157,12 @@ namespace Dexer.IO
 				s1 = (ushort)((s1 + value) % 65521);
 				s2 = (ushort)((s1 + s2) % 65521);
 			}
+
 			var checksum = (uint)(s2 << 16 | s1);
 			HeaderMarkers.CheckSumMarker.Value = checksum;
 			return checksum;
 		}
+
 		#endregion
 
 		public void WriteTo(BinaryWriter writer)
@@ -1167,6 +1201,5 @@ namespace Dexer.IO
 			Signature = ComputeSHA1Signature(writer);
 			CheckSum = ComputeAdlerCheckSum(writer);
 		}
-
 	}
 }

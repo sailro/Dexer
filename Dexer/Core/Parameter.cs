@@ -51,15 +51,14 @@ namespace Dexer.Core
 
 		object ICloneable.Clone()
 		{
-			var result = new Parameter { Type = Type };
+			var result = new Parameter {Type = Type};
 			return result;
 		}
 
 		public bool Equals(Parameter other)
 		{
 			// do not check annotations at this time.
-			return Type.Equals(other.Type);
+			return other != null && Type.Equals(other.Type);
 		}
-
 	}
 }

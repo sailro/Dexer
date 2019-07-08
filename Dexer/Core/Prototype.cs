@@ -60,6 +60,7 @@ namespace Dexer.Core
 
 				builder.Append(Parameters[i]);
 			}
+
 			builder.Append(")");
 			builder.Append(" : ");
 			builder.Append(ReturnType);
@@ -73,7 +74,7 @@ namespace Dexer.Core
 
 		object ICloneable.Clone()
 		{
-			var result = new Prototype { ReturnType = ReturnType };
+			var result = new Prototype {ReturnType = ReturnType};
 
 			foreach (var p in Parameters)
 			{
@@ -85,21 +86,18 @@ namespace Dexer.Core
 
 		public bool Equals(Prototype other)
 		{
-			var result = ReturnType.Equals(other.ReturnType) && Parameters.Count.Equals(other.Parameters.Count);
-			if (result)
-			{
-				for (var i = 0; i < Parameters.Count; i++)
-					result = result && Parameters[i].Equals(other.Parameters[i]);
-			}
-			return result;
+			if (other == null)
+				return false;
+
+			if (!ReturnType.Equals(other.ReturnType) || !Parameters.Count.Equals(other.Parameters.Count))
+				return false;
+
+			return !Parameters.Where((t, i) => !t.Equals(other.Parameters[i])).Any();
 		}
 
 		public override bool Equals(object obj)
 		{
-			if (obj is Prototype)
-				return Equals(obj as Prototype);
-
-			return false;
+			return obj is Prototype prototype && Equals(prototype);
 		}
 
 		public override int GetHashCode()
@@ -112,6 +110,5 @@ namespace Dexer.Core
 
 			return builder.ToString().GetHashCode();
 		}
-
 	}
 }

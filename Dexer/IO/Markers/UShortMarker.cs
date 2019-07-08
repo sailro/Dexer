@@ -24,7 +24,6 @@ using Dexer.Extensions;
 
 namespace Dexer.IO.Markers
 {
-
 	internal class UShortMarker : Marker<ushort>
 	{
 		public override ushort Value
@@ -46,7 +45,5 @@ namespace Dexer.IO.Markers
 		}
 
 		public UShortMarker(BinaryWriter writer) : base(writer) { }
-
 	}
-
 }

@@ -24,7 +24,6 @@ using Dexer.Extensions;
 
 namespace Dexer.IO.Markers
 {
-
 	internal class SignatureMarker : Marker<byte[]>
 	{
 		public override byte[] Value
@@ -46,7 +45,5 @@ namespace Dexer.IO.Markers
 		}
 
 		public SignatureMarker(BinaryWriter writer) : base(writer) { }
-
 	}
-
 }

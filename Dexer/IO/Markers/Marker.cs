@@ -24,7 +24,6 @@ using System.Collections.Generic;
 
 namespace Dexer.IO.Markers
 {
-
 	internal abstract class Marker<T>
 	{
 		public BinaryWriter Writer { get; set; }
@@ -48,5 +47,4 @@ namespace Dexer.IO.Markers
 			CloneMarker();
 		}
 	}
-
 }

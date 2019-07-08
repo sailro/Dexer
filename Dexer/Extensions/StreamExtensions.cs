@@ -25,7 +25,6 @@ namespace Dexer.Extensions
 {
 	public static class StreamExtensions
 	{
-
 		// Note: already implemented in .NET 4.0
 		public static void CopyTo(this Stream source, Stream destination)
 		{
@@ -36,6 +35,5 @@ namespace Dexer.Extensions
 				destination.Write(buffer, 0, num);
 			}
 		}
-
 	}
 }

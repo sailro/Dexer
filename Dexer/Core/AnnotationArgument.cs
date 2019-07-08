@@ -42,9 +42,12 @@ namespace Dexer.Core
 
 		public bool Equals(AnnotationArgument other)
 		{
+			if (other == null)
+				return false;
+
 			return Name.Equals(other.Name)
-				&& ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
-				&& (((ValueFormat.GetFormat(Value) == ValueFormats.Array) && ArrayEquals(Value as Array, other.Value as Array)) || Equals(Value, other.Value));
+			       && ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
+			       && (ValueFormat.GetFormat(Value) == ValueFormats.Array && ArrayEquals(Value as Array, other.Value as Array) || Equals(Value, other.Value));
 		}
 
 		internal static bool ArrayEquals(Array array1, Array array2)
@@ -54,7 +57,5 @@ namespace Dexer.Core
 
 			return !array1.Cast<object>().Where((t, i) => !array1.GetValue(i).Equals(array2.GetValue(i))).Any();
 		}
-
 	}
 }
-

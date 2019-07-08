@@ -39,20 +39,22 @@ namespace Dexer.Instructions
 
 		object ICloneable.Clone()
 		{
-			var result = new Catch { Type = Type, Instruction = Instruction };
+			var result = new Catch {Type = Type, Instruction = Instruction};
 			return result;
 		}
 
 		public bool Equals(Catch other)
 		{
+			if (other == null)
+				return false;
+
 			return Type.Equals(other.Type)
-				&& Instruction.Equals(other.Instruction);
+			       && Instruction.Equals(other.Instruction);
 		}
 
 		public override bool Equals(object obj)
 		{
-			var other = obj as Catch;
-			return other != null && Equals(other);
+			return obj is Catch other && Equals(other);
 		}
 
 		public override int GetHashCode()
@@ -64,6 +66,5 @@ namespace Dexer.Instructions
 
 			return builder.ToString().GetHashCode();
 		}
-
 	}
 }

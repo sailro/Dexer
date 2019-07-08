@@ -33,6 +33,5 @@ namespace Dexer.IO
 		{
 			Instruction = instruction;
 		}
-
 	}
 }

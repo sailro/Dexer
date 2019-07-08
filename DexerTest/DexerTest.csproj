@@ -61,16 +61,41 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Files\bubble.classes.dex" />
-    <None Include="Files\bud.classes.dex" />
-    <None Include="Files\f1live.classes.dex" />
-    <None Include="Files\gesture.classes.dex" />
-    <None Include="Files\helloactivity.classes.dex" />
-    <None Include="Files\lcd.classes.dex" />
-    <None Include="Files\lunar.classes.dex" />
-    <None Include="Files\notepad.classes.dex" />
-    <None Include="Files\searchable.classes.dex" />
-    <None Include="Files\skeleton.classes.dex" />
+    <None Include="Files\dalvik.array.dex" />
+    <None Include="Files\dalvik.classes.dex" />
+    <None Include="Files\dalvik.compare.dex" />
+    <None Include="Files\dalvik.floatmath.dex" />
+    <None Include="Files\dalvik.goto.dex" />
+    <None Include="Files\dalvik.highregistermoves.dex" />
+    <None Include="Files\dalvik.instfield.dex" />
+    <None Include="Files\dalvik.internedstring.dex" />
+    <None Include="Files\dalvik.intmath.dex" />
+    <None Include="Files\dalvik.jumbo.dex" />
+    <None Include="Files\dalvik.math.dex" />
+    <None Include="Files\dalvik.methodcall.dex" />
+    <None Include="Files\dalvik.monitor.dex" />
+    <None Include="Files\dalvik.movewide16.dex" />
+    <None Include="Files\dalvik.putarray.dex" />
+    <None Include="Files\dalvik.staticfield.dex" />
+    <None Include="Files\dalvik.switch.dex" />
+    <None Include="Files\dalvik.throw.dex" />
+    <None Include="Files\dalvik.unresclass.dex" />
+    <None Include="Files\dalvik.unresstuff.dex" />
+    <None Include="Files\dalvik.unrestest1.dex" />
+    <None Include="Files\dalvik.unrestest2.dex" />
+    <None Include="Files\sample.accessors.dex" />
+    <None Include="Files\sample.arduino.dex" />
+    <None Include="Files\sample.bubble.dex" />
+    <None Include="Files\sample.bud.dex" />
+    <None Include="Files\sample.download.dex" />
+    <None Include="Files\sample.f1live.dex" />
+    <None Include="Files\sample.gesture.dex" />
+    <None Include="Files\sample.helloactivity.dex" />
+    <None Include="Files\sample.lcd.dex" />
+    <None Include="Files\sample.lunar.dex" />
+    <None Include="Files\sample.notepad.dex" />
+    <None Include="Files\sample.searchable.dex" />
+    <None Include="Files\sample.skeleton.dex" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

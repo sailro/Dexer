@@ -40,14 +40,12 @@ namespace Dexer.Core
 		public bool Equals(ArrayType other)
 		{
 			return base.Equals(other)
-				&& ElementType.Equals(other.ElementType);
+			       && ElementType.Equals(other.ElementType);
 		}
 
 		public override bool Equals(TypeReference other)
 		{
-			return other is ArrayType
-				&& Equals((ArrayType) other);
+			return other is ArrayType type && Equals(type);
 		}
-
 	}
 }

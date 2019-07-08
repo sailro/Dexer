@@ -21,6 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Dexer.Core;
 using System;
+
 namespace Dexer.Metadata
 {
 	public static class ValueFormat
@@ -54,6 +55,7 @@ namespace Dexer.Metadata
 
 				return ValueFormats.Field;
 			}
+
 			if (value is MethodReference)
 				return ValueFormats.Method;
 			if (value is Array)

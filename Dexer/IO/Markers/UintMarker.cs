@@ -24,7 +24,6 @@ using Dexer.Extensions;
 
 namespace Dexer.IO.Markers
 {
-
 	internal class UIntMarker : Marker<uint>
 	{
 		public override uint Value
@@ -46,7 +45,5 @@ namespace Dexer.IO.Markers
 		}
 
 		public UIntMarker(BinaryWriter writer) : base(writer) { }
-
 	}
-
 }

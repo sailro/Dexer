@@ -30,8 +30,10 @@ namespace Dexer.Core
 
 		public virtual bool Equals(TypeReference other)
 		{
+			if (other == null)
+				return false;
+
 			return TypeDescriptor == other.TypeDescriptor;
 		}
-
 	}
 }

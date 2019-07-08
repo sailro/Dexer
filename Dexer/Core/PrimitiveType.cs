@@ -48,14 +48,12 @@ namespace Dexer.Core
 		public bool Equals(PrimitiveType other)
 		{
 			return base.Equals(other)
-				&& TypeDescriptor == other.TypeDescriptor;
+			       && TypeDescriptor == other.TypeDescriptor;
 		}
 
 		public override bool Equals(TypeReference other)
 		{
-			return other is PrimitiveType
-				&& Equals((PrimitiveType) other);
+			return other is PrimitiveType type && Equals(type);
 		}
-
 	}
 }

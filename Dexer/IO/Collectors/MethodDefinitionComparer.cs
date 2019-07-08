@@ -28,6 +28,17 @@ namespace Dexer.IO.Collectors
 	{
 		public int Compare(MethodDefinition x, MethodDefinition y)
 		{
+			switch (x)
+			{
+				case null when y == null:
+					return 0;
+				case null:
+					return -1;
+			}
+
+			if (y == null)
+				return 1;
+
 			var result = x.IsVirtual.CompareTo(y.IsVirtual);
 
 			if (result == 0)

@@ -45,23 +45,24 @@ namespace Dexer.Instructions
 			{
 				Registers.Add(new Register(i));
 			}
+
 			Instructions = new List<Instruction>();
 			Exceptions = new List<ExceptionHandler>();
 		}
 
 		internal static void CheckArrayData(Instruction ins, out Array elements, out Type elementtype, out int elementsize)
 		{
-			if (!(ins.Operand is Array) || ((Array) ins.Operand).Length == 0)
+			if (!(ins.Operand is Array) || ((Array)ins.Operand).Length == 0)
 				throw new InstructionException(ins, "Expecting non empty Array");
 
-			elements = (Array) ins.Operand;
+			elements = (Array)ins.Operand;
 			elementtype = elements.GetValue(0).GetType();
 			elementsize = Marshal.SizeOf(elementtype);
 
 			if (!(elementtype == typeof(sbyte)
-				|| elementtype == typeof(short)
-				|| elementtype == typeof(int)
-				|| elementtype == typeof(long)))
+			      || elementtype == typeof(short)
+			      || elementtype == typeof(int)
+			      || elementtype == typeof(long)))
 			{
 				throw new InstructionException(ins, "Expecting sbyte/short/int/long element type");
 			}
@@ -184,13 +185,10 @@ namespace Dexer.Instructions
 						// vAA, #+BBBBBBBB
 						ip += 3;
 
-						Array elements;
-						Type elementtype;
-						int elementsize;
-						CheckArrayData(ins, out elements, out elementtype, out elementsize);
+						CheckArrayData(ins, out var elements, out _, out var elementsize);
 
 						// Keep 4-byte alignment for this block
-						if (extra%2 != 0)
+						if (extra % 2 != 0)
 							extra++;
 
 						extra += (elements.Length * elementsize + 1) / 2 + 4;
@@ -250,7 +248,7 @@ namespace Dexer.Instructions
 						// vAA, +BBBBBBBB
 						if (!(ins.Operand is PackedSwitchData))
 							throw new InstructionException(ins, "Expecting PackedSwitchData");
-						var pdata = (PackedSwitchData) ins.Operand;
+						var pdata = (PackedSwitchData)ins.Operand;
 
 						ip += 3;
 						extra += (pdata.Targets.Count * 2) + 4;
@@ -259,7 +257,7 @@ namespace Dexer.Instructions
 						// vAA, +BBBBBBBB
 						if (!(ins.Operand is SparseSwitchData))
 							throw new InstructionException(ins, "Expecting SparseSwitchData");
-						var sdata = (SparseSwitchData) ins.Operand;
+						var sdata = (SparseSwitchData)ins.Operand;
 
 						ip += 3;
 						extra += (sdata.Targets.Count * 4) + 2;
@@ -416,7 +414,8 @@ namespace Dexer.Instructions
 						throw new NotImplementedException(string.Concat("Unknown opcode:", ins.OpCode));
 				}
 			}
-			return new OffsetStatistics { CodeUnits = ip, ExtraCodeUnits = extra };
+
+			return new OffsetStatistics {CodeUnits = ip, ExtraCodeUnits = extra};
 		}
 	}
 }

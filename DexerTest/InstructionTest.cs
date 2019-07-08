@@ -21,7 +21,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Dexer.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Dexer.Instructions;
@@ -76,6 +75,5 @@ namespace Dexer.Test
 			if (isInconclusive)
 				Assert.Inconclusive("Some OpCode(s) were not covered ({0:P} coverage) , see test details", ((double)coverage.Count) / (Enum.GetNames(typeof(OpCodes)).Length));
 		}
-
 	}
 }

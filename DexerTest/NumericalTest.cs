@@ -49,23 +49,22 @@ namespace Dexer.Test
 
 				Assert.AreEqual(expected, actual);
 			}
-
 		}
 
 		[TestMethod]
 		public void TestULEB128()
 		{
 			TestNumber(reader => reader.ReadULEB128(),
-							 (writer, value) => writer.WriteULEB128(value),
-							 GenerateUIntValues());
+				(writer, value) => writer.WriteULEB128(value),
+				GenerateUIntValues());
 		}
 
 		[TestMethod]
 		public void TestSLEB128()
 		{
 			TestNumber(reader => reader.ReadSLEB128(),
-							(writer, value) => writer.WriteSLEB128(value),
-							GenerateSIntValues());
+				(writer, value) => writer.WriteSLEB128(value),
+				GenerateSIntValues());
 		}
 
 		private int _bytelength;
@@ -86,16 +85,16 @@ namespace Dexer.Test
 		public void TestUnsignedPackedNumbers()
 		{
 			TestNumber(reader => reader.ReadUnsignedPackedNumber(_bytelength),
-							  VBLUIntWriter,
-							  GenerateULongValues());
+				VBLUIntWriter,
+				GenerateULongValues());
 		}
 
 		[TestMethod]
 		public void TestSignedPackedNumbers()
 		{
 			TestNumber(reader => reader.ReadSignedPackedNumber(_bytelength),
-							  VBLSIntWriter,
-							  GenerateSLongValues());
+				VBLSIntWriter,
+				GenerateSLongValues());
 		}
 
 		private IEnumerable<long> GenerateULongValues()
@@ -129,6 +128,5 @@ namespace Dexer.Test
 				yield return -(int)item;
 			}
 		}
-
 	}
 }

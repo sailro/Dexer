@@ -58,7 +58,6 @@ namespace Dexer.Test
 				using (var writer = new BinaryWriter(fs))
 					dexwriter.WriteTo(writer);
 			}
-
 		}
 
 		[TestMethod]
@@ -66,9 +65,7 @@ namespace Dexer.Test
 		{
 			foreach (var file in GetTestFiles())
 			{
-				DexReader dexreader;
-				DexWriter dexwriter;
-				TestReadWrite(file, out dexreader, out dexwriter);
+				TestReadWrite(file, out var dexreader, out var dexwriter);
 
 				var checklist = new Dictionary<TypeCodes, string>();
 
@@ -80,6 +77,7 @@ namespace Dexer.Test
 						if (!checklist.ContainsKey(tc))
 							checklist.Add(tc, tc.ToString());
 					}
+
 					if (dexreader.Map[tc].Offset != dexwriter.Map[tc].Offset)
 					{
 						TestContext.WriteLine("{0} Offset differs : expected={1}, actual={2}", tc, dexreader.Map[tc].Offset, dexwriter.Map[tc].Offset);
@@ -97,9 +95,7 @@ namespace Dexer.Test
 		{
 			foreach (var file in GetTestFiles())
 			{
-				DexReader dexreader;
-				DexWriter dexwriter;
-				TestReadWrite(file, out dexreader, out dexwriter);
+				TestReadWrite(file, out var dexreader, out var dexwriter);
 
 				Assert.AreEqual(dexreader.Header.CheckSum, dexwriter.CheckSum);
 			}
@@ -110,9 +106,7 @@ namespace Dexer.Test
 		{
 			foreach (var file in GetTestFiles())
 			{
-				DexReader dexreader;
-				DexWriter dexwriter;
-				TestReadWrite(file, out dexreader, out dexwriter);
+				TestReadWrite(file, out var dexreader, out var dexwriter);
 
 				Assert.IsTrue(dexreader.Header.Signature.Match(dexwriter.Signature, 0));
 			}

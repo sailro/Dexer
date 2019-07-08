@@ -44,6 +44,7 @@ namespace Dexer.IO
 		}
 
 		#region Header
+
 		private void ReadHeader(BinaryReader reader)
 		{
 			Header.Magic = reader.ReadBytes(DexConsts.FileMagic.Length);
@@ -88,9 +89,11 @@ namespace Dexer.IO
 			Header.DataSize = reader.ReadUInt32();
 			Header.DataOffset = reader.ReadUInt32();
 		}
+
 		#endregion
 
 		#region MapList
+
 		private void ReadMapList(BinaryReader reader)
 		{
 			reader.PreserveCurrentPosition(Header.MapOffset, () =>
@@ -98,7 +101,7 @@ namespace Dexer.IO
 				uint mapsize = reader.ReadUInt32();
 				for (int i = 0; i < mapsize; i++)
 				{
-					var item = new MapItem { Type = (TypeCodes)reader.ReadUInt16() };
+					var item = new MapItem {Type = (TypeCodes)reader.ReadUInt16()};
 					reader.ReadUInt16(); // unused
 					item.Count = reader.ReadUInt32();
 					item.Offset = reader.ReadUInt32();
@@ -110,6 +113,7 @@ namespace Dexer.IO
 		#endregion
 
 		#region Strings
+
 		private void ReadStrings(BinaryReader reader)
 		{
 			reader.PreserveCurrentPosition(Header.StringsOffset, () =>
@@ -124,9 +128,11 @@ namespace Dexer.IO
 				}
 			});
 		}
+
 		#endregion
 
 		#region Prefetch
+
 		private void PrefetchTypeReferences(BinaryReader reader)
 		{
 			reader.PreserveCurrentPosition(Header.TypeReferencesOffset, () =>
@@ -139,7 +145,6 @@ namespace Dexer.IO
 					var descriptor = Dex.Strings[descriptorIndex];
 					Dex.TypeReferences.Add(TypeDescriptor.Allocate(descriptor));
 				}
-
 			});
 		}
 
@@ -224,32 +229,32 @@ namespace Dexer.IO
 				}
 			});
 		}
+
 		#endregion
 
 		#region Annotations
+
 		private void ReadAnnotationDirectory(BinaryReader reader, IAnnotationProvider provider, uint annotationOffset)
 		{
 			reader.PreserveCurrentPosition(annotationOffset, () =>
 			{
-				uint classAnnotationOffset = reader.ReadUInt32();
-				uint annotatedFieldsSize = reader.ReadUInt32();
-				uint annotatedMethodsSize = reader.ReadUInt32();
-				uint annotatedParametersSize = reader.ReadUInt32();
+				var classAnnotationOffset = reader.ReadUInt32();
+				var annotatedFieldsSize = reader.ReadUInt32();
+				var annotatedMethodsSize = reader.ReadUInt32();
+				var annotatedParametersSize = reader.ReadUInt32();
 
 				if (classAnnotationOffset > 0)
 					provider.Annotations = ReadAnnotationSet(reader, classAnnotationOffset);
 
 				for (var j = 0; j < annotatedFieldsSize; j++)
 				{
-					var fieldDefinition = Dex.FieldReferences[reader.ReadInt32()] as FieldDefinition;
-					if (fieldDefinition != null)
+					if (Dex.FieldReferences[reader.ReadInt32()] is FieldDefinition fieldDefinition)
 						fieldDefinition.Annotations = ReadAnnotationSet(reader, reader.ReadUInt32());
 				}
 
 				for (var j = 0; j < annotatedMethodsSize; j++)
 				{
-					var methodDefinition = Dex.MethodReferences[reader.ReadInt32()] as MethodDefinition;
-					if (methodDefinition != null)
+					if (Dex.MethodReferences[reader.ReadInt32()] is MethodDefinition methodDefinition)
 						methodDefinition.Annotations = ReadAnnotationSet(reader, reader.ReadUInt32());
 				}
 
@@ -258,7 +263,7 @@ namespace Dexer.IO
 					var methodIndex = reader.ReadInt32();
 					var offset = reader.ReadUInt32();
 					var annotations = ReadAnnotationSetRefList(reader, offset);
-					var mdef = (Dex.MethodReferences[methodIndex] as MethodDefinition);
+					var mdef = Dex.MethodReferences[methodIndex] as MethodDefinition;
 
 					if (mdef == null)
 						break;
@@ -321,7 +326,7 @@ namespace Dexer.IO
 			var typeIndex = (int)reader.ReadULEB128();
 			var elementSize = (int)reader.ReadULEB128();
 
-			var annotation = new Annotation { Type = (ClassReference)Dex.TypeReferences[typeIndex] };
+			var annotation = new Annotation {Type = (ClassReference)Dex.TypeReferences[typeIndex]};
 
 			for (var i = 0; i < elementSize; i++)
 			{
@@ -334,9 +339,11 @@ namespace Dexer.IO
 
 			return annotation;
 		}
+
 		#endregion
 
 		#region Prototypes
+
 		private void ReadPrototypes(BinaryReader reader)
 		{
 			reader.PreserveCurrentPosition(Header.PrototypesOffset, () =>
@@ -349,7 +356,7 @@ namespace Dexer.IO
 					var returnTypeIndex = reader.ReadInt32();
 					var parametersOffset = reader.ReadUInt32();
 
-					var prototype = new Prototype { ReturnType = Dex.TypeReferences[returnTypeIndex] };
+					var prototype = new Prototype {ReturnType = Dex.TypeReferences[returnTypeIndex]};
 
 					if (parametersOffset > 0)
 					{
@@ -375,9 +382,11 @@ namespace Dexer.IO
 				}
 			});
 		}
+
 		#endregion
 
 		#region Definitions
+
 		private void ReadClassDefinitions(BinaryReader reader)
 		{
 			reader.PreserveCurrentPosition(Header.ClassDefinitionsOffset, () =>
@@ -448,6 +457,7 @@ namespace Dexer.IO
 			{
 				array.Add(ReadValue(reader));
 			}
+
 			return array.ToArray();
 		}
 
@@ -542,11 +552,7 @@ namespace Dexer.IO
 				var triesSize = reader.ReadUInt16();
 				var debugOffset = reader.ReadUInt32();
 
-				mdef.Body = new MethodBody(mdef, registersSize)
-				{
-					IncomingArguments = incomingArgsSize,
-					OutgoingArguments = outgoingArgsSize
-				};
+				mdef.Body = new MethodBody(mdef, registersSize) {IncomingArguments = incomingArgsSize, OutgoingArguments = outgoingArgsSize};
 
 				var ireader = new InstructionReader(Dex, mdef);
 				ireader.ReadFrom(reader);
@@ -560,7 +566,6 @@ namespace Dexer.IO
 				if (debugOffset != 0)
 					ReadDebugInfo(reader, mdef, debugOffset);
 			});
-
 		}
 
 		private void ReadDebugInfo(BinaryReader reader, MethodDefinition mdef, uint debugOffset)
@@ -585,7 +590,7 @@ namespace Dexer.IO
 
 				while (true)
 				{
-					var ins = new DebugInstruction { OpCode = (DebugOpCodes)reader.ReadByte() };
+					var ins = new DebugInstruction {OpCode = (DebugOpCodes)reader.ReadByte()};
 					debugInfo.DebugInstructions.Add(ins);
 
 					uint registerIndex;
@@ -651,12 +656,12 @@ namespace Dexer.IO
 							break;
 						case DebugOpCodes.EndSequence:
 							return;
-							//case DebugOpCodes.Special:
-							// between 0x0a and 0xff (inclusive)
-							//case DebugOpCodes.SetPrologueEnd:
-							//case DebugOpCodes.SetEpilogueBegin:
-							//default:
-							//    break;
+						//case DebugOpCodes.Special:
+						// between 0x0a and 0xff (inclusive)
+						//case DebugOpCodes.SetPrologueEnd:
+						//case DebugOpCodes.SetEpilogueBegin:
+						//default:
+						//    break;
 					}
 				}
 			});
@@ -678,6 +683,7 @@ namespace Dexer.IO
 				{
 					exceptionLookup.Add(handlerOffset, new List<ExceptionHandler>());
 				}
+
 				exceptionLookup[handlerOffset].Add(ehandler);
 				ehandler.TryStart = instructionReader.Lookup[(int)startOffset];
 				// The last code unit covered (inclusive) is start_addr + insn_count - 1
@@ -697,11 +703,7 @@ namespace Dexer.IO
 				{
 					var typeIndex = reader.ReadULEB128();
 					var offset = reader.ReadULEB128();
-					var @catch = new Catch
-					{
-						Type = Dex.TypeReferences[(int)typeIndex],
-						Instruction = instructionReader.Lookup[(int)offset]
-					};
+					var @catch = new Catch {Type = Dex.TypeReferences[(int)typeIndex], Instruction = instructionReader.Lookup[(int)offset]};
 
 					// As catch handler can be used in several tries, let's clone the catch
 					foreach (var ehandler in exceptionLookup[(uint)itemoffset])
@@ -732,9 +734,11 @@ namespace Dexer.IO
 				ReadMethodDefinitions(reader, classDefinition, virtualMethodSize, true);
 			});
 		}
+
 		#endregion
 
 		#region References
+
 		private void ReadMethodReferences(BinaryReader reader)
 		{
 			reader.PreserveCurrentPosition(Header.MethodReferencesOffset, () =>
@@ -768,12 +772,7 @@ namespace Dexer.IO
 					var typeIndex = reader.ReadUInt16();
 					var nameIndex = reader.ReadInt32();
 
-					var fref = new FieldReference
-					{
-						Owner = (ClassReference)Dex.TypeReferences[classIndex],
-						Type = Dex.TypeReferences[typeIndex],
-						Name = Dex.Strings[nameIndex]
-					};
+					var fref = new FieldReference {Owner = (ClassReference)Dex.TypeReferences[classIndex], Type = Dex.TypeReferences[typeIndex], Name = Dex.Strings[nameIndex]};
 
 					Dex.FieldReferences.Add(fref);
 				}
@@ -792,6 +791,7 @@ namespace Dexer.IO
 				}
 			});
 		}
+
 		#endregion
 
 		public void ReadFrom(BinaryReader reader)
@@ -813,6 +813,5 @@ namespace Dexer.IO
 
 			Dex.Classes = ClassDefinition.Hierarchicalize(Dex.Classes, Dex);
 		}
-
 	}
 }

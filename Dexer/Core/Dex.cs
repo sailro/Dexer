@@ -141,6 +141,7 @@ namespace Dexer.Core
 				if (inner != null)
 					return inner;
 			}
+
 			return null;
 		}
 
@@ -153,11 +154,13 @@ namespace Dexer.Core
 					return item;
 				}
 			}
+
 			if (add)
 			{
 				// if !add see TypeDescriptor comment 
 				TypeReferences.Add(tref);
 			}
+
 			return tref;
 		}
 
@@ -180,9 +183,9 @@ namespace Dexer.Core
 					return item;
 				}
 			}
+
 			MethodReferences.Add(mref);
 			return mref;
 		}
-
 	}
 }

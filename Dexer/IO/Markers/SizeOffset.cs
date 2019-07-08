@@ -21,7 +21,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Dexer.IO.Markers
 {
-
 	internal class SizeOffset
 	{
 		public uint Size { get; set; }
@@ -33,5 +32,4 @@ namespace Dexer.IO.Markers
 			Offset = offset;
 		}
 	}
-
 }

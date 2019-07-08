@@ -32,7 +32,6 @@ namespace Dexer.Test
 	[TestClass]
 	public class SortTest : BaseCollectorTest
 	{
-
 		public void TestGlobalSort<T>(Func<Dex, List<T>> provider, IComparer<T> comparer)
 		{
 			foreach (var file in GetTestFiles())
@@ -45,15 +44,15 @@ namespace Dexer.Test
 				items.Shuffle();
 				items.Sort(comparer);
 
-				if (comparer is IPartialComparer<T>)
+				if (comparer is IPartialComparer<T> partialComparer)
 				{
 					var tsorter = new TopologicalSorter();
-					items = new List<T>(tsorter.TopologicalSort(items, comparer as IPartialComparer<T>));
+					items = new List<T>(tsorter.TopologicalSort(items, partialComparer));
 				}
 
 				if (Extralog)
 				{
-					DumpList(string.Concat(file, comparer.ToString(), ".expected.txt") , items);
+					DumpList(string.Concat(file, comparer.ToString(), ".expected.txt"), items);
 					DumpList(string.Concat(file, comparer.ToString(), ".actual.txt"), list);
 				}
 
@@ -64,7 +63,6 @@ namespace Dexer.Test
 
 					Assert.AreEqual(expected, actual);
 				}
-
 			}
 		}
 
@@ -80,7 +78,7 @@ namespace Dexer.Test
 			TestGlobalSort(dex => dex.FieldReferences, new FieldReferenceComparer());
 		}
 
-		private void SortAndCheck<T>(List<T> source, IComparer<T> comparer)
+		private static void SortAndCheck<T>(List<T> source, IComparer<T> comparer)
 		{
 			var items = new List<T>(source);
 			items.Shuffle();
@@ -166,6 +164,5 @@ namespace Dexer.Test
 		{
 			TestGlobalSort(dex => dex.Prototypes, new PrototypeComparer());
 		}
-
 	}
 }

@@ -80,19 +80,17 @@ namespace Dexer.Core
 		public bool Equals(ClassReference other)
 		{
 			return base.Equals(other)
-				&& Fullname == other.Fullname;
+			       && Fullname == other.Fullname;
 		}
 
 		public override bool Equals(TypeReference other)
 		{
-			return other is ClassReference
-				&& Equals((ClassReference) other);
+			return other is ClassReference reference && Equals(reference);
 		}
 
 		public bool Equals(IMemberReference other)
 		{
-			return other is ClassReference
-				&& Equals((ClassReference) other);
+			return other is ClassReference reference && Equals(reference);
 		}
 	}
 }

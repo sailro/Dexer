@@ -56,6 +56,5 @@ namespace Dexer.IO.Collectors
 			annotations.Shuffle();
 			base.Collect(annotations);
 		}
-
 	}
 }

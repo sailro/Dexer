@@ -21,7 +21,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Dexer.Core;
 using Dexer.IO.Collectors;
@@ -48,10 +47,10 @@ namespace Dexer.Test
 			var collector = new TC();
 			collector.Collect(dex);
 
-            var sourceKeys = provider(dex).ToDictionary(s => s);
-            var destKeys = collector.Items.ToDictionary(kv => kv.Key);
+			var sourceKeys = provider(dex).ToDictionary(s => s);
+			var destKeys = collector.Items.ToDictionary(kv => kv.Key);
 
-            foreach (var key in sourceKeys.Keys)
+			foreach (var key in sourceKeys.Keys)
 				Assert.IsTrue(collector.Items.ContainsKey(key) || (key.ToString() == "this"), "Item '{0}' not collected", key);
 
 			foreach (var key in destKeys.Keys)
@@ -59,6 +58,5 @@ namespace Dexer.Test
 
 			return collector;
 		}
-
 	}
 }

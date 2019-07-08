@@ -39,7 +39,7 @@ namespace Dexer.IO
 		private int _ip;
 		private uint InstructionsSize { get; set; }
 
-		internal Dictionary<int, Instruction> Lookup;     // instructions by starting offset
+		internal Dictionary<int, Instruction> Lookup; // instructions by starting offset
 		internal Dictionary<int, Instruction> LookupLast; // instructions by ending offset
 
 		public InstructionReader(Dex dex, MethodDefinition mdef)
@@ -153,14 +153,13 @@ namespace Dexer.IO
 				int registerCount;
 				int registerMask;
 
-				var ins = new Instruction { OpCode = (OpCodes)Lower[_ip], Offset = _ip };
+				var ins = new Instruction {OpCode = (OpCodes)Lower[_ip], Offset = _ip};
 
 				Lookup.Add(_ip, ins);
 				MethodDefinition.Body.Instructions.Add(ins);
 
 				switch (ins.OpCode)
 				{
-
 					case OpCodes.Nop:
 					case OpCodes.ReturnVoid:
 						_ip++;
@@ -655,7 +654,5 @@ namespace Dexer.IO
 
 			return items.ToArray();
 		}
-
 	}
-
 }

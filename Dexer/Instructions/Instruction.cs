@@ -69,14 +69,21 @@ namespace Dexer.Instructions
 				builder.Append(" ");
 				builder.Append(register);
 			}
+
 			builder.Append(" ");
-			if (Operand is Instruction)
-				builder.Append(string.Concat("=> {", ((Instruction) Operand).Offset, "}"));
-			else
-				if (Operand is string)
-				builder.Append(string.Concat("\"", Operand, "\""));
-			else
-				builder.Append(Operand);
+
+			switch (Operand)
+			{
+				case Instruction instruction:
+					builder.Append(string.Concat("=> {", instruction.Offset, "}"));
+					break;
+				case string _:
+					builder.Append(string.Concat("\"", Operand, "\""));
+					break;
+				default:
+					builder.Append(Operand);
+					break;
+			}
 
 			return builder.ToString();
 		}
@@ -85,7 +92,7 @@ namespace Dexer.Instructions
 		{
 			// Should be OK because we only use this after proper computation of offsets.
 			// Mainly used by CatchSet to detect dupe lists.
-			return Offset == other.Offset;
+			return other != null && Offset == other.Offset;
 		}
 	}
 }

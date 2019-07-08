@@ -28,67 +28,71 @@ namespace Dexer.Metadata
 	{
 		internal static TypeReference Allocate(string tdString)
 		{
-			if (!string.IsNullOrEmpty(tdString))
+			if (string.IsNullOrEmpty(tdString))
+				return null;
+
+			var prefix = tdString[0];
+			var td = (TypeDescriptors)prefix;
+
+			switch (td)
 			{
-				var prefix = tdString[0];
-				var td = (TypeDescriptors)prefix;
-				switch (td)
-				{
-					case TypeDescriptors.Boolean:
-						return PrimitiveType.Boolean;
-					case TypeDescriptors.Byte:
-						return PrimitiveType.Byte;
-					case TypeDescriptors.Char:
-						return PrimitiveType.Char;
-					case TypeDescriptors.Double:
-						return PrimitiveType.Double;
-					case TypeDescriptors.Float:
-						return PrimitiveType.Float;
-					case TypeDescriptors.Int:
-						return PrimitiveType.Int;
-					case TypeDescriptors.Long:
-						return PrimitiveType.Long;
-					case TypeDescriptors.Short:
-						return PrimitiveType.Short;
-					case TypeDescriptors.Void:
-						return PrimitiveType.Void;
-					case TypeDescriptors.Array:
-						return new ArrayType();
-					case TypeDescriptors.FullyQualifiedName:
-						return new ClassReference();
-				}
+				case TypeDescriptors.Boolean:
+					return PrimitiveType.Boolean;
+				case TypeDescriptors.Byte:
+					return PrimitiveType.Byte;
+				case TypeDescriptors.Char:
+					return PrimitiveType.Char;
+				case TypeDescriptors.Double:
+					return PrimitiveType.Double;
+				case TypeDescriptors.Float:
+					return PrimitiveType.Float;
+				case TypeDescriptors.Int:
+					return PrimitiveType.Int;
+				case TypeDescriptors.Long:
+					return PrimitiveType.Long;
+				case TypeDescriptors.Short:
+					return PrimitiveType.Short;
+				case TypeDescriptors.Void:
+					return PrimitiveType.Void;
+				case TypeDescriptors.Array:
+					return new ArrayType();
+				case TypeDescriptors.FullyQualifiedName:
+					return new ClassReference();
 			}
+
 			return null;
 		}
 
 		internal static void Fill(string tdString, TypeReference item, Dex context)
 		{
-			if (!string.IsNullOrEmpty(tdString))
+			if (string.IsNullOrEmpty(tdString))
+				return;
+
+			var prefix = tdString[0];
+			var td = (TypeDescriptors)prefix;
+
+			switch (td)
 			{
-				char prefix = tdString[0];
-				var td = (TypeDescriptors)prefix;
-				switch (td)
-				{
-					case TypeDescriptors.Array:
-						var atype = (ArrayType)item;
+				case TypeDescriptors.Array:
+					var atype = (ArrayType)item;
 
-						TypeReference elementType = Allocate(tdString.Substring(1));
-						Fill(tdString.Substring(1), elementType, context);
+					var elementType = Allocate(tdString.Substring(1));
+					Fill(tdString.Substring(1), elementType, context);
 
-						/* All types are already allocated
-                         * We want to reuse object reference if already in type repository
-                         * BUT if not, we don't want to add a new reference to this type:
-                         * it's a 'transient' type only used in the Dexer object model but
-                         * not persisted in dex file.
-                         */
-						atype.ElementType = context.Import(elementType, false);
+					/* All types are already allocated
+					     * We want to reuse object reference if already in type repository
+					     * BUT if not, we don't want to add a new reference to this type:
+					     * it's a 'transient' type only used in the Dexer object model but
+					     * not persisted in dex file.
+					     */
+					atype.ElementType = context.Import(elementType, false);
 
-						break;
-					case TypeDescriptors.FullyQualifiedName:
-						var cref = (ClassReference)item;
-						cref.Fullname = tdString.Substring(1, tdString.Length - 2);
-						break;
-				}
+					break;
+
+				case TypeDescriptors.FullyQualifiedName:
+					var cref = (ClassReference)item;
+					cref.Fullname = tdString.Substring(1, tdString.Length - 2);
+					break;
 			}
 		}
 
@@ -123,11 +127,15 @@ namespace Dexer.Metadata
 			{
 				result.Append(td);
 
-				if (tref is ArrayType)
-					result.Append(Encode((tref as ArrayType).ElementType, false));
-
-				if (tref is ClassReference)
-					result.Append(string.Concat((tref as ClassReference).Fullname.Replace(ClassReference.NamespaceSeparator, ClassReference.InternalNamespaceSeparator), ";"));
+				switch (tref)
+				{
+					case ArrayType type:
+						result.Append(Encode(type.ElementType, false));
+						break;
+					case ClassReference reference:
+						result.Append(string.Concat(reference.Fullname.Replace(ClassReference.NamespaceSeparator, ClassReference.InternalNamespaceSeparator), ";"));
+						break;
+				}
 			}
 			else
 			{
@@ -143,6 +151,5 @@ namespace Dexer.Metadata
 
 			return result.ToString();
 		}
-
 	}
 }

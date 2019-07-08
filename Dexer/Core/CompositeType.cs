@@ -23,6 +23,5 @@ namespace Dexer.Core
 {
 	public abstract class CompositeType : TypeReference
 	{
-
 	}
 }

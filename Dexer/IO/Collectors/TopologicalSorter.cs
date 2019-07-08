@@ -25,17 +25,16 @@ using System.Linq;
 
 namespace Dexer.IO.Collectors
 {
-
 	/* Taken from (great thanks)
 	 * http://stackoverflow.com/questions/1982592/topological-sorting-using-linq
 	 */
 
-	interface IPartialComparer<in T>
+	internal interface IPartialComparer<in T>
 	{
 		int? PartialCompare(T x, T y);
 	}
 
-	class ReferenceEqualityComparer<T> : IEqualityComparer<T>
+	internal class ReferenceEqualityComparer<T> : IEqualityComparer<T>
 	{
 		public bool Equals(T x, T y)
 		{
@@ -48,12 +47,11 @@ namespace Dexer.IO.Collectors
 		}
 	}
 
-	class TopologicalSorter
+	internal class TopologicalSorter
 	{
-		class DepthFirstSearch<TElement, TKey>
+		private class DepthFirstSearch<TElement, TKey>
 		{
 			readonly IEnumerable<TElement> _elements;
-			readonly Func<TElement, TKey> _selector;
 			readonly IPartialComparer<TKey> _comparer;
 			readonly HashSet<TElement> _visited;
 			readonly Dictionary<TElement, TKey> _keys;
@@ -63,18 +61,17 @@ namespace Dexer.IO.Collectors
 				IList<TElement> elements,
 				Func<TElement, TKey> selector,
 				IPartialComparer<TKey> comparer
-				)
+			)
 			{
 				_elements = elements;
-				_selector = selector;
 				_comparer = comparer;
 				var referenceComparer = new ReferenceEqualityComparer<TElement>();
 				_visited = new HashSet<TElement>(referenceComparer);
 				_keys = elements.ToDictionary(
 					e => e,
-					e => _selector(e),
+					selector,
 					referenceComparer
-					);
+				);
 				_sorted = new List<TElement>();
 			}
 
@@ -84,6 +81,7 @@ namespace Dexer.IO.Collectors
 				{
 					Visit(element);
 				}
+
 				return _sorted;
 			}
 
@@ -94,11 +92,12 @@ namespace Dexer.IO.Collectors
 					_visited.Add(element);
 					var predecessors = _elements.Where(
 						e => _comparer.PartialCompare(_keys[e], _keys[element]) < 0
-						);
+					);
 					foreach (var e in predecessors)
 					{
 						Visit(e);
 					}
+
 					_sorted.Add(element);
 				}
 			}
@@ -107,26 +106,26 @@ namespace Dexer.IO.Collectors
 		public IEnumerable<TElement> TopologicalSort<TElement>(
 			IList<TElement> elements,
 			IPartialComparer<TElement> comparer
-			)
+		)
 		{
 			var search = new DepthFirstSearch<TElement, TElement>(
 				elements,
 				element => element,
 				comparer
-				);
+			);
 			return search.VisitAll();
 		}
 
 		public IEnumerable<TElement> TopologicalSort<TElement, TKey>(
 			IList<TElement> elements,
 			Func<TElement, TKey> selector, IPartialComparer<TKey> comparer
-			)
+		)
 		{
 			var search = new DepthFirstSearch<TElement, TKey>(
 				elements,
 				selector,
 				comparer
-				);
+			);
 			return search.VisitAll();
 		}
 	}

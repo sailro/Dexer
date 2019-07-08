@@ -32,7 +32,18 @@ namespace Dexer.IO.Collectors
 
 		public int Compare(Annotation x, Annotation y)
 		{
-			int result = _typeReferenceComparer.Compare(x.Type, y.Type);
+			switch (x)
+			{
+				case null when y == null:
+					return 0;
+				case null:
+					return -1;
+			}
+
+			if (y == null)
+				return 1;
+
+			var result = _typeReferenceComparer.Compare(x.Type, y.Type);
 
 			if (result == 0)
 				result = x.Visibility.CompareTo(y.Visibility);

@@ -30,15 +30,11 @@ namespace Dexer.Test
 	public abstract class BaseTest
 	{
 		private TestContext _testContextInstance;
-		private string _filesDirectory;
 
 		// Set to true to provide more details as text files.
 		protected bool Extralog = false;
 
-		public string FilesDirectory
-		{
-			get { return _filesDirectory; }
-		}
+		public string FilesDirectory { get; private set; }
 
 		public string[] GetTestFiles()
 		{
@@ -47,16 +43,13 @@ namespace Dexer.Test
 
 		public TestContext TestContext
 		{
-			get
-			{
-				return _testContextInstance;
-			}
+			get => _testContextInstance;
 			set
 			{
 				_testContextInstance = value;
-				_filesDirectory = Path.Combine(_testContextInstance.TestDir, @"..\..");
-				_filesDirectory = Path.Combine(_filesDirectory, @"DexerTest\Files");
-				_filesDirectory = Path.GetFullPath(_filesDirectory);
+				FilesDirectory = Path.Combine(_testContextInstance.TestDir, @"..\..");
+				FilesDirectory = Path.Combine(FilesDirectory, @"DexerTest\Files");
+				FilesDirectory = Path.GetFullPath(FilesDirectory);
 			}
 		}
 
