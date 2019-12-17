@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dexer", "Dexer\Dexer.csproj", "{1151AF14-63F7-470D-9BD7-62BF0FF065D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DexerDebug", "DexerDebug\DexerDebug.csproj", "{8E28918D-3A81-441E-8663-0B41CE754F0F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dexer.Debug", "Dexer.Debug\Dexer.Debug.csproj", "{8E28918D-3A81-441E-8663-0B41CE754F0F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DexerTest", "DexerTest\DexerTest.csproj", "{932451A5-F7C6-4E6E-A3AD-EDEB08FABEDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dexer.Tests", "Dexer.Tests\Dexer.Tests.csproj", "{932451A5-F7C6-4E6E-A3AD-EDEB08FABEDE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
