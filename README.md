@@ -6,7 +6,7 @@ Dexer is an open source framework, written in C#, that reads and writes .DEX fil
 
 Usage:
 
-Let's work on the following Android application
+Let's work on the following Android application:
 ```java
 package dexer.poc;
  
