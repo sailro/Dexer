@@ -1,108 +1,31 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>
-    </ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{932451A5-F7C6-4E6E-A3AD-EDEB08FABEDE}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dexer.Test</RootNamespace>
-    <AssemblyName>DexerTest</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFramework>net462</TargetFramework>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.0.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.0.0" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0" />    
   </ItemGroup>
+
   <ItemGroup>
-    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
-      <Visible>False</Visible>
-    </CodeAnalysisDependentAssemblyPaths>
+    <ProjectReference Include="..\Dexer\Dexer.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
-    <Compile Include="BaseTest.cs" />
-    <Compile Include="CollectorTest.cs" />
-    <Compile Include="BaseCollectorTest.cs" />
-    <Compile Include="RoundtripTest.cs" />
-    <Compile Include="InstructionTest.cs" />
-    <Compile Include="NumericalTest.cs" />
-    <Compile Include="SortTest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Content Include="Files\*.dex">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Dexer\Dexer.csproj">
-      <Project>{1151AF14-63F7-470D-9BD7-62BF0FF065D3}</Project>
-      <Name>Dexer</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Files\dalvik.array.dex" />
-    <None Include="Files\dalvik.classes.dex" />
-    <None Include="Files\dalvik.compare.dex" />
-    <None Include="Files\dalvik.floatmath.dex" />
-    <None Include="Files\dalvik.goto.dex" />
-    <None Include="Files\dalvik.highregistermoves.dex" />
-    <None Include="Files\dalvik.instfield.dex" />
-    <None Include="Files\dalvik.internedstring.dex" />
-    <None Include="Files\dalvik.intmath.dex" />
-    <None Include="Files\dalvik.jumbo.dex" />
-    <None Include="Files\dalvik.math.dex" />
-    <None Include="Files\dalvik.methodcall.dex" />
-    <None Include="Files\dalvik.monitor.dex" />
-    <None Include="Files\dalvik.movewide16.dex" />
-    <None Include="Files\dalvik.putarray.dex" />
-    <None Include="Files\dalvik.staticfield.dex" />
-    <None Include="Files\dalvik.switch.dex" />
-    <None Include="Files\dalvik.throw.dex" />
-    <None Include="Files\dalvik.unresclass.dex" />
-    <None Include="Files\dalvik.unresstuff.dex" />
-    <None Include="Files\dalvik.unrestest1.dex" />
-    <None Include="Files\dalvik.unrestest2.dex" />
-    <None Include="Files\sample.accessors.dex" />
-    <None Include="Files\sample.arduino.dex" />
-    <None Include="Files\sample.bubble.dex" />
-    <None Include="Files\sample.bud.dex" />
-    <None Include="Files\sample.download.dex" />
-    <None Include="Files\sample.f1live.dex" />
-    <None Include="Files\sample.gesture.dex" />
-    <None Include="Files\sample.helloactivity.dex" />
-    <None Include="Files\sample.lcd.dex" />
-    <None Include="Files\sample.lunar.dex" />
-    <None Include="Files\sample.notepad.dex" />
-    <None Include="Files\sample.searchable.dex" />
-    <None Include="Files\sample.skeleton.dex" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>
