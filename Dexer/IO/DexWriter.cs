@@ -491,7 +491,7 @@ namespace Dexer.IO
 					valueArgument = writer.GetByteCountForSignedPackedNumber(BitConverter.DoubleToInt64Bits(Convert.ToDouble(value))) - 1;
 					break;
 				case ValueFormats.String:
-					valueArgument = writer.GetByteCountForUnsignedPackedNumber(StringLookup[(String)value]) - 1;
+					valueArgument = writer.GetByteCountForUnsignedPackedNumber(StringLookup[(string)value]) - 1;
 					break;
 				case ValueFormats.Type:
 					valueArgument = writer.GetByteCountForUnsignedPackedNumber(TypeLookup[(TypeReference)value]) - 1;
@@ -530,7 +530,7 @@ namespace Dexer.IO
 					writer.WritePackedSignedNumber(BitConverter.DoubleToInt64Bits(Convert.ToDouble(value)));
 					break;
 				case ValueFormats.String:
-					writer.WriteUnsignedPackedNumber(StringLookup[(String)value]);
+					writer.WriteUnsignedPackedNumber(StringLookup[(string)value]);
 					break;
 				case ValueFormats.Type:
 					writer.WriteUnsignedPackedNumber(TypeLookup[(TypeReference)value]);
@@ -679,7 +679,7 @@ namespace Dexer.IO
 				writer.Write(annotatedMethods.Count);
 				writer.Write(annotatedParametersList.Count);
 
-				var fields = new List<FieldReference>(annotatedFields.Cast<FieldReference>());
+				var fields = new List<FieldReference>(annotatedFields);
 				fields.Sort(new FieldReferenceComparer());
 				foreach (var field in fields)
 				{
@@ -687,7 +687,7 @@ namespace Dexer.IO
 					writer.Write(AnnotationSets[new AnnotationSet(field as IAnnotationProvider)]);
 				}
 
-				var methods = new List<MethodReference>(annotatedMethods.Cast<MethodReference>());
+				var methods = new List<MethodReference>(annotatedMethods);
 				methods.Sort(new MethodReferenceComparer());
 				foreach (var method in methods)
 				{
@@ -695,7 +695,7 @@ namespace Dexer.IO
 					writer.Write(AnnotationSets[new AnnotationSet(method as IAnnotationProvider)]);
 				}
 
-				methods = new List<MethodReference>(annotatedParametersList.Cast<MethodReference>());
+				methods = new List<MethodReference>(annotatedParametersList);
 				methods.Sort(new MethodReferenceComparer());
 				foreach (var method in methods)
 				{
@@ -875,8 +875,8 @@ namespace Dexer.IO
 								break;
 							case DebugOpCodes.SetFile:
 								// uleb128p1 name_idx
-								CheckOperand(ins, 1, typeof(String));
-								name = (String)ins.Operands[0];
+								CheckOperand(ins, 1, typeof(string));
+								name = (string)ins.Operands[0];
 								if (string.IsNullOrEmpty(name))
 									writer.WriteULEB128P1(DexConsts.NoIndex);
 								else
@@ -889,13 +889,13 @@ namespace Dexer.IO
 								var isExtended = ins.OpCode == DebugOpCodes.StartLocalExtended;
 
 								if (isExtended)
-									CheckOperand(ins, 4, typeof(Register), typeof(String), typeof(TypeReference), typeof(String));
+									CheckOperand(ins, 4, typeof(Register), typeof(string), typeof(TypeReference), typeof(string));
 								else
-									CheckOperand(ins, 3, typeof(Register), typeof(String), typeof(TypeReference));
+									CheckOperand(ins, 3, typeof(Register), typeof(string), typeof(TypeReference));
 
 								writer.WriteULEB128((uint)((Register)ins.Operands[0]).Index);
 
-								name = (String)ins.Operands[1];
+								name = (string)ins.Operands[1];
 								if (string.IsNullOrEmpty(name))
 									writer.WriteULEB128P1(DexConsts.NoIndex);
 								else
@@ -909,7 +909,7 @@ namespace Dexer.IO
 
 								if (isExtended)
 								{
-									var signature = (String)ins.Operands[3];
+									var signature = (string)ins.Operands[3];
 									if (string.IsNullOrEmpty(signature))
 										writer.WriteULEB128P1(DexConsts.NoIndex);
 									else

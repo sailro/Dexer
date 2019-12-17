@@ -21,7 +21,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
 using System.IO;
-using Dexer.Extensions;
 using Dexer.IO;
 
 namespace Dexer.Core

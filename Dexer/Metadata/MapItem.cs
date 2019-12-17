@@ -38,7 +38,7 @@ namespace Dexer.Metadata
 
 		public override string ToString()
 		{
-			return string.Format("{0}:{1} @0x{2:x}", Type, Count, Offset);
+			return $"{Type}:{Count} @0x{Offset:x}";
 		}
 	}
 }

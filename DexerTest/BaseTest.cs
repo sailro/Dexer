@@ -29,28 +29,20 @@ namespace Dexer.Test
 	[TestClass]
 	public abstract class BaseTest
 	{
-		private TestContext _testContextInstance;
-
 		// Set to true to provide more details as text files.
 		protected bool Extralog = false;
 
-		public string FilesDirectory { get; private set; }
-
 		public string[] GetTestFiles()
 		{
-			return Directory.GetFiles(FilesDirectory, "*.dex");
+			var asmPath = GetType().Assembly.Location;
+			var basePath = Path.Combine(Path.GetDirectoryName(asmPath), "Files");
+			return Directory.GetFiles(basePath, "*.dex");
 		}
 
 		public TestContext TestContext
 		{
-			get => _testContextInstance;
-			set
-			{
-				_testContextInstance = value;
-				FilesDirectory = Path.Combine(_testContextInstance.TestDir, @"..\..");
-				FilesDirectory = Path.Combine(FilesDirectory, @"DexerTest\Files");
-				FilesDirectory = Path.GetFullPath(FilesDirectory);
-			}
+			get;
+			set;
 		}
 
 		public void DumpList<T>(string filename, List<T> list)

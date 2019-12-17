@@ -19,7 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
 using Dexer.Instructions;
 
 namespace Dexer.IO
@@ -28,7 +27,7 @@ namespace Dexer.IO
 	{
 		public Instruction Instruction { get; set; }
 
-		public InstructionException(Instruction instruction, String message)
+		public InstructionException(Instruction instruction, string message)
 			: base(message)
 		{
 			Instruction = instruction;
