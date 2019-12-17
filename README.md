@@ -1,4 +1,4 @@
-Dexer [![Build Status](https://sailro.visualstudio.com/Dexer/_apis/build/status/sailro.Dexer?branchName=master)](https://sailro.visualstudio.com/Dexer/_build/latest?definitionId=1&branchName=master)
+Dexer [![Build status](https://github.com/sailro/Dexer/workflows/CI/badge.svg)](https://github.com/sailro/Dexer/actions?query=workflow%3ACI)
 =====
 
 Dexer is an open source framework, written in C#, that reads and writes .DEX files (Dalvik Executable Format) used by the Android Open Source Project.
