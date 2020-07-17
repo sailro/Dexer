@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Dexer.Core;
 using Dexer.Extensions;
@@ -713,7 +714,7 @@ namespace Dexer.IO
 			PrefetchClassDefinitions(reader, true);
 			ReadClassDefinitions(reader);
 
-			Dex.Classes = ClassDefinition.Hierarchicalize(Dex.Classes, Dex);
+			Dex.Classes = ClassDefinition.Hierarchicalize(Dex.Classes);
 		}
 	}
 }

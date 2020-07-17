@@ -19,6 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Dexer.Metadata;
@@ -170,27 +171,37 @@ namespace Dexer.Core
 
 			return Flattenize(container);
 		}
-
-		internal static List<ClassDefinition> Hierarchicalize(List<ClassDefinition> container, Dex dex)
+		
+		internal static List<ClassDefinition> Hierarchicalize(List<ClassDefinition> container)
 		{
+			container.Sort((a,b)=>string.CompareOrdinal(a.Fullname,b.Fullname));
 			var result = new List<ClassDefinition>();
-			foreach (var cdef in container)
-			{
-				if (cdef.Fullname.Contains(DexConsts.InnerClassMarker.ToString(CultureInfo.InvariantCulture)))
-				{
-					var items = cdef.Fullname.Split(DexConsts.InnerClassMarker);
-					var fullname = items[0];
-					//var name = items[1];
-					var owner = dex.GetClass(fullname);
-					if (owner == null)
-						continue;
+			Stack<ClassDefinition> layer = new Stack<ClassDefinition>();
 
-					owner.InnerClasses.Add(cdef);
-					cdef.Owner = owner;
-				}
-				else
+			var innerClassMaker = DexConsts.InnerClassMarker.ToString(CultureInfo.InvariantCulture);
+
+			foreach (var classDef in container)
+			{
+				while (true)
 				{
-					result.Add(cdef);
+					if (layer.Count == 0)
+					{
+						result.Add(classDef);
+						layer.Push(classDef);
+						break;
+					}
+					
+					var mayFather = layer.Peek();
+					if (classDef.Fullname.StartsWith(mayFather.Fullname) && classDef.Fullname.AsSpan(mayFather.Fullname.Length).StartsWith(innerClassMaker))
+					{
+						mayFather.InnerClasses.Add(classDef);//yes, must be father.
+						layer.Push(classDef);
+						break;
+					}
+					else
+					{
+						layer.Pop();
+					}
 				}
 			}
 
