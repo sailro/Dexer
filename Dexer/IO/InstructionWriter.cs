@@ -695,7 +695,7 @@ namespace Dexer.IO
 			if (ins.Registers.Count <= position)
 				throw new InstructionException(ins, $"Expecting register at position {position}");
 
-			var index = ins.Registers[position].Index;
+			var index = ins.Registers[position];
 			if (index < 0 || index > maxIndex)
 				throw new InstructionException(ins, $"Register index out of range [0..{maxIndex}]");
 

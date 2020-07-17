@@ -730,7 +730,7 @@ namespace Dexer.IO
 				Codes[method] = (uint)writer.BaseStream.Position;
 				count++;
 
-				writer.Write((ushort)body.Registers.Count);
+				writer.Write((ushort)body.RegisterCount);
 				writer.Write(body.IncomingArguments);
 				writer.Write(body.OutgoingArguments);
 				writer.Write((ushort)body.Exceptions.Count);
@@ -870,8 +870,8 @@ namespace Dexer.IO
 							case DebugOpCodes.EndLocal:
 							case DebugOpCodes.RestartLocal:
 								// uleb128 register_num
-								CheckOperand(ins, 1, typeof(Register));
-								writer.WriteULEB128((uint)((Register)ins.Operands[0]).Index);
+								CheckOperand(ins, 1, typeof(uint));
+								writer.WriteULEB128((uint)ins.Operands[0]);
 								break;
 							case DebugOpCodes.SetFile:
 								// uleb128p1 name_idx
@@ -889,11 +889,11 @@ namespace Dexer.IO
 								var isExtended = ins.OpCode == DebugOpCodes.StartLocalExtended;
 
 								if (isExtended)
-									CheckOperand(ins, 4, typeof(Register), typeof(string), typeof(TypeReference), typeof(string));
+									CheckOperand(ins, 4, typeof(uint), typeof(string), typeof(TypeReference), typeof(string));
 								else
-									CheckOperand(ins, 3, typeof(Register), typeof(string), typeof(TypeReference));
+									CheckOperand(ins, 3, typeof(uint), typeof(string), typeof(TypeReference));
 
-								writer.WriteULEB128((uint)((Register)ins.Operands[0]).Index);
+								writer.WriteULEB128((uint)ins.Operands[0]);
 
 								name = (string)ins.Operands[1];
 								if (string.IsNullOrEmpty(name))

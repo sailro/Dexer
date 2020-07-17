@@ -208,7 +208,7 @@ namespace Dexer.IO
 					var reference = Dex.TypeReferences[classIndex] as ClassDefinition;
 					if (reference == null)
 					{
-						var cdef = new ClassDefinition((ClassReference)Dex.TypeReferences[classIndex]);
+						var cdef = new ClassDefinition(Dex,(ClassReference)Dex.TypeReferences[classIndex]);
 						Dex.TypeReferences[classIndex] = cdef;
 						Dex.Classes.Add(cdef);
 					}
@@ -563,107 +563,9 @@ namespace Dexer.IO
 				if (triesSize != 0)
 					ReadExceptionHandlers(reader, mdef, ireader, triesSize);
 
-				if (debugOffset != 0)
-					ReadDebugInfo(reader, mdef, debugOffset);
-			});
-		}
-
-		private void ReadDebugInfo(BinaryReader reader, MethodDefinition mdef, uint debugOffset)
-		{
-			reader.PreserveCurrentPosition(debugOffset, () =>
-			{
-				var debugInfo = new DebugInfo(mdef.Body);
-				mdef.Body.DebugInfo = debugInfo;
-
-				var lineStart = reader.ReadULEB128();
-				debugInfo.LineStart = lineStart;
-
-				var parametersSize = reader.ReadULEB128();
-				for (var i = 0; i < parametersSize; i++)
-				{
-					var index = reader.ReadULEB128P1();
-					string name = null;
-					if (index != DexConsts.NoIndex && index >= 0)
-						name = Dex.Strings[(int)index];
-					debugInfo.Parameters.Add(name);
-				}
-
-				while (true)
-				{
-					var ins = new DebugInstruction {OpCode = (DebugOpCodes)reader.ReadByte()};
-					debugInfo.DebugInstructions.Add(ins);
-
-					uint registerIndex;
-					long nameIndex;
-					string name;
-
-					switch (ins.OpCode)
-					{
-						case DebugOpCodes.AdvancePc:
-							// uleb128 addr_diff
-							var addrDiff = reader.ReadULEB128();
-							ins.Operands.Add(addrDiff);
-							break;
-						case DebugOpCodes.AdvanceLine:
-							// sleb128 line_diff
-							var lineDiff = reader.ReadSLEB128();
-							ins.Operands.Add(lineDiff);
-							break;
-						case DebugOpCodes.EndLocal:
-						case DebugOpCodes.RestartLocal:
-							// uleb128 register_num
-							registerIndex = reader.ReadULEB128();
-							ins.Operands.Add(mdef.Body.Registers[(int)registerIndex]);
-							break;
-						case DebugOpCodes.SetFile:
-							// uleb128p1 name_idx
-							nameIndex = reader.ReadULEB128P1();
-							name = null;
-							if (nameIndex != DexConsts.NoIndex && nameIndex >= 0)
-								name = Dex.Strings[(int)nameIndex];
-							ins.Operands.Add(name);
-							break;
-						case DebugOpCodes.StartLocalExtended:
-						case DebugOpCodes.StartLocal:
-							// StartLocalExtended : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx, uleb128p1 sig_idx
-							// StartLocal : uleb128 register_num, uleb128p1 name_idx, uleb128p1 type_idx
-							var isExtended = ins.OpCode == DebugOpCodes.StartLocalExtended;
-
-							registerIndex = reader.ReadULEB128();
-							ins.Operands.Add(mdef.Body.Registers[(int)registerIndex]);
-
-							nameIndex = reader.ReadULEB128P1();
-							name = null;
-							if (nameIndex != DexConsts.NoIndex && nameIndex >= 0)
-								name = Dex.Strings[(int)nameIndex];
-							ins.Operands.Add(name);
-
-							var typeIndex = reader.ReadULEB128P1();
-							TypeReference type = null;
-							if (typeIndex != DexConsts.NoIndex && typeIndex >= 0)
-								type = Dex.TypeReferences[(int)typeIndex];
-							ins.Operands.Add(type);
-
-							if (isExtended)
-							{
-								var signatureIndex = reader.ReadULEB128P1();
-								string signature = null;
-								if (signatureIndex != DexConsts.NoIndex && signatureIndex >= 0)
-									signature = Dex.Strings[(int)signatureIndex];
-								ins.Operands.Add(signature);
-							}
-
-							break;
-						case DebugOpCodes.EndSequence:
-							return;
-						//case DebugOpCodes.Special:
-						// between 0x0a and 0xff (inclusive)
-						//case DebugOpCodes.SetPrologueEnd:
-						//case DebugOpCodes.SetEpilogueBegin:
-						//default:
-						//    break;
-					}
-				}
+				mdef.Body.debugInfoOffset = debugOffset;
+				// if (debugOffset != 0)
+				// 	ReadDebugInfo(reader, mdef, debugOffset);
 			});
 		}
 

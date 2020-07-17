@@ -310,7 +310,7 @@ namespace Dexer.IO.Collectors
 				}
 
 				case ValueType _:
-				case Register _:
+				//case Register _:
 				case Instruction _:
 				case PackedSwitchData _:
 				case SparseSwitchData _:

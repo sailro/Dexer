@@ -29,15 +29,15 @@ namespace Dexer.Instructions
 	{
 		public OpCodes OpCode { get; set; }
 		public int Offset { get; set; }
-		public List<Register> Registers { get; set; }
+		public List<char> Registers { get; set; }
 		public object Operand { get; set; }
 
 		public Instruction()
 		{
-			Registers = new List<Register>();
+			Registers = new List<char>();
 		}
 
-		public Instruction(OpCodes opcode, params Register[] registers)
+		public Instruction(OpCodes opcode, params char[] registers)
 			: this(opcode, null, registers)
 		{
 		}
@@ -51,13 +51,13 @@ namespace Dexer.Instructions
 		{
 		}
 
-		public Instruction(OpCodes opcode, object operand, params Register[] registers) : this()
+		public Instruction(OpCodes opcode, object operand, params char[] registers) : this()
 		{
 			OpCode = opcode;
 			Operand = operand;
 
 			if (registers != null)
-				Registers = new List<Register>(registers);
+				Registers = new List<char>(registers);
 		}
 
 		public override string ToString()

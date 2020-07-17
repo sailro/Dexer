@@ -54,33 +54,33 @@ namespace Dexer.IO
 
 		private void ReadvA(Instruction ins)
 		{
-			ins.Registers.Add(MethodDefinition.Body.Registers[Upper[_ip] & 0xF]);
+			ins.Registers.Add((char)(Upper[_ip] & 0xF));
 		}
 
 		private void ReadvAA(Instruction ins)
 		{
-			ins.Registers.Add(MethodDefinition.Body.Registers[Upper[_ip++]]);
+			ins.Registers.Add((char)(Upper[_ip++]));
 		}
 
 		private void ReadvAAAA(Instruction ins)
 		{
 			_ip++;
-			ins.Registers.Add(MethodDefinition.Body.Registers[Codes[_ip++]]);
+			ins.Registers.Add((char)(Codes[_ip++]));
 		}
 
 		private void ReadvB(Instruction ins)
 		{
-			ins.Registers.Add(MethodDefinition.Body.Registers[Upper[_ip++] >> 4]);
+			ins.Registers.Add((char)(Upper[_ip++] >> 4));
 		}
 
 		private void ReadvBB(Instruction ins)
 		{
-			ins.Registers.Add(MethodDefinition.Body.Registers[Lower[_ip]]);
+			ins.Registers.Add((char)(Lower[_ip]));
 		}
 
 		private void ReadvBBBB(Instruction ins)
 		{
-			ins.Registers.Add(MethodDefinition.Body.Registers[Codes[_ip++]]);
+			ins.Registers.Add((char)(Codes[_ip++]));
 		}
 
 		private void ReadvCC(Instruction ins)
@@ -133,7 +133,6 @@ namespace Dexer.IO
 
 		public void ReadFrom(BinaryReader reader)
 		{
-			var registers = MethodDefinition.Body.Registers;
 			InstructionsSize = reader.ReadUInt32();
 
 			Codes = new int[InstructionsSize];
@@ -335,7 +334,7 @@ namespace Dexer.IO
 						ins.Operand = Dex.TypeReferences[ReadShort(ref _ip)];
 						ReadvBBBB(ins);
 						for (var i = 1; i < registerCount; i++)
-							ins.Registers.Add(registers[i + ins.Registers[0].Index]);
+							ins.Registers.Add((char)(i + ins.Registers[0]));
 						break;
 					case OpCodes.Goto:
 						// +AA
@@ -503,7 +502,7 @@ namespace Dexer.IO
 						ins.Operand = Dex.MethodReferences[ReadUShort(ref _ip)];
 						ReadvBBBB(ins);
 						for (var i = 1; i < registerCount; i++)
-							ins.Registers.Add(registers[i + ins.Registers[0].Index]);
+							ins.Registers.Add((char)(i + ins.Registers[0]));
 						break;
 					case OpCodes.AddIntLit16:
 					case OpCodes.RsubInt:
@@ -553,7 +552,7 @@ namespace Dexer.IO
 		{
 			var registerCount = registerMask >> 20;
 			for (var i = 0; i < registerCount; i++)
-				ins.Registers.Add(MethodDefinition.Body.Registers[(registerMask >> (i * 4)) & 0xF]);
+				ins.Registers.Add((char)((registerMask >> (i * 4)) & 0xF));
 		}
 
 		// ReSharper disable UnusedParameter.Local

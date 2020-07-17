@@ -40,8 +40,12 @@ namespace Dexer.Core
 		public List<MethodDefinition> Methods { get; set; }
 		public ClassDefinition Owner { get; set; }
 
-		internal ClassDefinition()
+		public Dex DexSource { get;}
+		
+		internal ClassDefinition(Dex dexSource)
 		{
+			DexSource = dexSource;
+			
 			TypeDescriptor = TypeDescriptors.FullyQualifiedName;
 
 			Interfaces = new List<ClassReference>();
@@ -51,7 +55,7 @@ namespace Dexer.Core
 			InnerClasses = new List<ClassDefinition>();
 		}
 
-		internal ClassDefinition(ClassReference cref) : this()
+		internal ClassDefinition(Dex dexSource,ClassReference cref) : this(dexSource)
 		{
 			Fullname = cref.Fullname;
 			Namespace = cref.Namespace;

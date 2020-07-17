@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
 	<IsPackable>false</IsPackable>
 	<LangVersion>8</LangVersion>
+	<TargetFramework>netcoreapp3.1</TargetFramework>
+	<OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

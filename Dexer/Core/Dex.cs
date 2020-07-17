@@ -19,6 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Dexer.IO;
@@ -36,84 +37,49 @@ namespace Dexer.Core
 		internal List<string> Strings { get; set; }
 		internal List<Prototype> Prototypes { get; set; }
 
+		internal MemoryStream buffer { get; set; }
+
+		/*
+		 * well,a DexReader parse a 8MB dex file will take more than 200MB memory.
+		 * but our function here is asking "shall we load the 8MB dex into the memory?", which is so stupid.
+		 * I think we should just load all dex into memory,and lazy init some infrequently used data, such as DebugInstructions,
+		 * in order to reduce the memory cost.
+		 * 
+		 * We don’t need to worry if the dex is too big. Full-loaded Dexer Dex object is much more bigger.
+		 * And due to the DexIndexOverflow problem, a single dex file won't be too big to load.(it will be multidexed by developer)
+		 */
+
+		public static Dex Read(string filename)
+		{
+			return Read(File.OpenRead(filename));
+		}
+
 		public static Dex Read(Stream stream)
 		{
-			return Read(stream, true);
+			Dex result = new Dex(stream);
+
+			var buffer = result.buffer;
+			var binaryReader = new BinaryReader(buffer);
+			DexReader dexReader = new DexReader(result);
+			dexReader.ReadFrom(binaryReader);
+
+			return result;
+		}
+		
+		public void Write(string filename)
+		{
+			Write(File.Open(filename, FileMode.Create));
 		}
 
 		public void Write(Stream stream)
 		{
-			Write(stream, true);
+			using var binaryWriter = new BinaryWriter(stream);
+			DexWriter dexWriter = new DexWriter(this);
+			dexWriter.WriteTo(binaryWriter);
 		}
+		
 
-		public static Dex Read(string filename)
-		{
-			return Read(filename, true);
-		}
-
-		public void Write(string filename)
-		{
-			Write(filename, true);
-		}
-
-		public static Dex Read(Stream stream, bool bufferize)
-		{
-			var result = new Dex();
-
-			if (bufferize)
-			{
-				var memorystream = new MemoryStream();
-				stream.CopyTo(memorystream);
-				memorystream.Position = 0;
-				stream = memorystream;
-			}
-
-			using (var binaryReader = new BinaryReader(stream))
-			{
-				var reader = new DexReader(result);
-				reader.ReadFrom(binaryReader);
-				return result;
-			}
-		}
-
-
-		public static Dex Read(string filename, bool bufferize)
-		{
-			using (var stream = new FileStream(filename, FileMode.Open))
-				return Read(stream, bufferize);
-		}
-
-		public void Write(Stream stream, bool bufferize)
-		{
-			var deststream = stream;
-			MemoryStream memorystream = null;
-
-			if (bufferize)
-			{
-				memorystream = new MemoryStream();
-				deststream = memorystream;
-			}
-
-			using (var binaryWriter = new BinaryWriter(deststream))
-			{
-				var writer = new DexWriter(this);
-				writer.WriteTo(binaryWriter);
-
-				if (!bufferize)
-					return;
-
-				memorystream.Position = 0;
-				memorystream.CopyTo(stream);
-			}
-		}
-
-		public void Write(string filename, bool bufferize)
-		{
-			using (var stream = new FileStream(filename, FileMode.Create))
-				Write(stream, bufferize);
-		}
-
-		public Dex()
+		public Dex(Stream stream)
 		{
 			Classes = new List<ClassDefinition>();
 			TypeReferences = new List<TypeReference>();
@@ -122,6 +88,11 @@ namespace Dexer.Core
 
 			Prototypes = new List<Prototype>();
 			Strings = new List<string>();
+			
+			buffer = new MemoryStream((int)stream.Length);
+			stream.CopyTo(buffer);
+			
+			buffer.Position = 0;
 		}
 
 		public ClassDefinition GetClass(string fullname)

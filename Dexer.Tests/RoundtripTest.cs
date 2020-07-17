@@ -37,27 +37,31 @@ namespace Dexer.Tests
 		{
 			TestContext.WriteLine("Testing {0}", file);
 
-			var dex = new Dex();
-			dexreader = new DexReader(dex);
 
 			using (Stream fs = new FileStream(file, FileMode.Open))
-			using (var reader = new BinaryReader(fs))
+			{
+				var dex = new Dex(fs);
+				dexreader = new DexReader(dex);
+
+				var reader = new BinaryReader(dex.buffer);
 				dexreader.ReadFrom(reader);
 
-			dexwriter = new DexWriter(dex);
+				dexwriter = new DexWriter(dex);
 
-			if (Extralog)
-			{
-				using (Stream fs = new FileStream(file + ".out", FileMode.Create))
-				using (var writer = new BinaryWriter(fs))
-					dexwriter.WriteTo(writer);
+				if (Extralog)
+				{
+					using (Stream ofs = new FileStream(file + ".out", FileMode.Create))
+					using (var writer = new BinaryWriter(ofs))
+						dexwriter.WriteTo(writer);
+				}
+				else
+				{
+					using (Stream ofs = new MemoryStream())
+					using (var writer = new BinaryWriter(ofs))
+						dexwriter.WriteTo(writer);
+				}
 			}
-			else
-			{
-				using (Stream fs = new MemoryStream())
-				using (var writer = new BinaryWriter(fs))
-					dexwriter.WriteTo(writer);
-			}
+			
 		}
 
 		[TestMethod]
