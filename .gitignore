@@ -2,6 +2,7 @@
 /DexerTest/Files/disable
 /TestResults
 /.vs
+.idea
 bin
 obj
 *.user
