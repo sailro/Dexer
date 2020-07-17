@@ -1,10 +1,8 @@
-/Dexer/bin
-/Dexer/obj
-/DexerDebug/bin
-/DexerDebug/obj
-/DexerTest/bin
-/DexerTest/obj
-/*.user
-/*.suo
 /DexerTest/Files/*.out
 /DexerTest/Files/disable
+/TestResults
+/.vs
+bin
+obj
+*.user
+*.suo

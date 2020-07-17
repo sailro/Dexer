@@ -1,22 +1,15 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dexer", "Dexer\Dexer.csproj", "{1151AF14-63F7-470D-9BD7-62BF0FF065D3}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dexer", "Dexer\Dexer.csproj", "{1151AF14-63F7-470D-9BD7-62BF0FF065D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DexerDebug", "DexerDebug\DexerDebug.csproj", "{8E28918D-3A81-441E-8663-0B41CE754F0F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dexer.Debug", "Dexer.Debug\Dexer.Debug.csproj", "{8E28918D-3A81-441E-8663-0B41CE754F0F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DexerTest", "DexerTest\DexerTest.csproj", "{932451A5-F7C6-4E6E-A3AD-EDEB08FABEDE}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DDA11A7A-0C94-4726-9552-369F67D753FA}"
-	ProjectSection(SolutionItems) = preProject
-		Dexer.vsmdi = Dexer.vsmdi
-		Local.testsettings = Local.testsettings
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dexer.Tests", "Dexer.Tests\Dexer.Tests.csproj", "{932451A5-F7C6-4E6E-A3AD-EDEB08FABEDE}"
 EndProject
 Global
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = Dexer.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -36,17 +29,18 @@ Global
 		{1151AF14-63F7-470D-9BD7-62BF0FF065D3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{1151AF14-63F7-470D-9BD7-62BF0FF065D3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{1151AF14-63F7-470D-9BD7-62BF0FF065D3}.Release|x86.ActiveCfg = Release|Any CPU
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|Any CPU.Build.0 = Debug|x86
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|x86.ActiveCfg = Debug|x86
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|x86.Build.0 = Debug|x86
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|Any CPU.ActiveCfg = Release|x86
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|Mixed Platforms.Build.0 = Release|x86
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|x86.ActiveCfg = Release|x86
-		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|x86.Build.0 = Release|x86
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Debug|x86.Build.0 = Debug|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|x86.ActiveCfg = Release|Any CPU
+		{8E28918D-3A81-441E-8663-0B41CE754F0F}.Release|x86.Build.0 = Release|Any CPU
 		{932451A5-F7C6-4E6E-A3AD-EDEB08FABEDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{932451A5-F7C6-4E6E-A3AD-EDEB08FABEDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{932451A5-F7C6-4E6E-A3AD-EDEB08FABEDE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -60,5 +54,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {61C68321-DD18-409C-A4F6-2937D39C29A1}
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Dexer.vsmdi
 	EndGlobalSection
 EndGlobal

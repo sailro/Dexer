@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -25,13 +25,12 @@ namespace Dexer.IO.Collectors
 {
 	internal class DependencyCollector : BaseCollector<ClassDefinition>
 	{
-
 		public override void Collect(TypeReference tref)
 		{
 			if (!(tref is ClassDefinition))
 				return;
 
-			var @class = (ClassDefinition) tref;
+			var @class = (ClassDefinition)tref;
 			if (!Items.ContainsKey(@class))
 				Items.Add(@class, 0);
 
@@ -45,6 +44,5 @@ namespace Dexer.IO.Collectors
 			Collect(@class.SuperClass);
 			Collect(@class as ClassReference);
 		}
-
 	}
 }

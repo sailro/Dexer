@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -48,14 +48,12 @@ namespace Dexer.Core
 		public bool Equals(PrimitiveType other)
 		{
 			return base.Equals(other)
-				&& TypeDescriptor == other.TypeDescriptor;
+			       && TypeDescriptor == other.TypeDescriptor;
 		}
 
 		public override bool Equals(TypeReference other)
 		{
-			return other is PrimitiveType
-				&& Equals((PrimitiveType) other);
+			return other is PrimitiveType type && Equals(type);
 		}
-
 	}
 }

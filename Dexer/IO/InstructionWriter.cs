@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -62,7 +62,6 @@ namespace Dexer.IO
 				int registerMask;
 				switch (ins.OpCode)
 				{
-
 					case OpCodes.Nop:
 					case OpCodes.ReturnVoid:
 						_ip++;
@@ -177,7 +176,7 @@ namespace Dexer.IO
 						WritevAA(ins);
 
 						// Keep 4-byte alignment for this block
-						if (_extraOffset%2 != 0)
+						if (_extraOffset % 2 != 0)
 							_extraOffset++;
 
 						WriteInt(_extraOffset - ins.Offset, ref _ip);
@@ -469,7 +468,7 @@ namespace Dexer.IO
 			if (!(ins.Operand is Instruction))
 				throw new InstructionException(ins, "Expecting Instruction");
 
-			WriteSByte((ins.Operand as Instruction).Offset - ins.Offset);
+			WriteSByte(((Instruction)ins.Operand).Offset - ins.Offset);
 		}
 
 		private void WriteSByte(Instruction ins)
@@ -482,7 +481,7 @@ namespace Dexer.IO
 			if (!(ins.Operand is Instruction))
 				throw new InstructionException(ins, "Expecting Instruction");
 
-			WriteShort((ins.Operand as Instruction).Offset - ins.Offset, ref _ip);
+			WriteShort(((Instruction)ins.Operand).Offset - ins.Offset, ref _ip);
 		}
 
 		private void WriteShortFieldIndex(Instruction ins)
@@ -490,7 +489,7 @@ namespace Dexer.IO
 			if (!(ins.Operand is FieldReference))
 				throw new InstructionException(ins, "Expecting FieldReference");
 
-			WriteUShort(DexWriter.FieldLookup[ins.Operand as FieldReference], ref _ip);
+			WriteUShort(DexWriter.FieldLookup[(FieldReference)ins.Operand], ref _ip);
 		}
 
 		private void WriteShortMethodIndex(Instruction ins)
@@ -498,7 +497,7 @@ namespace Dexer.IO
 			if (!(ins.Operand is MethodReference))
 				throw new InstructionException(ins, "Expecting MethodReference");
 
-			WriteUShort(DexWriter.MethodLookup[ins.Operand as MethodReference], ref _ip);
+			WriteUShort(DexWriter.MethodLookup[(MethodReference)ins.Operand], ref _ip);
 		}
 
 		private void WriteShortStringIndex(Instruction ins)
@@ -506,7 +505,7 @@ namespace Dexer.IO
 			if (!(ins.Operand is string))
 				throw new InstructionException(ins, "Expecting String");
 
-			WriteUShort(DexWriter.StringLookup[(string) ins.Operand], ref _ip);
+			WriteUShort(DexWriter.StringLookup[(string)ins.Operand], ref _ip);
 		}
 
 		private void WriteShortTypeIndex(Instruction ins)
@@ -514,7 +513,7 @@ namespace Dexer.IO
 			if (!(ins.Operand is TypeReference))
 				throw new InstructionException(ins, "Expecting TypeReference");
 
-			WriteUShort(DexWriter.TypeLookup[ins.Operand as TypeReference], ref _ip);
+			WriteUShort(DexWriter.TypeLookup[(TypeReference)ins.Operand], ref _ip);
 		}
 
 		private void WriteShort(Instruction ins, int shift)
@@ -543,7 +542,7 @@ namespace Dexer.IO
 			if (!(ins.Operand is Instruction))
 				throw new InstructionException(ins, "Expecting Instruction");
 
-			WriteInt((ins.Operand as Instruction).Offset - ins.Offset, ref _ip);
+			WriteInt(((Instruction)ins.Operand).Offset - ins.Offset, ref _ip);
 		}
 
 		private void WriteIntStringIndex(Instruction ins)
@@ -591,7 +590,7 @@ namespace Dexer.IO
 		{
 			if (!(ins.Operand is SparseSwitchData))
 				throw new InstructionException(ins, "Expecting SparseSwitchData");
-			var data = ins.Operand as SparseSwitchData;
+			var data = (SparseSwitchData)ins.Operand;
 
 			WriteShort((short)PseudoOpCodes.SparseSwitch, ref _extraOffset);
 			WriteShort(data.Targets.Count, ref _extraOffset);
@@ -607,7 +606,7 @@ namespace Dexer.IO
 		{
 			if (!(ins.Operand is PackedSwitchData))
 				throw new InstructionException(ins, "Expecting PackedSwitchData");
-			var data = ins.Operand as PackedSwitchData;
+			var data = (PackedSwitchData)ins.Operand;
 
 			WriteShort((short)PseudoOpCodes.PackedSwitch, ref _extraOffset);
 			WriteShort(data.Targets.Count, ref _extraOffset);
@@ -619,10 +618,7 @@ namespace Dexer.IO
 
 		private void WriteArrayData(Instruction ins)
 		{
-			Array elements;
-			Type elementtype;
-			int elementsize;
-			MethodBody.CheckArrayData(ins, out elements, out elementtype, out elementsize);
+			MethodBody.CheckArrayData(ins, out var elements, out _, out var elementsize);
 
 			WriteShort(PseudoOpCodes.FillArrayData, ref _extraOffset);
 			WriteShort(elementsize, ref _extraOffset);
@@ -697,14 +693,13 @@ namespace Dexer.IO
 		private static int CheckRegister(Instruction ins, int position, int maxIndex)
 		{
 			if (ins.Registers.Count <= position)
-				throw new InstructionException(ins, string.Format("Expecting register at position {0}", position));
+				throw new InstructionException(ins, $"Expecting register at position {position}");
 
-			int index = ins.Registers[position].Index;
+			var index = ins.Registers[position].Index;
 			if (index < 0 || index > maxIndex)
-				throw new InstructionException(ins, string.Format("Register index out of range [0..{0}]", maxIndex));
+				throw new InstructionException(ins, $"Register index out of range [0..{maxIndex}]");
 
 			return index;
 		}
-
 	}
 }

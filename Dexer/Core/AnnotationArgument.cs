@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -42,9 +42,12 @@ namespace Dexer.Core
 
 		public bool Equals(AnnotationArgument other)
 		{
+			if (other == null)
+				return false;
+
 			return Name.Equals(other.Name)
-				&& ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
-				&& (((ValueFormat.GetFormat(Value) == ValueFormats.Array) && ArrayEquals(Value as Array, other.Value as Array)) || Equals(Value, other.Value));
+			       && ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
+			       && (ValueFormat.GetFormat(Value) == ValueFormats.Array && ArrayEquals(Value as Array, other.Value as Array) || Equals(Value, other.Value));
 		}
 
 		internal static bool ArrayEquals(Array array1, Array array2)
@@ -54,7 +57,5 @@ namespace Dexer.Core
 
 			return !array1.Cast<object>().Where((t, i) => !array1.GetValue(i).Equals(array2.GetValue(i))).Any();
 		}
-
 	}
 }
-

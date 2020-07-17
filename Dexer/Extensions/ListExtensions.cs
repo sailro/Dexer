@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -26,7 +26,6 @@ namespace Dexer.Extensions
 {
 	public static class ListExtensions
 	{
-
 		private static readonly Random Rnd = new Random();
 
 		public static void Shuffle<T>(this List<T> list)

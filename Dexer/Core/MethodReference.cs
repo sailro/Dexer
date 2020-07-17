@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -53,14 +53,13 @@ namespace Dexer.Core
 		public bool Equals(MethodReference other)
 		{
 			return Owner.Equals(other.Owner)
-				&& Name.Equals(other.Name)
-				&& Prototype.Equals(other.Prototype);
+			       && Name.Equals(other.Name)
+			       && Prototype.Equals(other.Prototype);
 		}
 
 		public virtual bool Equals(IMemberReference other)
 		{
-			return other is MethodReference
-				&& Equals((MethodReference) other);
+			return other is MethodReference reference && Equals(reference);
 		}
 	}
 }

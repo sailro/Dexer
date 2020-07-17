@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -20,14 +20,12 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Dexer.Core;
-using Dexer.Instructions;
 using Dexer.Metadata;
 
 namespace Dexer.IO.Collectors
 {
 	internal class StringCollector : BaseCollector<string>
 	{
-
 		public override void Collect(Prototype prototype)
 		{
 			base.Collect(prototype);
@@ -52,14 +50,13 @@ namespace Dexer.IO.Collectors
 		{
 			base.Collect(str);
 
-			if (str != null)
-			{
-				if (!Items.ContainsKey(str))
-					Items[str] = 0;
+			if (str == null)
+				return;
 
-				Items[str]++;
-			}
+			if (!Items.ContainsKey(str))
+				Items[str] = 0;
+
+			Items[str]++;
 		}
-
 	}
 }

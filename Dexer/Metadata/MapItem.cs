@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -38,7 +38,7 @@ namespace Dexer.Metadata
 
 		public override string ToString()
 		{
-			return string.Format("{0}:{1} @0x{2:x}", Type, Count, Offset);
+			return $"{Type}:{Count} @0x{Offset:x}";
 		}
 	}
 }

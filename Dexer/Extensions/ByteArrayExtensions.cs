@@ -1,4 +1,4 @@
-/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -26,7 +26,6 @@ namespace Dexer.Extensions
 {
 	public static class ByteArrayExtensions
 	{
-
 		public static string ToHexString(this byte[] bytes)
 		{
 			var builder = new StringBuilder();
@@ -34,6 +33,7 @@ namespace Dexer.Extensions
 			{
 				builder.AppendFormat("{0:x2}", b);
 			}
+
 			return builder.ToString();
 		}
 
@@ -51,8 +51,8 @@ namespace Dexer.Extensions
 					return i;
 				}
 			}
+
 			return -1;
 		}
-
 	}
 }

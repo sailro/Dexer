@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -36,8 +36,7 @@ namespace Dexer.IO
 
 		public override bool Equals(object obj)
 		{
-			var annotationSet = obj as AnnotationSet;
-			return annotationSet != null && Equals(annotationSet);
+			return obj is AnnotationSet annotationSet && Equals(annotationSet);
 		}
 
 		public override int GetHashCode()
@@ -50,15 +49,19 @@ namespace Dexer.IO
 
 		public bool Equals(AnnotationSet other)
 		{
-			var result = Count == other.Count;
+			if (other == null)
+				return false;
 
-			if (result)
+			if (Count != other.Count)
+				return false;
+
+			for (var i = 0; i < Count; i++)
 			{
-				for (var i = 0; i < Count; i++)
-					result &= this[i].Equals(other[i]);
+				if (!this[i].Equals(other[i]))
+					return false;
 			}
 
-			return result;
+			return true;
 		}
 	}
 }

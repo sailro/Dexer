@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -25,7 +25,6 @@ namespace Dexer.IO.Collectors
 {
 	internal class PrototypeCollector : BaseCollector<Prototype>
 	{
-
 		public override void Collect(Prototype prototype)
 		{
 			base.Collect(prototype);
@@ -36,6 +35,5 @@ namespace Dexer.IO.Collectors
 
 			Items[prototype]++;
 		}
-
 	}
 }

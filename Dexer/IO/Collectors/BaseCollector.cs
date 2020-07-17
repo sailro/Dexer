@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -201,13 +201,15 @@ namespace Dexer.IO.Collectors
 		{
 			Collect(member.Name);
 
-			var fieldReference = member as FieldReference;
-			if (fieldReference != null)
-				Collect(fieldReference.Owner);
-
-			var methodReference = member as MethodReference;
-			if (methodReference != null)
-				Collect(methodReference.Owner);
+			switch (member)
+			{
+				case FieldReference fieldReference:
+					Collect(fieldReference.Owner);
+					break;
+				case MethodReference methodReference:
+					Collect(methodReference.Owner);
+					break;
+			}
 		}
 
 		public virtual void Collect(ArrayType array)
@@ -218,13 +220,15 @@ namespace Dexer.IO.Collectors
 
 		public virtual void Collect(CompositeType composite)
 		{
-			var classReference = composite as ClassReference;
-			if (classReference != null)
-				Collect(classReference);
-
-			var arrayType = composite as ArrayType;
-			if (arrayType != null)
-				Collect(arrayType);
+			switch (composite)
+			{
+				case ClassReference classReference:
+					Collect(classReference);
+					break;
+				case ArrayType arrayType:
+					Collect(arrayType);
+					break;
+			}
 		}
 
 		public virtual void Collect(Annotation annotation)
@@ -276,38 +280,48 @@ namespace Dexer.IO.Collectors
 
 		public virtual void Collect(object obj)
 		{
-			if (obj == null)
-				return;
+			switch (obj)
+			{
+				case null:
+					return;
+				case CompositeType type:
+					Collect(type);
+					break;
+				case FieldReference reference:
+					Collect(reference);
+					break;
+				case MethodReference reference:
+					Collect(reference);
+					break;
+				case TypeReference reference:
+					Collect(reference);
+					break;
+				case Annotation annotation:
+					Collect(annotation);
+					break;
+				case string s:
+					Collect(s);
+					break;
+				case IEnumerable enumerable:
+				{
+					foreach (var iobj in enumerable)
+						Collect(iobj);
+					break;
+				}
 
-			if (obj is CompositeType)
-				Collect(obj as CompositeType);
-			else if (obj is FieldReference)
-				Collect(obj as FieldReference);
-			else if (obj is MethodReference)
-				Collect(obj as MethodReference);
-			else if (obj is TypeReference)
-				Collect(obj as TypeReference);
-			else if (obj is Annotation)
-				Collect(obj as Annotation);
-
-			else if (obj is string)
-				Collect(obj as string);
-
-			else if (obj is IEnumerable)
-				foreach (var iobj in (obj as IEnumerable))
-					Collect(iobj);
-
-			else if (obj is ValueType) return;
-			else if (obj is Register) return;
-			else if (obj is Instruction) return;
-			else if (obj is PackedSwitchData) return;
-			else if (obj is SparseSwitchData) return;
-			else throw new ArgumentException(obj.GetType().Name);
+				case ValueType _:
+				case Register _:
+				case Instruction _:
+				case PackedSwitchData _:
+				case SparseSwitchData _:
+					return;
+				default:
+					throw new ArgumentException(obj.GetType().Name);
+			}
 		}
 
 		public virtual void Collect(string str)
 		{
 		}
-
 	}
 }

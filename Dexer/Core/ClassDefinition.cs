@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -76,62 +76,62 @@ namespace Dexer.Core
 		// ReSharper disable ValueParameterNotUsed
 		public bool IsPublic
 		{
-			get { return (AccessFlags & AccessFlags.Public) != 0; }
-			set { AccessFlags |= AccessFlags.Public; }
+			get => (AccessFlags & AccessFlags.Public) != 0;
+			set => AccessFlags |= AccessFlags.Public;
 		}
 
 		public bool IsPrivate
 		{
-			get { return (AccessFlags & AccessFlags.Private) != 0; }
-			set { AccessFlags |= AccessFlags.Private; }
+			get => (AccessFlags & AccessFlags.Private) != 0;
+			set => AccessFlags |= AccessFlags.Private;
 		}
 
 		public bool IsProtected
 		{
-			get { return (AccessFlags & AccessFlags.Protected) != 0; }
-			set { AccessFlags |= AccessFlags.Protected; }
+			get => (AccessFlags & AccessFlags.Protected) != 0;
+			set => AccessFlags |= AccessFlags.Protected;
 		}
 
 		public bool IsStatic
 		{
-			get { return (AccessFlags & AccessFlags.Static) != 0; }
-			set { AccessFlags |= AccessFlags.Static; }
+			get => (AccessFlags & AccessFlags.Static) != 0;
+			set => AccessFlags |= AccessFlags.Static;
 		}
 
 		public bool IsFinal
 		{
-			get { return (AccessFlags & AccessFlags.Final) != 0; }
-			set { AccessFlags |= AccessFlags.Final; }
+			get => (AccessFlags & AccessFlags.Final) != 0;
+			set => AccessFlags |= AccessFlags.Final;
 		}
 
 		public bool IsInterface
 		{
-			get { return (AccessFlags & AccessFlags.Interface) != 0; }
-			set { AccessFlags |= AccessFlags.Interface; }
+			get => (AccessFlags & AccessFlags.Interface) != 0;
+			set => AccessFlags |= AccessFlags.Interface;
 		}
 
 		public bool IsAbstract
 		{
-			get { return (AccessFlags & AccessFlags.Abstract) != 0; }
-			set { AccessFlags |= AccessFlags.Abstract; }
+			get => (AccessFlags & AccessFlags.Abstract) != 0;
+			set => AccessFlags |= AccessFlags.Abstract;
 		}
 
 		public bool IsSynthetic
 		{
-			get { return (AccessFlags & AccessFlags.Synthetic) != 0; }
-			set { AccessFlags |= AccessFlags.Synthetic; }
+			get => (AccessFlags & AccessFlags.Synthetic) != 0;
+			set => AccessFlags |= AccessFlags.Synthetic;
 		}
 
 		public bool IsAnnotation
 		{
-			get { return (AccessFlags & AccessFlags.Annotation) != 0; }
-			set { AccessFlags |= AccessFlags.Annotation; }
+			get => (AccessFlags & AccessFlags.Annotation) != 0;
+			set => AccessFlags |= AccessFlags.Annotation;
 		}
 
 		public bool IsEnum
 		{
-			get { return (AccessFlags & AccessFlags.Enum) != 0; }
-			set { AccessFlags |= AccessFlags.Enum; }
+			get => (AccessFlags & AccessFlags.Enum) != 0;
+			set => AccessFlags |= AccessFlags.Enum;
 		}
 		// ReSharper restore ValueParameterNotUsed
 
@@ -143,8 +143,7 @@ namespace Dexer.Core
 
 		public override bool Equals(TypeReference other)
 		{
-			return other is ClassDefinition
-				&& Equals((ClassDefinition) other);
+			return other is ClassDefinition definition && Equals(definition);
 		}
 
 		internal static List<ClassDefinition> Flattenize(List<ClassDefinition> container)
@@ -155,6 +154,7 @@ namespace Dexer.Core
 				result.AddRange(Flattenize(cdef.InnerClasses));
 				result.Add(cdef);
 			}
+
 			return result;
 		}
 
@@ -189,8 +189,8 @@ namespace Dexer.Core
 					result.Add(cdef);
 				}
 			}
+
 			return result;
 		}
-
 	}
 }

@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2016 Sebastien LEBRETON
+﻿/* Dexer Copyright (c) 2010-2019 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -24,7 +24,6 @@ using System.Collections.Generic;
 
 namespace Dexer.IO.Markers
 {
-
 	internal abstract class Marker<T>
 	{
 		public BinaryWriter Writer { get; set; }
@@ -48,5 +47,4 @@ namespace Dexer.IO.Markers
 			CloneMarker();
 		}
 	}
-
 }
