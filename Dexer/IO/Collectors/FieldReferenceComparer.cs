@@ -26,8 +26,8 @@ namespace Dexer.IO.Collectors
 {
 	internal class FieldReferenceComparer : IComparer<FieldReference>
 	{
-		private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
-		private readonly StringComparer _stringComparer = new StringComparer();
+		private readonly TypeReferenceComparer _typeReferenceComparer = new();
+		private readonly StringComparer _stringComparer = new();
 
 		public int Compare(FieldReference x, FieldReference y)
 		{

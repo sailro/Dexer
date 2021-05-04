@@ -37,8 +37,7 @@ namespace Dexer.Core
 			Parameters = new List<Parameter>();
 		}
 
-		public Prototype(TypeReference returntype, params Parameter[] parameters)
-			: this()
+		public Prototype(TypeReference returntype, params Parameter[] parameters) : this()
 		{
 			ReturnType = returntype;
 			Parameters = new List<Parameter>(parameters);

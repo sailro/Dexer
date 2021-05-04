@@ -28,8 +28,7 @@ namespace Dexer.IO
 	{
 		public DebugInstruction Instruction { get; set; }
 
-		public DebugInstructionException(DebugInstruction instruction, String message)
-			: base(message)
+		public DebugInstructionException(DebugInstruction instruction, string message) : base(message)
 		{
 			Instruction = instruction;
 		}

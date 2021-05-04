@@ -63,22 +63,22 @@ namespace Dexer.Extensions
 
 		internal static UShortMarker MarkUShort(this BinaryWriter writer)
 		{
-			return new UShortMarker(writer);
+			return new(writer);
 		}
 
 		internal static UIntMarker MarkUInt(this BinaryWriter writer)
 		{
-			return new UIntMarker(writer);
+			return new(writer);
 		}
 
 		internal static SizeOffsetMarker MarkSizeOffset(this BinaryWriter writer)
 		{
-			return new SizeOffsetMarker(writer);
+			return new(writer);
 		}
 
 		internal static SignatureMarker MarkSignature(this BinaryWriter writer)
 		{
-			return new SignatureMarker(writer);
+			return new(writer);
 		}
 
 		public static void WriteULEB128(this BinaryWriter writer, uint value)

@@ -938,7 +938,7 @@ namespace Dexer.IO
 		#region EncodedArray
 
 		// this is really test code, need to optimize
-		private string GetByteArrayAsString(IEnumerable<byte> bytes)
+		private static string GetByteArrayAsString(IEnumerable<byte> bytes)
 		{
 			var builder = new StringBuilder();
 			foreach (var item in bytes)
@@ -1063,7 +1063,7 @@ namespace Dexer.IO
 			}
 
 			// File "global" alignment (EnsureAlignment is used for local alignment)
-			while ((writer.BaseStream.Position % 4) != 0)
+			while (writer.BaseStream.Position % 4 != 0)
 				writer.Write((byte)0);
 
 			if (count > 0)

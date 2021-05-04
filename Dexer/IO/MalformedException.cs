@@ -25,8 +25,7 @@ namespace Dexer.IO
 {
 	public class MalformedException : Exception
 	{
-		public MalformedException(string message)
-			: base(message)
+		public MalformedException(string message) : base(message)
 		{
 		}
 	}

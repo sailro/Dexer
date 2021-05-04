@@ -80,11 +80,11 @@ namespace Dexer.Metadata
 					Fill(tdString.Substring(1), elementType, context);
 
 					/* All types are already allocated
-					     * We want to reuse object reference if already in type repository
-					     * BUT if not, we don't want to add a new reference to this type:
-					     * it's a 'transient' type only used in the Dexer object model but
-					     * not persisted in dex file.
-					     */
+					 * We want to reuse object reference if already in type repository
+					 * BUT if not, we don't want to add a new reference to this type:
+					 * it's a 'transient' type only used in the Dexer object model but
+					 * not persisted in dex file.
+					 */
 					atype.ElementType = context.Import(elementType, false);
 
 					break;

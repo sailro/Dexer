@@ -81,7 +81,7 @@ namespace Dexer.Core
 				builder.Append($"{argument.Name}=");
 				if (ValueFormat.GetFormat(argument.Value) == ValueFormats.Array)
 				{
-					if (!(argument.Value is Array array))
+					if (argument.Value is not Array array)
 						throw new ArgumentException();
 
 					for (var i = 0; i < array.Length; i++)

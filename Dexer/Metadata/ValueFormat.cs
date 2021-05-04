@@ -28,43 +28,26 @@ namespace Dexer.Metadata
 	{
 		public static ValueFormats GetFormat(object value)
 		{
-			if (value is byte || value is sbyte)
-				return ValueFormats.Byte;
-			if (value is short || value is ushort)
-				return ValueFormats.Short;
-			if (value is char)
-				return ValueFormats.Char;
-			if (value is int || value is uint)
-				return ValueFormats.Int;
-			if (value is long || value is ulong)
-				return ValueFormats.Long;
-			if (value is float)
-				return ValueFormats.Float;
-			if (value is double)
-				return ValueFormats.Double;
-			if (value is bool)
-				return ValueFormats.Boolean;
-			if (value is string)
-				return ValueFormats.String;
-			if (value is TypeReference)
-				return ValueFormats.Type;
-			if (value is FieldReference)
+			return value switch
 			{
-				if (value is FieldDefinition && (value as FieldDefinition).IsEnum)
-					return ValueFormats.Enum;
-
-				return ValueFormats.Field;
-			}
-
-			if (value is MethodReference)
-				return ValueFormats.Method;
-			if (value is Array)
-				return ValueFormats.Array;
-			if (value is Annotation)
-				return ValueFormats.Annotation;
-			if (value == null)
-				return ValueFormats.Null;
-			throw new ArgumentException("Unexpected format");
+				byte or sbyte => ValueFormats.Byte,
+				short or ushort => ValueFormats.Short,
+				char => ValueFormats.Char,
+				int or uint => ValueFormats.Int,
+				long or ulong => ValueFormats.Long,
+				float => ValueFormats.Float,
+				double => ValueFormats.Double,
+				bool => ValueFormats.Boolean,
+				string => ValueFormats.String,
+				TypeReference => ValueFormats.Type,
+				FieldDefinition { IsEnum: true } => ValueFormats.Enum,
+				FieldReference => ValueFormats.Field,
+				MethodReference => ValueFormats.Method,
+				Array => ValueFormats.Array,
+				Annotation => ValueFormats.Annotation,
+				null => ValueFormats.Null,
+				_ => throw new ArgumentException("Unexpected format"),
+			};
 		}
 	}
 }

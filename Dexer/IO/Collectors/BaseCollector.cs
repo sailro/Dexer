@@ -38,7 +38,7 @@ namespace Dexer.IO.Collectors
 
 		public List<T> ToList()
 		{
-			return new List<T>(Items.Keys);
+			return new(Items.Keys);
 		}
 
 		public List<T> ToList(IComparer<T> comparer)

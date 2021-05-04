@@ -27,7 +27,7 @@ namespace Dexer.IO.Collectors
 {
 	internal class PrototypeComparer : IComparer<Prototype>
 	{
-		private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
+		private readonly TypeReferenceComparer _typeReferenceComparer = new();
 
 		public int Compare(Prototype x, Prototype y)
 		{

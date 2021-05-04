@@ -26,9 +26,9 @@ namespace Dexer.IO.Collectors
 {
 	internal class MethodReferenceComparer : IComparer<MethodReference>
 	{
-		private readonly PrototypeComparer _prototypeComparer = new PrototypeComparer();
-		private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
-		private readonly StringComparer _stringComparer = new StringComparer();
+		private readonly PrototypeComparer _prototypeComparer = new();
+		private readonly TypeReferenceComparer _typeReferenceComparer = new();
+		private readonly StringComparer _stringComparer = new();
 
 		public int Compare(MethodReference x, MethodReference y)
 		{

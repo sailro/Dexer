@@ -25,15 +25,15 @@ namespace Dexer.Core
 {
 	public class PrimitiveType : TypeReference
 	{
-		public static readonly PrimitiveType Void = new PrimitiveType(TypeDescriptors.Void);
-		public static readonly PrimitiveType Boolean = new PrimitiveType(TypeDescriptors.Boolean);
-		public static readonly PrimitiveType Byte = new PrimitiveType(TypeDescriptors.Byte);
-		public static readonly PrimitiveType Short = new PrimitiveType(TypeDescriptors.Short);
-		public static readonly PrimitiveType Char = new PrimitiveType(TypeDescriptors.Char);
-		public static readonly PrimitiveType Int = new PrimitiveType(TypeDescriptors.Int);
-		public static readonly PrimitiveType Long = new PrimitiveType(TypeDescriptors.Long);
-		public static readonly PrimitiveType Float = new PrimitiveType(TypeDescriptors.Float);
-		public static readonly PrimitiveType Double = new PrimitiveType(TypeDescriptors.Double);
+		public static readonly PrimitiveType Void = new(TypeDescriptors.Void);
+		public static readonly PrimitiveType Boolean = new(TypeDescriptors.Boolean);
+		public static readonly PrimitiveType Byte = new(TypeDescriptors.Byte);
+		public static readonly PrimitiveType Short = new(TypeDescriptors.Short);
+		public static readonly PrimitiveType Char = new(TypeDescriptors.Char);
+		public static readonly PrimitiveType Int = new(TypeDescriptors.Int);
+		public static readonly PrimitiveType Long = new(TypeDescriptors.Long);
+		public static readonly PrimitiveType Float = new(TypeDescriptors.Float);
+		public static readonly PrimitiveType Double = new(TypeDescriptors.Double);
 
 		private PrimitiveType(TypeDescriptors typeDescriptor)
 		{

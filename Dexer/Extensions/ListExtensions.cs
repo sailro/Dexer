@@ -26,7 +26,7 @@ namespace Dexer.Extensions
 {
 	public static class ListExtensions
 	{
-		private static readonly Random Rnd = new Random();
+		private static readonly Random Rnd = new();
 
 		public static void Shuffle<T>(this List<T> list)
 		{

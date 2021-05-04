@@ -27,8 +27,8 @@ namespace Dexer.IO.Collectors
 {
 	internal class AnnotationComparer : IComparer<Annotation>
 	{
-		private readonly TypeReferenceComparer _typeReferenceComparer = new TypeReferenceComparer();
-		private readonly ArgumentComparer _argumentComparer = new ArgumentComparer();
+		private readonly TypeReferenceComparer _typeReferenceComparer = new();
+		private readonly ArgumentComparer _argumentComparer = new();
 
 		public int Compare(Annotation x, Annotation y)
 		{
