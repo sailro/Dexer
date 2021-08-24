@@ -49,9 +49,15 @@ namespace Dexer.IO
 		public void WriteTo(BinaryWriter writer)
 		{
 			var stats = MethodDefinition.Body.UpdateInstructionOffsets();
-			_extraOffset = stats.CodeUnits;
 
-			Codes = new ushort[stats.CodeUnits + stats.ExtraCodeUnits];
+			var alignedCodeUnits = stats.CodeUnits;
+			if (stats.ExtraCodeUnits > 0 && alignedCodeUnits % 2 != 0)
+				alignedCodeUnits++;
+
+			// Make sure extradata use 4-bytes alignment
+			_extraOffset = alignedCodeUnits;
+
+			Codes = new ushort[alignedCodeUnits + stats.ExtraCodeUnits];
 
 			foreach (var ins in MethodDefinition.Body.Instructions)
 			{
@@ -434,7 +440,7 @@ namespace Dexer.IO
 			if (_ip != stats.CodeUnits)
 				throw new MalformedException("Instruction pointer out of range");
 
-			if (_extraOffset != stats.CodeUnits + stats.ExtraCodeUnits)
+			if (_extraOffset != alignedCodeUnits + stats.ExtraCodeUnits)
 				throw new MalformedException("Data pointer out of range");
 
 			writer.Write(_extraOffset);
