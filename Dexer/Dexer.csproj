@@ -10,7 +10,7 @@
 	
     <Authors>Sebastien Lebreton</Authors>
     <RepositoryUrl>https://github.com/sailro/dexer</RepositoryUrl>
-    <VersionPrefix>0.7.0</VersionPrefix>
+    <VersionPrefix>0.8.0</VersionPrefix>
     <Copyright>Sebastien Lebreton</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageTags>DEX Android Dalvik</PackageTags>
