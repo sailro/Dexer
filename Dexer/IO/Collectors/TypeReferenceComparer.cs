@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,13 +23,12 @@ using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Metadata;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class TypeReferenceComparer : IComparer<TypeReference>
 {
-	internal class TypeReferenceComparer : IComparer<TypeReference>
+	public int Compare(TypeReference x, TypeReference y)
 	{
-		public int Compare(TypeReference x, TypeReference y)
-		{
-			return string.CompareOrdinal(TypeDescriptor.Encode(x), TypeDescriptor.Encode(y));
-		}
+		return string.CompareOrdinal(TypeDescriptor.Encode(x), TypeDescriptor.Encode(y));
 	}
 }

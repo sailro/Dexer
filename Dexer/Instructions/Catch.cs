@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -25,46 +25,45 @@ using System;
 using System.Text;
 using Dexer.Metadata;
 
-namespace Dexer.Instructions
+namespace Dexer.Instructions;
+
+public class Catch : ICloneable, IEquatable<Catch>
 {
-	public class Catch : ICloneable, IEquatable<Catch>
+	public TypeReference Type { get; set; }
+	public Instruction Instruction { get; set; }
+
+	internal Catch Clone()
 	{
-		public TypeReference Type { get; set; }
-		public Instruction Instruction { get; set; }
+		return (Catch)(this as ICloneable).Clone();
+	}
 
-		internal Catch Clone()
-		{
-			return (Catch)(this as ICloneable).Clone();
-		}
+	object ICloneable.Clone()
+	{
+		var result = new Catch {Type = Type, Instruction = Instruction};
+		return result;
+	}
 
-		object ICloneable.Clone()
-		{
-			var result = new Catch {Type = Type, Instruction = Instruction};
-			return result;
-		}
+	public bool Equals(Catch other)
+	{
+		if (other == null)
+			return false;
 
-		public bool Equals(Catch other)
-		{
-			if (other == null)
-				return false;
+		return Type.Equals(other.Type)
+		       && Instruction.Equals(other.Instruction);
+	}
 
-			return Type.Equals(other.Type)
-			       && Instruction.Equals(other.Instruction);
-		}
+	public override bool Equals(object obj)
+	{
+		return obj is Catch other && Equals(other);
+	}
 
-		public override bool Equals(object obj)
-		{
-			return obj is Catch other && Equals(other);
-		}
+	public override int GetHashCode()
+	{
+		var builder = new StringBuilder();
 
-		public override int GetHashCode()
-		{
-			var builder = new StringBuilder();
+		builder.AppendLine(TypeDescriptor.Encode(Type));
+		builder.AppendLine(Instruction.GetHashCode().ToString(CultureInfo.InvariantCulture));
 
-			builder.AppendLine(TypeDescriptor.Encode(Type));
-			builder.AppendLine(Instruction.GetHashCode().ToString(CultureInfo.InvariantCulture));
-
-			return builder.ToString().GetHashCode();
-		}
+		return builder.ToString().GetHashCode();
 	}
 }

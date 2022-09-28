@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,44 +23,43 @@ using System.Collections.Generic;
 using Dexer.Core;
 using System;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class PrototypeComparer : IComparer<Prototype>
 {
-	internal class PrototypeComparer : IComparer<Prototype>
+	private readonly TypeReferenceComparer _typeReferenceComparer = new();
+
+	public int Compare(Prototype x, Prototype y)
 	{
-		private readonly TypeReferenceComparer _typeReferenceComparer = new();
-
-		public int Compare(Prototype x, Prototype y)
+		switch (x)
 		{
-			switch (x)
-			{
-				case null when y == null:
-					return 0;
-				case null:
-					return -1;
-			}
-
-			if (y == null)
-				return 1;
-
-			var crt = _typeReferenceComparer.Compare(x.ReturnType, y.ReturnType);
-			if (crt != 0)
-				return crt;
-
-			if (x.Parameters.Count == 0 && y.Parameters.Count != 0)
+			case null when y == null:
+				return 0;
+			case null:
 				return -1;
-
-			if (y.Parameters.Count == 0 && x.Parameters.Count != 0)
-				return 1;
-
-			var minp = Math.Min(x.Parameters.Count, y.Parameters.Count);
-			for (var i = 0; i < minp; i++)
-			{
-				var cp = _typeReferenceComparer.Compare(x.Parameters[i].Type, y.Parameters[i].Type);
-				if (cp != 0)
-					return cp;
-			}
-
-			return x.Parameters.Count.CompareTo(y.Parameters.Count);
 		}
+
+		if (y == null)
+			return 1;
+
+		var crt = _typeReferenceComparer.Compare(x.ReturnType, y.ReturnType);
+		if (crt != 0)
+			return crt;
+
+		if (x.Parameters.Count == 0 && y.Parameters.Count != 0)
+			return -1;
+
+		if (y.Parameters.Count == 0 && x.Parameters.Count != 0)
+			return 1;
+
+		var minp = Math.Min(x.Parameters.Count, y.Parameters.Count);
+		for (var i = 0; i < minp; i++)
+		{
+			var cp = _typeReferenceComparer.Compare(x.Parameters[i].Type, y.Parameters[i].Type);
+			if (cp != 0)
+				return cp;
+		}
+
+		return x.Parameters.Count.CompareTo(y.Parameters.Count);
 	}
 }

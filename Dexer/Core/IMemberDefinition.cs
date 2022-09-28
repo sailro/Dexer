@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,11 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public interface IMemberDefinition : IMemberReference, IAnnotationProvider
 {
-	public interface IMemberDefinition : IMemberReference, IAnnotationProvider
-	{
-		AccessFlags AccessFlags { get; set; }
-		ClassDefinition Owner { get; set; }
-	}
+	AccessFlags AccessFlags { get; set; }
+	ClassDefinition Owner { get; set; }
 }

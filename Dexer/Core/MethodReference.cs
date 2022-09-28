@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,45 +21,44 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Text;
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public class MethodReference : IMemberReference
 {
-	public class MethodReference : IMemberReference
+	public CompositeType Owner { get; set; }
+	public string Name { get; set; }
+	public Prototype Prototype { get; set; }
+
+	public MethodReference()
 	{
-		public CompositeType Owner { get; set; }
-		public string Name { get; set; }
-		public Prototype Prototype { get; set; }
+	}
 
-		public MethodReference()
-		{
-		}
+	public MethodReference(CompositeType owner, string name, Prototype prototype) : this()
+	{
+		Owner = owner;
+		Name = name;
+		Prototype = prototype;
+	}
 
-		public MethodReference(CompositeType owner, string name, Prototype prototype) : this()
-		{
-			Owner = owner;
-			Name = name;
-			Prototype = prototype;
-		}
+	public override string ToString()
+	{
+		var builder = new StringBuilder();
+		builder.Append(Owner);
+		builder.Append("::");
+		builder.Append(Name);
+		builder.Append(Prototype);
+		return builder.ToString();
+	}
 
-		public override string ToString()
-		{
-			var builder = new StringBuilder();
-			builder.Append(Owner);
-			builder.Append("::");
-			builder.Append(Name);
-			builder.Append(Prototype);
-			return builder.ToString();
-		}
+	public bool Equals(MethodReference other)
+	{
+		return Owner.Equals(other.Owner)
+		       && Name.Equals(other.Name)
+		       && Prototype.Equals(other.Prototype);
+	}
 
-		public bool Equals(MethodReference other)
-		{
-			return Owner.Equals(other.Owner)
-			       && Name.Equals(other.Name)
-			       && Prototype.Equals(other.Prototype);
-		}
-
-		public virtual bool Equals(IMemberReference other)
-		{
-			return other is MethodReference reference && Equals(reference);
-		}
+	public virtual bool Equals(IMemberReference other)
+	{
+		return other is MethodReference reference && Equals(reference);
 	}
 }

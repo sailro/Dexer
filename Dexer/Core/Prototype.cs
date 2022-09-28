@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -25,89 +25,88 @@ using System.Text;
 using System;
 using Dexer.Metadata;
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public class Prototype : ICloneable, IEquatable<Prototype>
 {
-	public class Prototype : ICloneable, IEquatable<Prototype>
+	public TypeReference ReturnType { get; set; }
+	public List<Parameter> Parameters { get; set; }
+
+	public Prototype()
 	{
-		public TypeReference ReturnType { get; set; }
-		public List<Parameter> Parameters { get; set; }
+		Parameters = new List<Parameter>();
+	}
 
-		public Prototype()
+	public Prototype(TypeReference returntype, params Parameter[] parameters) : this()
+	{
+		ReturnType = returntype;
+		Parameters = new List<Parameter>(parameters);
+	}
+
+	public bool ContainsAnnotation()
+	{
+		return Parameters.Any(parameter => parameter.Annotations.Count > 0);
+	}
+
+	public override string ToString()
+	{
+		var builder = new StringBuilder();
+		builder.Append("(");
+		for (var i = 0; i < Parameters.Count; i++)
 		{
-			Parameters = new List<Parameter>();
+			if (i > 0)
+				builder.Append(", ");
+
+			builder.Append(Parameters[i]);
 		}
 
-		public Prototype(TypeReference returntype, params Parameter[] parameters) : this()
+		builder.Append(")");
+		builder.Append(" : ");
+		builder.Append(ReturnType);
+		return builder.ToString();
+	}
+
+	internal Prototype Clone()
+	{
+		return (Prototype)(this as ICloneable).Clone();
+	}
+
+	object ICloneable.Clone()
+	{
+		var result = new Prototype {ReturnType = ReturnType};
+
+		foreach (var p in Parameters)
 		{
-			ReturnType = returntype;
-			Parameters = new List<Parameter>(parameters);
+			result.Parameters.Add(p.Clone());
 		}
 
-		public bool ContainsAnnotation()
-		{
-			return Parameters.Any(parameter => parameter.Annotations.Count > 0);
-		}
+		return result;
+	}
 
-		public override string ToString()
-		{
-			var builder = new StringBuilder();
-			builder.Append("(");
-			for (var i = 0; i < Parameters.Count; i++)
-			{
-				if (i > 0)
-					builder.Append(", ");
+	public bool Equals(Prototype other)
+	{
+		if (other == null)
+			return false;
 
-				builder.Append(Parameters[i]);
-			}
+		if (!ReturnType.Equals(other.ReturnType) || !Parameters.Count.Equals(other.Parameters.Count))
+			return false;
 
-			builder.Append(")");
-			builder.Append(" : ");
-			builder.Append(ReturnType);
-			return builder.ToString();
-		}
+		return !Parameters.Where((t, i) => !t.Equals(other.Parameters[i])).Any();
+	}
 
-		internal Prototype Clone()
-		{
-			return (Prototype)(this as ICloneable).Clone();
-		}
+	public override bool Equals(object obj)
+	{
+		return obj is Prototype prototype && Equals(prototype);
+	}
 
-		object ICloneable.Clone()
-		{
-			var result = new Prototype {ReturnType = ReturnType};
+	public override int GetHashCode()
+	{
+		var builder = new StringBuilder();
+		builder.AppendLine(TypeDescriptor.Encode(ReturnType));
 
-			foreach (var p in Parameters)
-			{
-				result.Parameters.Add(p.Clone());
-			}
+		foreach (var parameter in Parameters)
+			builder.AppendLine(TypeDescriptor.Encode(parameter.Type));
 
-			return result;
-		}
-
-		public bool Equals(Prototype other)
-		{
-			if (other == null)
-				return false;
-
-			if (!ReturnType.Equals(other.ReturnType) || !Parameters.Count.Equals(other.Parameters.Count))
-				return false;
-
-			return !Parameters.Where((t, i) => !t.Equals(other.Parameters[i])).Any();
-		}
-
-		public override bool Equals(object obj)
-		{
-			return obj is Prototype prototype && Equals(prototype);
-		}
-
-		public override int GetHashCode()
-		{
-			var builder = new StringBuilder();
-			builder.AppendLine(TypeDescriptor.Encode(ReturnType));
-
-			foreach (var parameter in Parameters)
-				builder.AppendLine(TypeDescriptor.Encode(parameter.Type));
-
-			return builder.ToString().GetHashCode();
-		}
+		return builder.ToString().GetHashCode();
 	}
 }

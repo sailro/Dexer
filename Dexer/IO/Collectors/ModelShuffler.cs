@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,38 +23,37 @@ using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Extensions;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class ModelShuffler : BaseCollector<object>
 {
-	internal class ModelShuffler : BaseCollector<object>
+	public override void Collect(List<ClassDefinition> classes)
 	{
-		public override void Collect(List<ClassDefinition> classes)
-		{
-			classes.Shuffle();
-			base.Collect(classes);
-		}
+		classes.Shuffle();
+		base.Collect(classes);
+	}
 
-		public override void Collect(List<ClassReference> classes)
-		{
-			classes.Shuffle();
-			base.Collect(classes);
-		}
+	public override void Collect(List<ClassReference> classes)
+	{
+		classes.Shuffle();
+		base.Collect(classes);
+	}
 
-		public override void Collect(List<MethodDefinition> methods)
-		{
-			methods.Shuffle();
-			base.Collect(methods);
-		}
+	public override void Collect(List<MethodDefinition> methods)
+	{
+		methods.Shuffle();
+		base.Collect(methods);
+	}
 
-		public override void Collect(List<FieldDefinition> fields)
-		{
-			fields.Shuffle();
-			base.Collect(fields);
-		}
+	public override void Collect(List<FieldDefinition> fields)
+	{
+		fields.Shuffle();
+		base.Collect(fields);
+	}
 
-		public override void Collect(List<Annotation> annotations)
-		{
-			annotations.Shuffle();
-			base.Collect(annotations);
-		}
+	public override void Collect(List<Annotation> annotations)
+	{
+		annotations.Shuffle();
+		base.Collect(annotations);
 	}
 }

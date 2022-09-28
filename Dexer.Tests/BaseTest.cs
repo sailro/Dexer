@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -24,34 +24,33 @@ using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Dexer.Tests
+namespace Dexer.Tests;
+
+[TestClass]
+public abstract class BaseTest
 {
-	[TestClass]
-	public abstract class BaseTest
+	// Set to true to provide more details as text files.
+	protected bool Extralog = false;
+
+	public string[] GetTestFiles()
 	{
-		// Set to true to provide more details as text files.
-		protected bool Extralog = false;
+		var asmPath = GetType().Assembly.Location;
+		var basePath = Path.Combine(Path.GetDirectoryName(asmPath)!, "Files");
+		return Directory.GetFiles(basePath, "*.dex");
+	}
 
-		public string[] GetTestFiles()
-		{
-			var asmPath = GetType().Assembly.Location;
-			var basePath = Path.Combine(Path.GetDirectoryName(asmPath), "Files");
-			return Directory.GetFiles(basePath, "*.dex");
-		}
+	public TestContext TestContext
+	{
+		get;
+		set;
+	}
 
-		public TestContext TestContext
-		{
-			get;
-			set;
-		}
+	public void DumpList<T>(string filename, List<T> list)
+	{
+		var output = new StringBuilder();
+		foreach (var item in list)
+			output.AppendLine(item.ToString());
 
-		public void DumpList<T>(string filename, List<T> list)
-		{
-			var output = new StringBuilder();
-			foreach (var item in list)
-				output.AppendLine(item.ToString());
-
-			File.WriteAllText(filename, output.ToString());
-		}
+		File.WriteAllText(filename, output.ToString());
 	}
 }

@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -27,142 +27,141 @@ using Dexer.IO.Collectors;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StringComparer = Dexer.IO.Collectors.StringComparer;
 
-namespace Dexer.Tests
+namespace Dexer.Tests;
+
+[TestClass]
+public class SortTest : BaseCollectorTest
 {
-	[TestClass]
-	public class SortTest : BaseCollectorTest
+	public void TestGlobalSort<T>(Func<Dex, List<T>> provider, IComparer<T> comparer)
 	{
-		public void TestGlobalSort<T>(Func<Dex, List<T>> provider, IComparer<T> comparer)
+		foreach (var file in GetTestFiles())
 		{
-			foreach (var file in GetTestFiles())
-			{
-				TestContext.WriteLine("Testing {0}", file);
+			TestContext.WriteLine("Testing {0}", file);
 
-				var dex = Dex.Read(file);
-				var list = provider(dex);
-				var items = new List<T>(list);
-				items.Shuffle();
-				items.Sort(comparer);
-
-				if (comparer is IPartialComparer<T> partialComparer)
-				{
-					var tsorter = new TopologicalSorter();
-					items = new List<T>(tsorter.TopologicalSort(items, partialComparer));
-				}
-
-				if (Extralog)
-				{
-					DumpList(string.Concat(file, comparer.ToString(), ".expected.txt"), items);
-					DumpList(string.Concat(file, comparer.ToString(), ".actual.txt"), list);
-				}
-
-				for (var i = 0; i < items.Count; i++)
-				{
-					var expected = items[i];
-					var actual = list[i];
-
-					Assert.AreEqual(expected, actual);
-				}
-			}
-		}
-
-		[TestMethod]
-		public void TestMethodReferenceSort()
-		{
-			TestGlobalSort(dex => dex.MethodReferences, new MethodReferenceComparer());
-		}
-
-		[TestMethod]
-		public void TestFieldReferenceSort()
-		{
-			TestGlobalSort(dex => dex.FieldReferences, new FieldReferenceComparer());
-		}
-
-		private static void SortAndCheck<T>(List<T> source, IComparer<T> comparer)
-		{
-			var items = new List<T>(source);
+			var dex = Dex.Read(file);
+			var list = provider(dex);
+			var items = new List<T>(list);
 			items.Shuffle();
 			items.Sort(comparer);
 
-			for (var i = 0; i < items.Count; i++)
-				Assert.AreEqual(items[i], source[i]);
-		}
-
-		[TestMethod]
-		public void TestMethodDefinitionSort()
-		{
-			foreach (var file in GetTestFiles())
+			if (comparer is IPartialComparer<T> partialComparer)
 			{
-				TestContext.WriteLine("Testing {0}", file);
-				var dex = Dex.Read(file);
+				var tsorter = new TopologicalSorter();
+				items = new List<T>(tsorter.TopologicalSort(items, partialComparer));
+			}
 
-				foreach (var @class in dex.Classes)
-					SortAndCheck(@class.Methods, new MethodDefinitionComparer());
+			if (Extralog)
+			{
+				DumpList(string.Concat(file, comparer.ToString(), ".expected.txt"), items);
+				DumpList(string.Concat(file, comparer.ToString(), ".actual.txt"), list);
+			}
+
+			for (var i = 0; i < items.Count; i++)
+			{
+				var expected = items[i];
+				var actual = list[i];
+
+				Assert.AreEqual(expected, actual);
 			}
 		}
+	}
 
-		[TestMethod]
-		public void TestAnnotationSort()
+	[TestMethod]
+	public void TestMethodReferenceSort()
+	{
+		TestGlobalSort(dex => dex.MethodReferences, new MethodReferenceComparer());
+	}
+
+	[TestMethod]
+	public void TestFieldReferenceSort()
+	{
+		TestGlobalSort(dex => dex.FieldReferences, new FieldReferenceComparer());
+	}
+
+	private static void SortAndCheck<T>(List<T> source, IComparer<T> comparer)
+	{
+		var items = new List<T>(source);
+		items.Shuffle();
+		items.Sort(comparer);
+
+		for (var i = 0; i < items.Count; i++)
+			Assert.AreEqual(items[i], source[i]);
+	}
+
+	[TestMethod]
+	public void TestMethodDefinitionSort()
+	{
+		foreach (var file in GetTestFiles())
 		{
-			foreach (var file in GetTestFiles())
+			TestContext.WriteLine("Testing {0}", file);
+			var dex = Dex.Read(file);
+
+			foreach (var @class in dex.Classes)
+				SortAndCheck(@class.Methods, new MethodDefinitionComparer());
+		}
+	}
+
+	[TestMethod]
+	public void TestAnnotationSort()
+	{
+		foreach (var file in GetTestFiles())
+		{
+			TestContext.WriteLine("Testing {0}", file);
+			var dex = Dex.Read(file);
+
+			foreach (var @class in dex.Classes)
 			{
-				TestContext.WriteLine("Testing {0}", file);
-				var dex = Dex.Read(file);
+				SortAndCheck(@class.Annotations, new AnnotationComparer());
 
-				foreach (var @class in dex.Classes)
+				foreach (var field in @class.Fields)
+					SortAndCheck(field.Annotations, new AnnotationComparer());
+
+				foreach (var method in @class.Methods)
 				{
-					SortAndCheck(@class.Annotations, new AnnotationComparer());
+					SortAndCheck(method.Annotations, new AnnotationComparer());
 
-					foreach (var field in @class.Fields)
-						SortAndCheck(field.Annotations, new AnnotationComparer());
-
-					foreach (var method in @class.Methods)
-					{
-						SortAndCheck(method.Annotations, new AnnotationComparer());
-
-						foreach (var parameter in method.Prototype.Parameters)
-							SortAndCheck(parameter.Annotations, new AnnotationComparer());
-					}
+					foreach (var parameter in method.Prototype.Parameters)
+						SortAndCheck(parameter.Annotations, new AnnotationComparer());
 				}
 			}
 		}
+	}
 
 
-		[TestMethod]
-		public void TestFieldDefinitionSort()
+	[TestMethod]
+	public void TestFieldDefinitionSort()
+	{
+		foreach (var file in GetTestFiles())
 		{
-			foreach (var file in GetTestFiles())
-			{
-				TestContext.WriteLine("Testing {0}", file);
-				var dex = Dex.Read(file);
+			TestContext.WriteLine("Testing {0}", file);
+			var dex = Dex.Read(file);
 
-				foreach (var @class in dex.Classes)
-					SortAndCheck(@class.Fields, new FieldDefinitionComparer());
-			}
+			foreach (var @class in dex.Classes)
+				SortAndCheck(@class.Fields, new FieldDefinitionComparer());
 		}
+	}
 
-		[TestMethod]
-		public void TestTypeReferenceSort()
-		{
-			TestGlobalSort(dex => dex.TypeReferences, new TypeReferenceComparer());
-		}
+	[TestMethod]
+	public void TestTypeReferenceSort()
+	{
+		TestGlobalSort(dex => dex.TypeReferences, new TypeReferenceComparer());
+	}
 
-		[TestMethod]
-		public void TestClassDefinitionTopologicalSort()
-		{
-			TestGlobalSort(dex => dex.Classes, new ClassDefinitionComparer());
-		}
+	[TestMethod]
+	public void TestClassDefinitionTopologicalSort()
+	{
+		TestGlobalSort(dex => dex.Classes, new ClassDefinitionComparer());
+	}
 
-		[TestMethod]
-		public void TestStringSort()
-		{
-			TestGlobalSort(dex => dex.Strings, new StringComparer());
-		}
+	[TestMethod]
+	public void TestStringSort()
+	{
+		TestGlobalSort(dex => dex.Strings, new StringComparer());
+	}
 
-		[TestMethod]
-		public void TestPrototypeSort()
-		{
-			TestGlobalSort(dex => dex.Prototypes, new PrototypeComparer());
-		}
+	[TestMethod]
+	public void TestPrototypeSort()
+	{
+		TestGlobalSort(dex => dex.Prototypes, new PrototypeComparer());
 	}
 }

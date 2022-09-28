@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -25,55 +25,54 @@ using Dexer.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Dexer.Instructions;
 
-namespace Dexer.Tests
+namespace Dexer.Tests;
+
+[TestClass]
+public class InstructionTest : BaseCollectorTest
 {
-	[TestClass]
-	public class InstructionTest : BaseCollectorTest
+	[TestMethod]
+	public void TestUpdateInstructionOffsets()
 	{
-		[TestMethod]
-		public void TestUpdateInstructionOffsets()
+		var coverage = new Dictionary<OpCodes, int>();
+
+		foreach (var file in GetTestFiles())
 		{
-			var coverage = new Dictionary<OpCodes, int>();
+			TestContext.WriteLine("Testing {0}", file);
 
-			foreach (var file in GetTestFiles())
+			var dex = Dex.Read(file);
+
+			foreach (var @class in dex.Classes)
 			{
-				TestContext.WriteLine("Testing {0}", file);
-
-				var dex = Dex.Read(file);
-
-				foreach (var @class in dex.Classes)
+				foreach (var method in @class.Methods)
 				{
-					foreach (var method in @class.Methods)
+					if (method.Body == null)
+						continue;
+
+					var offsets = new List<int>();
+					foreach (var ins in method.Body.Instructions)
 					{
-						if (method.Body == null)
-							continue;
-
-						var offsets = new List<int>();
-						foreach (var ins in method.Body.Instructions)
-						{
-							if (!coverage.ContainsKey(ins.OpCode))
-								coverage.Add(ins.OpCode, 0);
-							offsets.Add(ins.Offset);
-							coverage[ins.OpCode]++;
-						}
-
-						method.Body.UpdateInstructionOffsets();
-						for (var i = 0; i < offsets.Count; i++)
-							Assert.AreEqual(offsets[i], method.Body.Instructions[i].Offset, "Check OpCode {0}", method.Body.Instructions[i == 0 ? i : i - 1].OpCode);
+						if (!coverage.ContainsKey(ins.OpCode))
+							coverage.Add(ins.OpCode, 0);
+						offsets.Add(ins.Offset);
+						coverage[ins.OpCode]++;
 					}
+
+					method.Body.UpdateInstructionOffsets();
+					for (var i = 0; i < offsets.Count; i++)
+						Assert.AreEqual(offsets[i], method.Body.Instructions[i].Offset, "Check OpCode {0}", method.Body.Instructions[i == 0 ? i : i - 1].OpCode);
 				}
 			}
-
-			bool IsPartial = false;
-			foreach (OpCodes opcode in Enum.GetValues(typeof(OpCodes)))
-				if (!coverage.ContainsKey(opcode))
-				{
-					IsPartial = true;
-					TestContext.WriteLine("OpCode {0} was not covered", opcode);
-				}
-
-			if (IsPartial)
-				TestContext.WriteLine("Some OpCode(s) were not covered ({0:P} coverage)", (double)coverage.Count / Enum.GetNames(typeof(OpCodes)).Length);
 		}
+
+		bool IsPartial = false;
+		foreach (OpCodes opcode in Enum.GetValues(typeof(OpCodes)))
+			if (!coverage.ContainsKey(opcode))
+			{
+				IsPartial = true;
+				TestContext.WriteLine("OpCode {0} was not covered", opcode);
+			}
+
+		if (IsPartial)
+			TestContext.WriteLine("Some OpCode(s) were not covered ({0:P} coverage)", (double)coverage.Count / Enum.GetNames(typeof(OpCodes)).Length);
 	}
 }

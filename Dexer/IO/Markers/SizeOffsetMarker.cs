@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,33 +22,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.IO;
 using Dexer.Extensions;
 
-namespace Dexer.IO.Markers
+namespace Dexer.IO.Markers;
+
+internal class SizeOffsetMarker : Marker<SizeOffset>
 {
-	internal class SizeOffsetMarker : Marker<SizeOffset>
+	public override SizeOffset Value
 	{
-		public override SizeOffset Value
+		set
 		{
-			set
-			{
 #if !DISABLE_MARKERS || !DEBUG
-				foreach (var position in Positions)
+			foreach (var position in Positions)
+			{
+				Writer.PreserveCurrentPosition(position, () =>
 				{
-					Writer.PreserveCurrentPosition(position, () =>
-					{
-						Writer.Write(value.Size);
-						Writer.Write(value.Offset);
-					});
-				}
-#endif
+					Writer.Write(value.Size);
+					Writer.Write(value.Offset);
+				});
 			}
+#endif
 		}
+	}
 
-		public SizeOffsetMarker(BinaryWriter writer) : base(writer) { }
+	public SizeOffsetMarker(BinaryWriter writer) : base(writer) { }
 
-		public override void Allocate()
-		{
-			Writer.Write((uint)0);
-			Writer.Write((uint)0);
-		}
+	public override void Allocate()
+	{
+		Writer.Write((uint)0);
+		Writer.Write((uint)0);
 	}
 }

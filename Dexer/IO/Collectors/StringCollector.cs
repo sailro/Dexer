@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,41 +22,40 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using Dexer.Core;
 using Dexer.Metadata;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class StringCollector : BaseCollector<string>
 {
-	internal class StringCollector : BaseCollector<string>
+	public override void Collect(Prototype prototype)
 	{
-		public override void Collect(Prototype prototype)
-		{
-			base.Collect(prototype);
+		base.Collect(prototype);
 
-			// Shorty descriptor
-			Collect(TypeDescriptor.Encode(prototype));
-		}
+		// Shorty descriptor
+		Collect(TypeDescriptor.Encode(prototype));
+	}
 
-		public override void Collect(ArrayType array)
-		{
-			// Do not 'over' collect String descriptors by iterating over array.ElementType
-			Collect(array as TypeReference);
-		}
+	public override void Collect(ArrayType array)
+	{
+		// Do not 'over' collect String descriptors by iterating over array.ElementType
+		Collect(array as TypeReference);
+	}
 
-		public override void Collect(TypeReference tref)
-		{
-			base.Collect(tref);
-			Collect(TypeDescriptor.Encode(tref));
-		}
+	public override void Collect(TypeReference tref)
+	{
+		base.Collect(tref);
+		Collect(TypeDescriptor.Encode(tref));
+	}
 
-		public override void Collect(string str)
-		{
-			base.Collect(str);
+	public override void Collect(string str)
+	{
+		base.Collect(str);
 
-			if (str == null)
-				return;
+		if (str == null)
+			return;
 
-			if (!Items.ContainsKey(str))
-				Items[str] = 0;
+		if (!Items.ContainsKey(str))
+			Items[str] = 0;
 
-			Items[str]++;
-		}
+		Items[str]++;
 	}
 }

@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -25,47 +25,46 @@ using System.Globalization;
 using System.Text;
 using Dexer.Instructions;
 
-namespace Dexer.IO
+namespace Dexer.IO;
+
+internal class CatchSet : List<Catch>, IEquatable<CatchSet>
 {
-	internal class CatchSet : List<Catch>, IEquatable<CatchSet>
+	public Instruction CatchAll { get; set; }
+
+	public CatchSet(ExceptionHandler handler)
 	{
-		public Instruction CatchAll { get; set; }
+		AddRange(handler.Catches);
+		CatchAll = handler.CatchAll;
+	}
 
-		public CatchSet(ExceptionHandler handler)
-		{
-			AddRange(handler.Catches);
-			CatchAll = handler.CatchAll;
-		}
+	public override bool Equals(object obj)
+	{
+		return obj is CatchSet set && Equals(set);
+	}
 
-		public override bool Equals(object obj)
-		{
-			return obj is CatchSet set && Equals(set);
-		}
+	public override int GetHashCode()
+	{
+		var builder = new StringBuilder();
+		builder.AppendLine(CatchAll == null ? "0" : CatchAll.Offset.ToString(CultureInfo.InvariantCulture));
+		foreach (var @catch in this)
+			builder.AppendLine(@catch.GetHashCode().ToString(CultureInfo.InvariantCulture));
+		return builder.ToString().GetHashCode();
+	}
 
-		public override int GetHashCode()
-		{
-			var builder = new StringBuilder();
-			builder.AppendLine(CatchAll == null ? "0" : CatchAll.Offset.ToString(CultureInfo.InvariantCulture));
-			foreach (var @catch in this)
-				builder.AppendLine(@catch.GetHashCode().ToString(CultureInfo.InvariantCulture));
-			return builder.ToString().GetHashCode();
-		}
+	public bool Equals(CatchSet other)
+	{
+		if (other == null)
+			return false;
 
-		public bool Equals(CatchSet other)
+		if (Count != other.Count || !Equals(CatchAll, other.CatchAll))
+			return false;
+
+		for (var i = 0; i < Count; i++)
 		{
-			if (other == null)
+			if (!this[i].Equals(other[i]))
 				return false;
-
-			if (Count != other.Count || !Equals(CatchAll, other.CatchAll))
-				return false;
-
-			for (var i = 0; i < Count; i++)
-			{
-				if (!this[i].Equals(other[i]))
-					return false;
-			}
-
-			return true;
 		}
+
+		return true;
 	}
 }

@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,110 +23,108 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+/* Taken from (great thanks)
+ * http://stackoverflow.com/questions/1982592/topological-sorting-using-linq
+ */
+
+internal interface IPartialComparer<in T>
 {
-	/* Taken from (great thanks)
-	 * http://stackoverflow.com/questions/1982592/topological-sorting-using-linq
-	 */
+	int? PartialCompare(T x, T y);
+}
 
-	internal interface IPartialComparer<in T>
+internal class ReferenceEqualityComparer<T> : IEqualityComparer<T>
+{
+	public bool Equals(T x, T y)
 	{
-		int? PartialCompare(T x, T y);
+		return ReferenceEquals(x, y);
 	}
 
-	internal class ReferenceEqualityComparer<T> : IEqualityComparer<T>
+	public int GetHashCode(T obj)
 	{
-		public bool Equals(T x, T y)
-		{
-			return ReferenceEquals(x, y);
-		}
-
-		public int GetHashCode(T obj)
-		{
-			return obj.GetHashCode();
-		}
+		return obj.GetHashCode();
 	}
+}
 
-	internal class TopologicalSorter
+internal class TopologicalSorter
+{
+	private class DepthFirstSearch<TElement, TKey>
 	{
-		private class DepthFirstSearch<TElement, TKey>
-		{
-			readonly IEnumerable<TElement> _elements;
-			readonly IPartialComparer<TKey> _comparer;
-			readonly HashSet<TElement> _visited;
-			readonly Dictionary<TElement, TKey> _keys;
-			readonly List<TElement> _sorted;
+		readonly IEnumerable<TElement> _elements;
+		readonly IPartialComparer<TKey> _comparer;
+		readonly HashSet<TElement> _visited;
+		readonly Dictionary<TElement, TKey> _keys;
+		readonly List<TElement> _sorted;
 
-			public DepthFirstSearch(
-				IList<TElement> elements,
-				Func<TElement, TKey> selector,
-				IPartialComparer<TKey> comparer
-			)
-			{
-				_elements = elements;
-				_comparer = comparer;
-				var referenceComparer = new ReferenceEqualityComparer<TElement>();
-				_visited = new HashSet<TElement>(referenceComparer);
-				_keys = elements.ToDictionary(
-					e => e,
-					selector,
-					referenceComparer
-				);
-				_sorted = new List<TElement>();
-			}
-
-			public IEnumerable<TElement> VisitAll()
-			{
-				foreach (var element in _elements)
-				{
-					Visit(element);
-				}
-
-				return _sorted;
-			}
-
-			void Visit(TElement element)
-			{
-				if (!_visited.Contains(element))
-				{
-					_visited.Add(element);
-					var predecessors = _elements.Where(
-						e => _comparer.PartialCompare(_keys[e], _keys[element]) < 0
-					);
-					foreach (var e in predecessors)
-					{
-						Visit(e);
-					}
-
-					_sorted.Add(element);
-				}
-			}
-		}
-
-		public IEnumerable<TElement> TopologicalSort<TElement>(
+		public DepthFirstSearch(
 			IList<TElement> elements,
-			IPartialComparer<TElement> comparer
+			Func<TElement, TKey> selector,
+			IPartialComparer<TKey> comparer
 		)
 		{
-			var search = new DepthFirstSearch<TElement, TElement>(
-				elements,
-				element => element,
-				comparer
-			);
-			return search.VisitAll();
-		}
-
-		public IEnumerable<TElement> TopologicalSort<TElement, TKey>(
-			IList<TElement> elements,
-			Func<TElement, TKey> selector, IPartialComparer<TKey> comparer
-		)
-		{
-			var search = new DepthFirstSearch<TElement, TKey>(
-				elements,
+			_elements = elements;
+			_comparer = comparer;
+			var referenceComparer = new ReferenceEqualityComparer<TElement>();
+			_visited = new HashSet<TElement>(referenceComparer);
+			_keys = elements.ToDictionary(
+				e => e,
 				selector,
-				comparer
+				referenceComparer
 			);
-			return search.VisitAll();
+			_sorted = new List<TElement>();
 		}
+
+		public IEnumerable<TElement> VisitAll()
+		{
+			foreach (var element in _elements)
+			{
+				Visit(element);
+			}
+
+			return _sorted;
+		}
+
+		void Visit(TElement element)
+		{
+			if (!_visited.Contains(element))
+			{
+				_visited.Add(element);
+				var predecessors = _elements.Where(
+					e => _comparer.PartialCompare(_keys[e], _keys[element]) < 0
+				);
+				foreach (var e in predecessors)
+				{
+					Visit(e);
+				}
+
+				_sorted.Add(element);
+			}
+		}
+	}
+
+	public IEnumerable<TElement> TopologicalSort<TElement>(
+		IList<TElement> elements,
+		IPartialComparer<TElement> comparer
+	)
+	{
+		var search = new DepthFirstSearch<TElement, TElement>(
+			elements,
+			element => element,
+			comparer
+		);
+		return search.VisitAll();
+	}
+
+	public IEnumerable<TElement> TopologicalSort<TElement, TKey>(
+		IList<TElement> elements,
+		Func<TElement, TKey> selector, IPartialComparer<TKey> comparer
+	)
+	{
+		var search = new DepthFirstSearch<TElement, TKey>(
+			elements,
+			selector,
+			comparer
+		);
+		return search.VisitAll();
 	}
 }

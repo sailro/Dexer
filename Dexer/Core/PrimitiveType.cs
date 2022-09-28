@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,39 +21,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Dexer.Metadata;
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public class PrimitiveType : TypeReference
 {
-	public class PrimitiveType : TypeReference
+	public static readonly PrimitiveType Void = new(TypeDescriptors.Void);
+	public static readonly PrimitiveType Boolean = new(TypeDescriptors.Boolean);
+	public static readonly PrimitiveType Byte = new(TypeDescriptors.Byte);
+	public static readonly PrimitiveType Short = new(TypeDescriptors.Short);
+	public static readonly PrimitiveType Char = new(TypeDescriptors.Char);
+	public static readonly PrimitiveType Int = new(TypeDescriptors.Int);
+	public static readonly PrimitiveType Long = new(TypeDescriptors.Long);
+	public static readonly PrimitiveType Float = new(TypeDescriptors.Float);
+	public static readonly PrimitiveType Double = new(TypeDescriptors.Double);
+
+	private PrimitiveType(TypeDescriptors typeDescriptor)
 	{
-		public static readonly PrimitiveType Void = new(TypeDescriptors.Void);
-		public static readonly PrimitiveType Boolean = new(TypeDescriptors.Boolean);
-		public static readonly PrimitiveType Byte = new(TypeDescriptors.Byte);
-		public static readonly PrimitiveType Short = new(TypeDescriptors.Short);
-		public static readonly PrimitiveType Char = new(TypeDescriptors.Char);
-		public static readonly PrimitiveType Int = new(TypeDescriptors.Int);
-		public static readonly PrimitiveType Long = new(TypeDescriptors.Long);
-		public static readonly PrimitiveType Float = new(TypeDescriptors.Float);
-		public static readonly PrimitiveType Double = new(TypeDescriptors.Double);
+		TypeDescriptor = typeDescriptor;
+	}
 
-		private PrimitiveType(TypeDescriptors typeDescriptor)
-		{
-			TypeDescriptor = typeDescriptor;
-		}
+	public override string ToString()
+	{
+		return TypeDescriptor.ToString();
+	}
 
-		public override string ToString()
-		{
-			return TypeDescriptor.ToString();
-		}
+	public bool Equals(PrimitiveType other)
+	{
+		return base.Equals(other)
+		       && TypeDescriptor == other.TypeDescriptor;
+	}
 
-		public bool Equals(PrimitiveType other)
-		{
-			return base.Equals(other)
-			       && TypeDescriptor == other.TypeDescriptor;
-		}
-
-		public override bool Equals(TypeReference other)
-		{
-			return other is PrimitiveType type && Equals(type);
-		}
+	public override bool Equals(TypeReference other)
+	{
+		return other is PrimitiveType type && Equals(type);
 	}
 }

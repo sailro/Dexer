@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,25 +22,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 
-namespace Dexer.Extensions
+namespace Dexer.Extensions;
+
+public static class ListExtensions
 {
-	public static class ListExtensions
+	private static readonly Random Rnd = new();
+
+	public static void Shuffle<T>(this List<T> list)
 	{
-		private static readonly Random Rnd = new();
+		if (list.Count <= 1)
+			return;
 
-		public static void Shuffle<T>(this List<T> list)
+		for (var i = list.Count - 1; i >= 0; i--)
 		{
-			if (list.Count <= 1)
-				return;
+			var item = list[i];
+			var index = Rnd.Next(i + 1);
 
-			for (var i = list.Count - 1; i >= 0; i--)
-			{
-				var item = list[i];
-				var index = Rnd.Next(i + 1);
-
-				list[i] = list[index];
-				list[index] = item;
-			}
+			list[i] = list[index];
+			list[index] = item;
 		}
 	}
 }

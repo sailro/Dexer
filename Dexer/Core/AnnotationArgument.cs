@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -24,38 +24,37 @@ using Dexer.Metadata;
 using System.Text;
 using System;
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public class AnnotationArgument : IEquatable<AnnotationArgument>
 {
-	public class AnnotationArgument : IEquatable<AnnotationArgument>
+	public string Name { get; set; }
+	public object Value { get; set; }
+
+	public override string ToString()
 	{
-		public string Name { get; set; }
-		public object Value { get; set; }
+		var builder = new StringBuilder();
+		builder.Append(Name);
+		builder.Append(":");
+		builder.Append(Value);
+		return builder.ToString();
+	}
 
-		public override string ToString()
-		{
-			var builder = new StringBuilder();
-			builder.Append(Name);
-			builder.Append(":");
-			builder.Append(Value);
-			return builder.ToString();
-		}
+	public bool Equals(AnnotationArgument other)
+	{
+		if (other == null)
+			return false;
 
-		public bool Equals(AnnotationArgument other)
-		{
-			if (other == null)
-				return false;
+		return Name.Equals(other.Name)
+		       && ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
+		       && (ValueFormat.GetFormat(Value) == ValueFormats.Array && ArrayEquals(Value as Array, other.Value as Array) || Equals(Value, other.Value));
+	}
 
-			return Name.Equals(other.Name)
-			       && ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
-			       && (ValueFormat.GetFormat(Value) == ValueFormats.Array && ArrayEquals(Value as Array, other.Value as Array) || Equals(Value, other.Value));
-		}
+	internal static bool ArrayEquals(Array array1, Array array2)
+	{
+		if (array1.Length != array2.Length)
+			return false;
 
-		internal static bool ArrayEquals(Array array1, Array array2)
-		{
-			if (array1.Length != array2.Length)
-				return false;
-
-			return !array1.Cast<object>().Where((t, i) => !array1.GetValue(i).Equals(array2.GetValue(i))).Any();
-		}
+		return !array1.Cast<object>().Where((_, i) => !array1.GetValue(i).Equals(array2.GetValue(i))).Any();
 	}
 }

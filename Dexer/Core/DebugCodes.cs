@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,20 +19,19 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public enum DebugCodes
 {
-	public enum DebugCodes
-	{
-		EndSequence = 0x00,
-		AdvancePc = 0x01,
-		AdvanceLine = 0x02,
-		StartLocal = 0x03,
-		StartLocalExtended = 0x04,
-		EndLocal = 0x05,
-		RestartLocal = 0x06,
-		SetPrologueEnd = 0x07,
-		SetEpilogueBegin = 0x08,
-		SetFile = 0x09,
-		Firstpecial = 0x0a
-	}
+	EndSequence = 0x00,
+	AdvancePc = 0x01,
+	AdvanceLine = 0x02,
+	StartLocal = 0x03,
+	StartLocalExtended = 0x04,
+	EndLocal = 0x05,
+	RestartLocal = 0x06,
+	SetPrologueEnd = 0x07,
+	SetEpilogueBegin = 0x08,
+	SetFile = 0x09,
+	Firstpecial = 0x0a
 }

@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,34 +23,33 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class CatchSetComparer : IComparer<CatchSet>
 {
-	internal class CatchSetComparer : IComparer<CatchSet>
+	public List<int> CollectOffsets(CatchSet set)
 	{
-		public List<int> CollectOffsets(CatchSet set)
+		var result = set.Select(@catch => @catch.Instruction.Offset).ToList();
+
+		if (set.CatchAll != null)
+			result.Add(set.CatchAll.Offset);
+
+		return result;
+	}
+
+	public int Compare(CatchSet x, CatchSet y)
+	{
+		var xOffsets = CollectOffsets(x);
+		var yOffsets = CollectOffsets(y);
+
+		var minp = Math.Min(xOffsets.Count, yOffsets.Count);
+		for (var i = 0; i < minp; i++)
 		{
-			var result = set.Select(@catch => @catch.Instruction.Offset).ToList();
-
-			if (set.CatchAll != null)
-				result.Add(set.CatchAll.Offset);
-
-			return result;
+			var cp = xOffsets[i].CompareTo(yOffsets[i]);
+			if (cp != 0)
+				return cp;
 		}
 
-		public int Compare(CatchSet x, CatchSet y)
-		{
-			var xOffsets = CollectOffsets(x);
-			var yOffsets = CollectOffsets(y);
-
-			var minp = Math.Min(xOffsets.Count, yOffsets.Count);
-			for (var i = 0; i < minp; i++)
-			{
-				var cp = xOffsets[i].CompareTo(yOffsets[i]);
-				if (cp != 0)
-					return cp;
-			}
-
-			return 0;
-		}
+		return 0;
 	}
 }

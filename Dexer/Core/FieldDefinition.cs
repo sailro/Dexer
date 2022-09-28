@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,99 +21,98 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Collections.Generic;
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public class FieldDefinition : FieldReference, IMemberDefinition
 {
-	public class FieldDefinition : FieldReference, IMemberDefinition
+	public AccessFlags AccessFlags { get; set; }
+
+	public new ClassDefinition Owner
 	{
-		public AccessFlags AccessFlags { get; set; }
+		get => base.Owner as ClassDefinition;
+		set => base.Owner = value;
+	}
 
-		public new ClassDefinition Owner
-		{
-			get => base.Owner as ClassDefinition;
-			set => base.Owner = value;
-		}
+	public List<Annotation> Annotations { get; set; }
+	public object Value { get; set; }
 
-		public List<Annotation> Annotations { get; set; }
-		public object Value { get; set; }
+	public FieldDefinition()
+	{
+		Annotations = new List<Annotation>();
+	}
 
-		public FieldDefinition()
-		{
-			Annotations = new List<Annotation>();
-		}
+	// for prefetching
+	internal FieldDefinition(FieldReference fref) : this()
+	{
+		Owner = fref.Owner as ClassDefinition;
+		Type = fref.Type;
+		Name = fref.Name;
+	}
 
-		// for prefetching
-		internal FieldDefinition(FieldReference fref) : this()
-		{
-			Owner = fref.Owner as ClassDefinition;
-			Type = fref.Type;
-			Name = fref.Name;
-		}
+	// ReSharper disable ValueParameterNotUsed
+	public bool IsPublic
+	{
+		get => (AccessFlags & AccessFlags.Public) != 0;
+		set => AccessFlags |= AccessFlags.Public;
+	}
 
-		// ReSharper disable ValueParameterNotUsed
-		public bool IsPublic
-		{
-			get => (AccessFlags & AccessFlags.Public) != 0;
-			set => AccessFlags |= AccessFlags.Public;
-		}
+	public bool IsPrivate
+	{
+		get => (AccessFlags & AccessFlags.Private) != 0;
+		set => AccessFlags |= AccessFlags.Private;
+	}
 
-		public bool IsPrivate
-		{
-			get => (AccessFlags & AccessFlags.Private) != 0;
-			set => AccessFlags |= AccessFlags.Private;
-		}
+	public bool IsProtected
+	{
+		get => (AccessFlags & AccessFlags.Protected) != 0;
+		set => AccessFlags |= AccessFlags.Protected;
+	}
 
-		public bool IsProtected
-		{
-			get => (AccessFlags & AccessFlags.Protected) != 0;
-			set => AccessFlags |= AccessFlags.Protected;
-		}
+	public bool IsStatic
+	{
+		get => (AccessFlags & AccessFlags.Static) != 0;
+		set => AccessFlags |= AccessFlags.Static;
+	}
 
-		public bool IsStatic
-		{
-			get => (AccessFlags & AccessFlags.Static) != 0;
-			set => AccessFlags |= AccessFlags.Static;
-		}
+	public bool IsFinal
+	{
+		get => (AccessFlags & AccessFlags.Final) != 0;
+		set => AccessFlags |= AccessFlags.Final;
+	}
 
-		public bool IsFinal
-		{
-			get => (AccessFlags & AccessFlags.Final) != 0;
-			set => AccessFlags |= AccessFlags.Final;
-		}
+	public bool IsVolatile
+	{
+		get => (AccessFlags & AccessFlags.Volatile) != 0;
+		set => AccessFlags |= AccessFlags.Volatile;
+	}
 
-		public bool IsVolatile
-		{
-			get => (AccessFlags & AccessFlags.Volatile) != 0;
-			set => AccessFlags |= AccessFlags.Volatile;
-		}
+	public bool IsTransient
+	{
+		get => (AccessFlags & AccessFlags.Transient) != 0;
+		set => AccessFlags |= AccessFlags.Transient;
+	}
 
-		public bool IsTransient
-		{
-			get => (AccessFlags & AccessFlags.Transient) != 0;
-			set => AccessFlags |= AccessFlags.Transient;
-		}
+	public bool IsSynthetic
+	{
+		get => (AccessFlags & AccessFlags.Synthetic) != 0;
+		set => AccessFlags |= AccessFlags.Synthetic;
+	}
 
-		public bool IsSynthetic
-		{
-			get => (AccessFlags & AccessFlags.Synthetic) != 0;
-			set => AccessFlags |= AccessFlags.Synthetic;
-		}
+	public bool IsEnum
+	{
+		get => (AccessFlags & AccessFlags.Enum) != 0;
+		set => AccessFlags |= AccessFlags.Enum;
+	}
+	// ReSharper restore ValueParameterNotUsed
 
-		public bool IsEnum
-		{
-			get => (AccessFlags & AccessFlags.Enum) != 0;
-			set => AccessFlags |= AccessFlags.Enum;
-		}
-		// ReSharper restore ValueParameterNotUsed
+	public bool Equals(FieldDefinition other)
+	{
+		// Should be enough (ownership)
+		return base.Equals(other);
+	}
 
-		public bool Equals(FieldDefinition other)
-		{
-			// Should be enough (ownership)
-			return base.Equals(other);
-		}
-
-		public override bool Equals(IMemberReference other)
-		{
-			return other is FieldDefinition definition && Equals(definition);
-		}
+	public override bool Equals(IMemberReference other)
+	{
+		return other is FieldDefinition definition && Equals(definition);
 	}
 }

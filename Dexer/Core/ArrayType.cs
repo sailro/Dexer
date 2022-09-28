@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,31 +21,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Dexer.Metadata;
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public class ArrayType : CompositeType
 {
-	public class ArrayType : CompositeType
+	public TypeReference ElementType { get; set; }
+
+	public ArrayType()
 	{
-		public TypeReference ElementType { get; set; }
+		TypeDescriptor = TypeDescriptors.Array;
+	}
 
-		public ArrayType()
-		{
-			TypeDescriptor = TypeDescriptors.Array;
-		}
+	public override string ToString()
+	{
+		return string.Concat("[", ElementType.ToString(), "]");
+	}
 
-		public override string ToString()
-		{
-			return string.Concat("[", ElementType.ToString(), "]");
-		}
+	public bool Equals(ArrayType other)
+	{
+		return base.Equals(other)
+		       && ElementType.Equals(other.ElementType);
+	}
 
-		public bool Equals(ArrayType other)
-		{
-			return base.Equals(other)
-			       && ElementType.Equals(other.ElementType);
-		}
-
-		public override bool Equals(TypeReference other)
-		{
-			return other is ArrayType type && Equals(type);
-		}
+	public override bool Equals(TypeReference other)
+	{
+		return other is ArrayType type && Equals(type);
 	}
 }

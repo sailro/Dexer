@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -25,79 +25,78 @@ using Dexer.Metadata;
 using System;
 using System.Linq;
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public class Annotation : IEquatable<Annotation>
 {
-	public class Annotation : IEquatable<Annotation>
+	public ClassReference Type { get; set; }
+	public List<AnnotationArgument> Arguments { get; set; }
+	public AnnotationVisibility Visibility { get; set; }
+
+	public Annotation()
 	{
-		public ClassReference Type { get; set; }
-		public List<AnnotationArgument> Arguments { get; set; }
-		public AnnotationVisibility Visibility { get; set; }
+		Arguments = new List<AnnotationArgument>();
+	}
 
-		public Annotation()
+	public override string ToString()
+	{
+		var builder = new StringBuilder();
+		builder.Append(Type);
+		builder.Append("(");
+		for (var i = 0; i < Arguments.Count; i++)
 		{
-			Arguments = new List<AnnotationArgument>();
+			if (i > 0)
+				builder.Append(", ");
+
+			builder.Append(Arguments[i]);
 		}
 
-		public override string ToString()
+		builder.Append(")");
+		return builder.ToString();
+	}
+
+	public bool Equals(Annotation other)
+	{
+		if (other == null)
+			return false;
+
+		if (!Type.Equals(other.Type) || !Arguments.Count.Equals(other.Arguments.Count))
+			return false;
+
+		return !Arguments.Where((t, i) => !t.Equals(other.Arguments[i])).Any();
+	}
+
+	public override bool Equals(object obj)
+	{
+		return obj is Annotation annotation && Equals(annotation);
+	}
+
+	public override int GetHashCode()
+	{
+		var builder = new StringBuilder();
+		builder.AppendLine(TypeDescriptor.Encode(Type));
+
+		foreach (var argument in Arguments)
 		{
-			var builder = new StringBuilder();
-			builder.Append(Type);
-			builder.Append("(");
-			for (var i = 0; i < Arguments.Count; i++)
+			builder.Append($"{argument.Name}=");
+			if (ValueFormat.GetFormat(argument.Value) == ValueFormats.Array)
 			{
-				if (i > 0)
-					builder.Append(", ");
+				if (argument.Value is not Array array)
+					throw new ArgumentException();
 
-				builder.Append(Arguments[i]);
-			}
-
-			builder.Append(")");
-			return builder.ToString();
-		}
-
-		public bool Equals(Annotation other)
-		{
-			if (other == null)
-				return false;
-
-			if (!Type.Equals(other.Type) || !Arguments.Count.Equals(other.Arguments.Count))
-				return false;
-
-			return !Arguments.Where((t, i) => !t.Equals(other.Arguments[i])).Any();
-		}
-
-		public override bool Equals(object obj)
-		{
-			return obj is Annotation annotation && Equals(annotation);
-		}
-
-		public override int GetHashCode()
-		{
-			var builder = new StringBuilder();
-			builder.AppendLine(TypeDescriptor.Encode(Type));
-
-			foreach (var argument in Arguments)
-			{
-				builder.Append($"{argument.Name}=");
-				if (ValueFormat.GetFormat(argument.Value) == ValueFormats.Array)
+				for (var i = 0; i < array.Length; i++)
 				{
-					if (argument.Value is not Array array)
-						throw new ArgumentException();
-
-					for (var i = 0; i < array.Length; i++)
-					{
-						if (i > 0)
-							builder.Append(",");
-						builder.Append(array.GetValue(i));
-					}
+					if (i > 0)
+						builder.Append(",");
+					builder.Append(array.GetValue(i));
 				}
-				else
-					builder.Append(argument.Value);
-
-				builder.AppendLine();
 			}
+			else
+				builder.Append(argument.Value);
 
-			return builder.ToString().GetHashCode();
+			builder.AppendLine();
 		}
+
+		return builder.ToString().GetHashCode();
 	}
 }

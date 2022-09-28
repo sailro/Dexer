@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -26,37 +26,36 @@ using Dexer.Core;
 using Dexer.IO.Collectors;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Dexer.Tests
+namespace Dexer.Tests;
+
+[TestClass]
+public class BaseCollectorTest : BaseTest
 {
-	[TestClass]
-	public class BaseCollectorTest : BaseTest
+	internal void TestCollector<TC, T>(Func<Dex, List<T>> provider) where TC : BaseCollector<T>, new()
 	{
-		internal void TestCollector<TC, T>(Func<Dex, List<T>> provider) where TC : BaseCollector<T>, new()
+		foreach (var file in GetTestFiles())
 		{
-			foreach (var file in GetTestFiles())
-			{
-				TestCollector<TC, T>(provider, file);
-			}
+			TestCollector<TC, T>(provider, file);
 		}
+	}
 
-		internal TC TestCollector<TC, T>(Func<Dex, List<T>> provider, string file) where TC : BaseCollector<T>, new()
-		{
-			TestContext.WriteLine("Testing {0}", file);
-			var dex = Dex.Read(file);
+	internal TC TestCollector<TC, T>(Func<Dex, List<T>> provider, string file) where TC : BaseCollector<T>, new()
+	{
+		TestContext.WriteLine("Testing {0}", file);
+		var dex = Dex.Read(file);
 
-			var collector = new TC();
-			collector.Collect(dex);
+		var collector = new TC();
+		collector.Collect(dex);
 
-			var sourceKeys = provider(dex).ToDictionary(s => s);
-			var destKeys = collector.Items.ToDictionary(kv => kv.Key);
+		var sourceKeys = provider(dex).ToDictionary(s => s);
+		var destKeys = collector.Items.ToDictionary(kv => kv.Key);
 
-			foreach (var key in sourceKeys.Keys)
-				Assert.IsTrue(collector.Items.ContainsKey(key) || (key.ToString() == "this"), "Item '{0}' not collected", key);
+		foreach (var key in sourceKeys.Keys)
+			Assert.IsTrue(collector.Items.ContainsKey(key) || (key.ToString() == "this"), "Item '{0}' not collected", key);
 
-			foreach (var key in destKeys.Keys)
-				Assert.IsTrue(sourceKeys.ContainsKey(key) || (key.ToString() == "this"), "Item '{0}' is 'over' collected", key);
+		foreach (var key in destKeys.Keys)
+			Assert.IsTrue(sourceKeys.ContainsKey(key) || (key.ToString() == "this"), "Item '{0}' is 'over' collected", key);
 
-			return collector;
-		}
+		return collector;
 	}
 }

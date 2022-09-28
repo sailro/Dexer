@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,43 +22,42 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using System;
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public class Parameter : IAnnotationProvider, ICloneable, IEquatable<Parameter>
 {
-	public class Parameter : IAnnotationProvider, ICloneable, IEquatable<Parameter>
+	public List<Annotation> Annotations { get; set; }
+	public TypeReference Type { get; set; }
+
+	public Parameter()
 	{
-		public List<Annotation> Annotations { get; set; }
-		public TypeReference Type { get; set; }
+		Annotations = new List<Annotation>();
+	}
 
-		public Parameter()
-		{
-			Annotations = new List<Annotation>();
-		}
+	public Parameter(TypeReference type) : this()
+	{
+		Type = type;
+	}
 
-		public Parameter(TypeReference type) : this()
-		{
-			Type = type;
-		}
+	public override string ToString()
+	{
+		return Type.ToString();
+	}
 
-		public override string ToString()
-		{
-			return Type.ToString();
-		}
+	internal Parameter Clone()
+	{
+		return (Parameter)(this as ICloneable).Clone();
+	}
 
-		internal Parameter Clone()
-		{
-			return (Parameter)(this as ICloneable).Clone();
-		}
+	object ICloneable.Clone()
+	{
+		var result = new Parameter {Type = Type};
+		return result;
+	}
 
-		object ICloneable.Clone()
-		{
-			var result = new Parameter {Type = Type};
-			return result;
-		}
-
-		public bool Equals(Parameter other)
-		{
-			// do not check annotations at this time.
-			return other != null && Type.Equals(other.Type);
-		}
+	public bool Equals(Parameter other)
+	{
+		// do not check annotations at this time.
+		return other != null && Type.Equals(other.Type);
 	}
 }

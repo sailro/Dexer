@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,53 +22,52 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using Dexer.Core;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class ModelSorter : BaseCollector<object>
 {
-	internal class ModelSorter : BaseCollector<object>
+	private readonly ClassDefinitionComparer _cdefc;
+	private readonly ClassReferenceComparer _crefc;
+	private readonly MethodDefinitionComparer _mdefc;
+	private readonly FieldDefinitionComparer _fdefc;
+	private readonly AnnotationComparer _ac;
+
+	public ModelSorter()
 	{
-		private readonly ClassDefinitionComparer _cdefc;
-		private readonly ClassReferenceComparer _crefc;
-		private readonly MethodDefinitionComparer _mdefc;
-		private readonly FieldDefinitionComparer _fdefc;
-		private readonly AnnotationComparer _ac;
+		_cdefc = new ClassDefinitionComparer();
+		_crefc = new ClassReferenceComparer();
+		_mdefc = new MethodDefinitionComparer();
+		_fdefc = new FieldDefinitionComparer();
+		_ac = new AnnotationComparer();
+	}
 
-		public ModelSorter()
-		{
-			_cdefc = new ClassDefinitionComparer();
-			_crefc = new ClassReferenceComparer();
-			_mdefc = new MethodDefinitionComparer();
-			_fdefc = new FieldDefinitionComparer();
-			_ac = new AnnotationComparer();
-		}
+	public override void Collect(List<ClassDefinition> classes)
+	{
+		classes.Sort(_cdefc);
+		base.Collect(classes);
+	}
 
-		public override void Collect(List<ClassDefinition> classes)
-		{
-			classes.Sort(_cdefc);
-			base.Collect(classes);
-		}
+	public override void Collect(List<ClassReference> classes)
+	{
+		classes.Sort(_crefc);
+		base.Collect(classes);
+	}
 
-		public override void Collect(List<ClassReference> classes)
-		{
-			classes.Sort(_crefc);
-			base.Collect(classes);
-		}
+	public override void Collect(List<MethodDefinition> methods)
+	{
+		methods.Sort(_mdefc);
+		base.Collect(methods);
+	}
 
-		public override void Collect(List<MethodDefinition> methods)
-		{
-			methods.Sort(_mdefc);
-			base.Collect(methods);
-		}
+	public override void Collect(List<FieldDefinition> fields)
+	{
+		fields.Sort(_fdefc);
+		base.Collect(fields);
+	}
 
-		public override void Collect(List<FieldDefinition> fields)
-		{
-			fields.Sort(_fdefc);
-			base.Collect(fields);
-		}
-
-		public override void Collect(List<Annotation> annotations)
-		{
-			annotations.Sort(_ac);
-			base.Collect(annotations);
-		}
+	public override void Collect(List<Annotation> annotations)
+	{
+		annotations.Sort(_ac);
+		base.Collect(annotations);
 	}
 }

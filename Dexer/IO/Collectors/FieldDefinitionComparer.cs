@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,29 +22,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using Dexer.Core;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class FieldDefinitionComparer : FieldReferenceComparer, IComparer<FieldDefinition>
 {
-	internal class FieldDefinitionComparer : FieldReferenceComparer, IComparer<FieldDefinition>
+	public int Compare(FieldDefinition x, FieldDefinition y)
 	{
-		public int Compare(FieldDefinition x, FieldDefinition y)
+		switch (x)
 		{
-			switch (x)
-			{
-				case null when y == null:
-					return 0;
-				case null:
-					return -1;
-			}
-
-			if (y == null)
-				return 1;
-
-			var result = y.IsStatic.CompareTo(x.IsStatic);
-
-			if (result == 0)
-				result = base.Compare(x, y);
-
-			return result;
+			case null when y == null:
+				return 0;
+			case null:
+				return -1;
 		}
+
+		if (y == null)
+			return 1;
+
+		var result = y.IsStatic.CompareTo(x.IsStatic);
+
+		if (result == 0)
+			result = base.Compare(x, y);
+
+		return result;
 	}
 }

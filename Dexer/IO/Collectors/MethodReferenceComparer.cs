@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,36 +22,35 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using Dexer.Core;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class MethodReferenceComparer : IComparer<MethodReference>
 {
-	internal class MethodReferenceComparer : IComparer<MethodReference>
+	private readonly PrototypeComparer _prototypeComparer = new();
+	private readonly TypeReferenceComparer _typeReferenceComparer = new();
+	private readonly StringComparer _stringComparer = new();
+
+	public int Compare(MethodReference x, MethodReference y)
 	{
-		private readonly PrototypeComparer _prototypeComparer = new();
-		private readonly TypeReferenceComparer _typeReferenceComparer = new();
-		private readonly StringComparer _stringComparer = new();
-
-		public int Compare(MethodReference x, MethodReference y)
+		switch (x)
 		{
-			switch (x)
-			{
-				case null when y == null:
-					return 0;
-				case null:
-					return -1;
-			}
-
-			if (y == null)
-				return 1;
-
-			var result = _typeReferenceComparer.Compare(x.Owner, y.Owner);
-
-			if (result == 0)
-				result = _stringComparer.Compare(x.Name, y.Name);
-
-			if (result == 0)
-				result = _prototypeComparer.Compare(x.Prototype, y.Prototype);
-
-			return result;
+			case null when y == null:
+				return 0;
+			case null:
+				return -1;
 		}
+
+		if (y == null)
+			return 1;
+
+		var result = _typeReferenceComparer.Compare(x.Owner, y.Owner);
+
+		if (result == 0)
+			result = _stringComparer.Compare(x.Name, y.Name);
+
+		if (result == 0)
+			result = _prototypeComparer.Compare(x.Prototype, y.Prototype);
+
+		return result;
 	}
 }

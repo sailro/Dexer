@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,28 +21,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Dexer.Core;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class DependencyCollector : BaseCollector<ClassDefinition>
 {
-	internal class DependencyCollector : BaseCollector<ClassDefinition>
+	public override void Collect(TypeReference tref)
 	{
-		public override void Collect(TypeReference tref)
-		{
-			if (!(tref is ClassDefinition))
-				return;
+		if (tref is not ClassDefinition @class)
+			return;
 
-			var @class = (ClassDefinition)tref;
-			if (!Items.ContainsKey(@class))
-				Items.Add(@class, 0);
+		if (!Items.ContainsKey(@class))
+			Items.Add(@class, 0);
 
-			Items[@class]++;
-		}
+		Items[@class]++;
+	}
 
-		public override void Collect(ClassDefinition @class)
-		{
-			Collect(@class.InnerClasses);
-			Collect(@class.Interfaces);
-			Collect(@class.SuperClass);
-			Collect(@class as ClassReference);
-		}
+	public override void Collect(ClassDefinition @class)
+	{
+		Collect(@class.InnerClasses);
+		Collect(@class.Interfaces);
+		Collect(@class.SuperClass);
+		Collect(@class as ClassReference);
 	}
 }

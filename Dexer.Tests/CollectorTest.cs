@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,21 +23,20 @@ using Dexer.Core;
 using Dexer.IO.Collectors;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Dexer.Tests
-{
-	[TestClass]
-	public class CollectorTest : BaseCollectorTest
-	{
-		[TestMethod]
-		public void TestStringCollector()
-		{
-			TestCollector<StringCollector, string>(dex => dex.Strings);
-		}
+namespace Dexer.Tests;
 
-		[TestMethod]
-		public void TestPrototypeCollector()
-		{
-			TestCollector<PrototypeCollector, Prototype>(dex => dex.Prototypes);
-		}
+[TestClass]
+public class CollectorTest : BaseCollectorTest
+{
+	[TestMethod]
+	public void TestStringCollector()
+	{
+		TestCollector<StringCollector, string>(dex => dex.Strings);
+	}
+
+	[TestMethod]
+	public void TestPrototypeCollector()
+	{
+		TestCollector<PrototypeCollector, Prototype>(dex => dex.Prototypes);
 	}
 }

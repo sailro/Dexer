@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,18 +22,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using Dexer.Metadata;
 using System;
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public abstract class TypeReference : IEquatable<TypeReference>
 {
-	public abstract class TypeReference : IEquatable<TypeReference>
+	internal TypeDescriptors TypeDescriptor { get; set; }
+
+	public virtual bool Equals(TypeReference other)
 	{
-		internal TypeDescriptors TypeDescriptor { get; set; }
+		if (other == null)
+			return false;
 
-		public virtual bool Equals(TypeReference other)
-		{
-			if (other == null)
-				return false;
-
-			return TypeDescriptor == other.TypeDescriptor;
-		}
+		return TypeDescriptor == other.TypeDescriptor;
 	}
 }

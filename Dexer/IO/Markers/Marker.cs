@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,29 +22,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.IO;
 using System.Collections.Generic;
 
-namespace Dexer.IO.Markers
+namespace Dexer.IO.Markers;
+
+internal abstract class Marker<T>
 {
-	internal abstract class Marker<T>
+	public BinaryWriter Writer { get; set; }
+	public List<uint> Positions { get; set; }
+
+	public abstract T Value { set; }
+
+	public abstract void Allocate();
+
+	public void CloneMarker()
 	{
-		public BinaryWriter Writer { get; set; }
-		public List<uint> Positions { get; set; }
+		var position = (uint)Writer.BaseStream.Position;
+		Positions.Add(position);
+		Allocate();
+	}
 
-		public abstract T Value { set; }
-
-		public abstract void Allocate();
-
-		public void CloneMarker()
-		{
-			var position = (uint)Writer.BaseStream.Position;
-			Positions.Add(position);
-			Allocate();
-		}
-
-		protected Marker(BinaryWriter writer)
-		{
-			Writer = writer;
-			Positions = new List<uint>();
-			CloneMarker();
-		}
+	protected Marker(BinaryWriter writer)
+	{
+		Writer = writer;
+		Positions = new List<uint>();
+		CloneMarker();
 	}
 }

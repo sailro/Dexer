@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,40 +22,39 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using Dexer.Core;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class ClassDefinitionComparer : ClassReferenceComparer, IPartialComparer<ClassDefinition>, IComparer<ClassDefinition>
 {
-	internal class ClassDefinitionComparer : ClassReferenceComparer, IPartialComparer<ClassDefinition>, IComparer<ClassDefinition>
+	public int Compare(ClassDefinition x, ClassDefinition y)
 	{
-		public int Compare(ClassDefinition x, ClassDefinition y)
+		return base.Compare(x, y);
+	}
+
+	public List<ClassDefinition> CollectDependencies(ClassDefinition cdef)
+	{
+		var collector = new DependencyCollector();
+		collector.Collect(cdef);
+		var result = collector.ToList();
+		result.Remove(cdef);
+		return result;
+	}
+
+	public int? PartialCompare(ClassDefinition x, ClassDefinition y)
+	{
+		var xdependencies = CollectDependencies(x);
+		var ydependencies = CollectDependencies(y);
+
+		if (ydependencies.Contains(x))
 		{
-			return base.Compare(x, y);
-		}
-
-		public List<ClassDefinition> CollectDependencies(ClassDefinition cdef)
-		{
-			var collector = new DependencyCollector();
-			collector.Collect(cdef);
-			var result = collector.ToList();
-			result.Remove(cdef);
-			return result;
-		}
-
-		public int? PartialCompare(ClassDefinition x, ClassDefinition y)
-		{
-			var xdependencies = CollectDependencies(x);
-			var ydependencies = CollectDependencies(y);
-
-			if (ydependencies.Contains(x))
-			{
-				if (xdependencies.Contains(y))
-					return 0;
-				return -1;
-			}
-
 			if (xdependencies.Contains(y))
-				return 1;
-
-			return null;
+				return 0;
+			return -1;
 		}
+
+		if (xdependencies.Contains(y))
+			return 1;
+
+		return null;
 	}
 }

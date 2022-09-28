@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,48 +23,47 @@ using System;
 using System.Collections.Generic;
 using Dexer.Core;
 
-namespace Dexer.IO.Collectors
+namespace Dexer.IO.Collectors;
+
+internal class AnnotationComparer : IComparer<Annotation>
 {
-	internal class AnnotationComparer : IComparer<Annotation>
+	private readonly TypeReferenceComparer _typeReferenceComparer = new();
+	private readonly ArgumentComparer _argumentComparer = new();
+
+	public int Compare(Annotation x, Annotation y)
 	{
-		private readonly TypeReferenceComparer _typeReferenceComparer = new();
-		private readonly ArgumentComparer _argumentComparer = new();
-
-		public int Compare(Annotation x, Annotation y)
+		switch (x)
 		{
-			switch (x)
-			{
-				case null when y == null:
-					return 0;
-				case null:
-					return -1;
-			}
+			case null when y == null:
+				return 0;
+			case null:
+				return -1;
+		}
 
-			if (y == null)
-				return 1;
+		if (y == null)
+			return 1;
 
-			var result = _typeReferenceComparer.Compare(x.Type, y.Type);
+		var result = _typeReferenceComparer.Compare(x.Type, y.Type);
 
-			if (result == 0)
-				result = x.Visibility.CompareTo(y.Visibility);
+		if (result == 0)
+			result = x.Visibility.CompareTo(y.Visibility);
 
+		if (result != 0)
+			return result;
+
+		for (var i = 0; i < Math.Min(x.Arguments.Count, y.Arguments.Count); i++)
+		{
+			result = _argumentComparer.Compare(x.Arguments[i], y.Arguments[i]);
 			if (result != 0)
 				return result;
-
-			for (var i = 0; i < Math.Min(x.Arguments.Count, y.Arguments.Count); i++)
-			{
-				result = _argumentComparer.Compare(x.Arguments[i], y.Arguments[i]);
-				if (result != 0)
-					return result;
-			}
-
-			if (x.Arguments.Count > y.Arguments.Count)
-				return 1;
-
-			if (y.Arguments.Count > x.Arguments.Count)
-				return -1;
-
-			return result;
 		}
+
+		if (x.Arguments.Count > y.Arguments.Count)
+			return 1;
+
+		if (y.Arguments.Count > x.Arguments.Count)
+			return -1;
+
+		return result;
 	}
 }

@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,76 +23,75 @@ using System.Collections.Generic;
 using System.Text;
 using System;
 
-namespace Dexer.Instructions
+namespace Dexer.Instructions;
+
+public class Instruction : IEquatable<Instruction>
 {
-	public class Instruction : IEquatable<Instruction>
+	public OpCodes OpCode { get; set; }
+	public int Offset { get; set; }
+	public List<Register> Registers { get; set; }
+	public object Operand { get; set; }
+
+	public Instruction()
 	{
-		public OpCodes OpCode { get; set; }
-		public int Offset { get; set; }
-		public List<Register> Registers { get; set; }
-		public object Operand { get; set; }
+		Registers = new List<Register>();
+	}
 
-		public Instruction()
+	public Instruction(OpCodes opcode, params Register[] registers)
+		: this(opcode, null, registers)
+	{
+	}
+
+	public Instruction(OpCodes opcode)
+		: this(opcode, null, null)
+	{
+	}
+
+	public Instruction(OpCodes opcode, object operand) : this(opcode, operand, null)
+	{
+	}
+
+	public Instruction(OpCodes opcode, object operand, params Register[] registers) : this()
+	{
+		OpCode = opcode;
+		Operand = operand;
+
+		if (registers != null)
+			Registers = new List<Register>(registers);
+	}
+
+	public override string ToString()
+	{
+		var builder = new StringBuilder();
+		builder.Append(OpCode);
+		foreach (var register in Registers)
 		{
-			Registers = new List<Register>();
-		}
-
-		public Instruction(OpCodes opcode, params Register[] registers)
-			: this(opcode, null, registers)
-		{
-		}
-
-		public Instruction(OpCodes opcode)
-			: this(opcode, null, null)
-		{
-		}
-
-		public Instruction(OpCodes opcode, object operand) : this(opcode, operand, null)
-		{
-		}
-
-		public Instruction(OpCodes opcode, object operand, params Register[] registers) : this()
-		{
-			OpCode = opcode;
-			Operand = operand;
-
-			if (registers != null)
-				Registers = new List<Register>(registers);
-		}
-
-		public override string ToString()
-		{
-			var builder = new StringBuilder();
-			builder.Append(OpCode);
-			foreach (var register in Registers)
-			{
-				builder.Append(" ");
-				builder.Append(register);
-			}
-
 			builder.Append(" ");
-
-			switch (Operand)
-			{
-				case Instruction instruction:
-					builder.Append(string.Concat("=> {", instruction.Offset, "}"));
-					break;
-				case string _:
-					builder.Append(string.Concat("\"", Operand, "\""));
-					break;
-				default:
-					builder.Append(Operand);
-					break;
-			}
-
-			return builder.ToString();
+			builder.Append(register);
 		}
 
-		public bool Equals(Instruction other)
+		builder.Append(" ");
+
+		switch (Operand)
 		{
-			// Should be OK because we only use this after proper computation of offsets.
-			// Mainly used by CatchSet to detect dupe lists.
-			return other != null && Offset == other.Offset;
+			case Instruction instruction:
+				builder.Append(string.Concat("=> {", instruction.Offset, "}"));
+				break;
+			case string _:
+				builder.Append(string.Concat("\"", Operand, "\""));
+				break;
+			default:
+				builder.Append(Operand);
+				break;
 		}
+
+		return builder.ToString();
+	}
+
+	public bool Equals(Instruction other)
+	{
+		// Should be OK because we only use this after proper computation of offsets.
+		// Mainly used by CatchSet to detect dupe lists.
+		return other != null && Offset == other.Offset;
 	}
 }

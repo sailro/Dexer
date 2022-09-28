@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,32 +22,31 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using Dexer.Core;
 using System;
 
-namespace Dexer.Metadata
+namespace Dexer.Metadata;
+
+public static class ValueFormat
 {
-	public static class ValueFormat
+	public static ValueFormats GetFormat(object value)
 	{
-		public static ValueFormats GetFormat(object value)
+		return value switch
 		{
-			return value switch
-			{
-				byte or sbyte => ValueFormats.Byte,
-				short or ushort => ValueFormats.Short,
-				char => ValueFormats.Char,
-				int or uint => ValueFormats.Int,
-				long or ulong => ValueFormats.Long,
-				float => ValueFormats.Float,
-				double => ValueFormats.Double,
-				bool => ValueFormats.Boolean,
-				string => ValueFormats.String,
-				TypeReference => ValueFormats.Type,
-				FieldDefinition { IsEnum: true } => ValueFormats.Enum,
-				FieldReference => ValueFormats.Field,
-				MethodReference => ValueFormats.Method,
-				Array => ValueFormats.Array,
-				Annotation => ValueFormats.Annotation,
-				null => ValueFormats.Null,
-				_ => throw new ArgumentException("Unexpected format"),
-			};
-		}
+			byte or sbyte => ValueFormats.Byte,
+			short or ushort => ValueFormats.Short,
+			char => ValueFormats.Char,
+			int or uint => ValueFormats.Int,
+			long or ulong => ValueFormats.Long,
+			float => ValueFormats.Float,
+			double => ValueFormats.Double,
+			bool => ValueFormats.Boolean,
+			string => ValueFormats.String,
+			TypeReference => ValueFormats.Type,
+			FieldDefinition { IsEnum: true } => ValueFormats.Enum,
+			FieldReference => ValueFormats.Field,
+			MethodReference => ValueFormats.Method,
+			Array => ValueFormats.Array,
+			Annotation => ValueFormats.Annotation,
+			null => ValueFormats.Null,
+			_ => throw new ArgumentException("Unexpected format"),
+		};
 	}
 }

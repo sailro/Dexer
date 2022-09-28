@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,29 +22,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Collections.Generic;
 using System.Text;
 
-namespace Dexer.Instructions
+namespace Dexer.Instructions;
+
+public class DebugInstruction
 {
-	public class DebugInstruction
+	public DebugOpCodes OpCode { get; set; }
+	public List<object> Operands { get; set; }
+
+	public DebugInstruction()
 	{
-		public DebugOpCodes OpCode { get; set; }
-		public List<object> Operands { get; set; }
+		Operands = new List<object>();
+	}
 
-		public DebugInstruction()
+	public override string ToString()
+	{
+		var builder = new StringBuilder();
+		builder.Append(OpCode);
+		foreach (var operand in Operands)
 		{
-			Operands = new List<object>();
+			builder.Append(" ");
+			builder.Append(operand);
 		}
 
-		public override string ToString()
-		{
-			var builder = new StringBuilder();
-			builder.Append(OpCode);
-			foreach (var operand in Operands)
-			{
-				builder.Append(" ");
-				builder.Append(operand);
-			}
-
-			return builder.ToString();
-		}
+		return builder.ToString();
 	}
 }

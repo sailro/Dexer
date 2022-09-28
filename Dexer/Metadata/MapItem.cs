@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,26 +19,25 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-namespace Dexer.Metadata
+namespace Dexer.Metadata;
+
+public class MapItem
 {
-	public class MapItem
+	public TypeCodes Type { get; set; }
+	public uint Count { get; set; }
+	public uint Offset { get; set; }
+
+	public MapItem() { }
+
+	public MapItem(TypeCodes type, uint count, uint offset)
 	{
-		public TypeCodes Type { get; set; }
-		public uint Count { get; set; }
-		public uint Offset { get; set; }
+		Type = type;
+		Count = count;
+		Offset = offset;
+	}
 
-		public MapItem() { }
-
-		public MapItem(TypeCodes type, uint count, uint offset)
-		{
-			Type = type;
-			Count = count;
-			Offset = offset;
-		}
-
-		public override string ToString()
-		{
-			return $"{Type}:{Count} @0x{Offset:x}";
-		}
+	public override string ToString()
+	{
+		return $"{Type}:{Count} @0x{Offset:x}";
 	}
 }

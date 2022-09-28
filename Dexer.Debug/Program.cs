@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -22,15 +22,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using Dexer.Core;
 
-namespace Dexer.Debug
+namespace Dexer.Debug;
+
+internal class Program
 {
-	internal class Program
+	private static void Main()
 	{
-		private static void Main()
-		{
-			var dex = Dex.Read("classes.dex");
-			dex.Write("output.dex");
-			Console.ReadLine();
-		}
+		var dex = Dex.Read("classes.dex");
+		dex.Write("output.dex");
+		Console.ReadLine();
 	}
 }

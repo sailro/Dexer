@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -25,43 +25,42 @@ using System.Globalization;
 using Dexer.Core;
 using System.Text;
 
-namespace Dexer.IO
+namespace Dexer.IO;
+
+internal class AnnotationSet : List<Annotation>, IEquatable<AnnotationSet>
 {
-	internal class AnnotationSet : List<Annotation>, IEquatable<AnnotationSet>
+	public AnnotationSet(IAnnotationProvider provider)
 	{
-		public AnnotationSet(IAnnotationProvider provider)
-		{
-			AddRange(provider.Annotations);
-		}
+		AddRange(provider.Annotations);
+	}
 
-		public override bool Equals(object obj)
-		{
-			return obj is AnnotationSet annotationSet && Equals(annotationSet);
-		}
+	public override bool Equals(object obj)
+	{
+		return obj is AnnotationSet annotationSet && Equals(annotationSet);
+	}
 
-		public override int GetHashCode()
-		{
-			var builder = new StringBuilder();
-			foreach (var annotation in this)
-				builder.AppendLine(annotation.GetHashCode().ToString(CultureInfo.InvariantCulture));
-			return builder.ToString().GetHashCode();
-		}
+	public override int GetHashCode()
+	{
+		var builder = new StringBuilder();
+		foreach (var annotation in this)
+			builder.AppendLine(annotation.GetHashCode().ToString(CultureInfo.InvariantCulture));
+		return builder.ToString().GetHashCode();
+	}
 
-		public bool Equals(AnnotationSet other)
+	public bool Equals(AnnotationSet other)
+	{
+		if (other == null)
+			return false;
+
+		if (Count != other.Count)
+			return false;
+
+		for (var i = 0; i < Count; i++)
 		{
-			if (other == null)
+			if (!this[i].Equals(other[i]))
 				return false;
-
-			if (Count != other.Count)
-				return false;
-
-			for (var i = 0; i < Count; i++)
-			{
-				if (!this[i].Equals(other[i]))
-					return false;
-			}
-
-			return true;
 		}
+
+		return true;
 	}
 }

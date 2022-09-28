@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,25 +19,24 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-namespace Dexer.Metadata
+namespace Dexer.Metadata;
+
+public enum ValueFormats : byte
 {
-	public enum ValueFormats : byte
-	{
-		Byte = 0x00,
-		Short = 0x02,
-		Char = 0x03,
-		Int = 0x04,
-		Long = 0x06,
-		Float = 0x10,
-		Double = 0x11,
-		String = 0x17,
-		Type = 0x18,
-		Field = 0x19,
-		Method = 0x1a,
-		Enum = 0x1b,
-		Array = 0x1c,
-		Annotation = 0x1d,
-		Null = 0x1e,
-		Boolean = 0x1f
-	}
+	Byte = 0x00,
+	Short = 0x02,
+	Char = 0x03,
+	Int = 0x04,
+	Long = 0x06,
+	Float = 0x10,
+	Double = 0x11,
+	String = 0x17,
+	Type = 0x18,
+	Field = 0x19,
+	Method = 0x1a,
+	Enum = 0x1b,
+	Array = 0x1c,
+	Annotation = 0x1d,
+	Null = 0x1e,
+	Boolean = 0x1f
 }

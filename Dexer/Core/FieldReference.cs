@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2021 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,39 +21,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Text;
 
-namespace Dexer.Core
+namespace Dexer.Core;
+
+public class FieldReference : IMemberReference
 {
-	public class FieldReference : IMemberReference
+	public ClassReference Owner { get; set; }
+	public string Name { get; set; }
+	public TypeReference Type { get; set; }
+
+	internal FieldReference()
 	{
-		public ClassReference Owner { get; set; }
-		public string Name { get; set; }
-		public TypeReference Type { get; set; }
+	}
 
-		internal FieldReference()
-		{
-		}
+	public override string ToString()
+	{
+		var builder = new StringBuilder();
+		builder.Append(Owner);
+		builder.Append("::");
+		builder.Append(Name);
+		builder.Append(" : ");
+		builder.Append(Type);
+		return builder.ToString();
+	}
 
-		public override string ToString()
-		{
-			var builder = new StringBuilder();
-			builder.Append(Owner);
-			builder.Append("::");
-			builder.Append(Name);
-			builder.Append(" : ");
-			builder.Append(Type);
-			return builder.ToString();
-		}
+	public bool Equals(FieldReference other)
+	{
+		return Owner.Equals(other.Owner)
+		       && Name.Equals(other.Name)
+		       && Type.Equals(other.Type);
+	}
 
-		public bool Equals(FieldReference other)
-		{
-			return Owner.Equals(other.Owner)
-			       && Name.Equals(other.Name)
-			       && Type.Equals(other.Type);
-		}
-
-		public virtual bool Equals(IMemberReference other)
-		{
-			return other is FieldReference reference && Equals(reference);
-		}
+	public virtual bool Equals(IMemberReference other)
+	{
+		return other is FieldReference reference && Equals(reference);
 	}
 }
