@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,24 +19,16 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Collections.Generic;
 using System.Text;
 using Dexer.Metadata;
-using System;
-using System.Linq;
 
 namespace Dexer.Core;
 
-public class Annotation : IEquatable<Annotation>
+public class Annotation(ClassReference type) : IEquatable<Annotation>
 {
-	public ClassReference Type { get; set; }
-	public List<AnnotationArgument> Arguments { get; set; }
+	public ClassReference Type { get; } = type;
+	public List<AnnotationArgument> Arguments { get; } = [];
 	public AnnotationVisibility Visibility { get; set; }
-
-	public Annotation()
-	{
-		Arguments = new List<AnnotationArgument>();
-	}
 
 	public override string ToString()
 	{
@@ -55,7 +47,7 @@ public class Annotation : IEquatable<Annotation>
 		return builder.ToString();
 	}
 
-	public bool Equals(Annotation other)
+	public bool Equals(Annotation? other)
 	{
 		if (other == null)
 			return false;
@@ -66,7 +58,7 @@ public class Annotation : IEquatable<Annotation>
 		return !Arguments.Where((t, i) => !t.Equals(other.Arguments[i])).Any();
 	}
 
-	public override bool Equals(object obj)
+	public override bool Equals(object? obj)
 	{
 		return obj is Annotation annotation && Equals(annotation);
 	}

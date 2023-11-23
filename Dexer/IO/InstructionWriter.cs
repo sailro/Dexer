@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,11 +19,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.IO;
 using Dexer.Core;
 using Dexer.Instructions;
-using System.Collections.Generic;
-using System;
 
 namespace Dexer.IO;
 
@@ -31,24 +28,24 @@ internal class InstructionWriter
 {
 	private DexWriter DexWriter { get; }
 	private MethodDefinition MethodDefinition { get; }
-	internal ushort[] Codes { get; set; }
-	private int _ip;
-	private int _extraOffset;
+	internal ushort[] Codes { get; set; } = [];
+	private int _ip = 0;
+	private int _extraOffset = 0;
 
-	internal Dictionary<Instruction, int> LookupLast; // ending offsets by instruction
+	internal Dictionary<Instruction, int> LookupLast { get; } = []; // ending offsets by instruction
 
 	public InstructionWriter(DexWriter dexWriter, MethodDefinition method)
 	{
+		if (method.Body == null)
+			throw new ArgumentNullException(nameof(method.Body));
+
 		DexWriter = dexWriter;
 		MethodDefinition = method;
-		LookupLast = new Dictionary<Instruction, int>();
-		_ip = 0;
-		_extraOffset = 0;
 	}
 
 	public void WriteTo(BinaryWriter writer)
 	{
-		var stats = MethodDefinition.Body.UpdateInstructionOffsets();
+		var stats = MethodDefinition.Body!.UpdateInstructionOffsets();
 
 		var alignedCodeUnits = stats.CodeUnits;
 		if (stats.ExtraCodeUnits > 0 && alignedCodeUnits % 2 != 0)
@@ -461,20 +458,20 @@ internal class InstructionWriter
 
 	private void WriteNibble(Instruction ins)
 	{
-		Codes[_ip++] |= (ushort)((int)ins.Operand << 12);
+		Codes[_ip++] |= (ushort)(Convert.ToSByte(ins.Operand) << 12);
 	}
 
-	private void WriteSByte(object value)
+	private void WriteSByte(object? value)
 	{
 		Codes[_ip++] |= (ushort)(Convert.ToSByte(value) << 8);
 	}
 
 	private void WriteSbyteInstructionOffset(Instruction ins)
 	{
-		if (!(ins.Operand is Instruction))
+		if (ins.Operand is not Instruction instruction)
 			throw new InstructionException(ins, "Expecting Instruction");
 
-		WriteSByte(((Instruction)ins.Operand).Offset - ins.Offset);
+		WriteSByte(instruction.Offset - ins.Offset);
 	}
 
 	private void WriteSByte(Instruction ins)
@@ -484,42 +481,42 @@ internal class InstructionWriter
 
 	private void WriteShortInstructionOffset(Instruction ins)
 	{
-		if (!(ins.Operand is Instruction))
+		if (ins.Operand is not Instruction instruction)
 			throw new InstructionException(ins, "Expecting Instruction");
 
-		WriteShort(((Instruction)ins.Operand).Offset - ins.Offset, ref _ip);
+		WriteShort(instruction.Offset - ins.Offset, ref _ip);
 	}
 
 	private void WriteShortFieldIndex(Instruction ins)
 	{
-		if (!(ins.Operand is FieldReference))
+		if (ins.Operand is not FieldReference field)
 			throw new InstructionException(ins, "Expecting FieldReference");
 
-		WriteUShort(DexWriter.FieldLookup[(FieldReference)ins.Operand], ref _ip);
+		WriteUShort(DexWriter.FieldLookup[field], ref _ip);
 	}
 
 	private void WriteShortMethodIndex(Instruction ins)
 	{
-		if (!(ins.Operand is MethodReference))
+		if (ins.Operand is not MethodReference method)
 			throw new InstructionException(ins, "Expecting MethodReference");
 
-		WriteUShort(DexWriter.MethodLookup[(MethodReference)ins.Operand], ref _ip);
+		WriteUShort(DexWriter.MethodLookup[method], ref _ip);
 	}
 
 	private void WriteShortStringIndex(Instruction ins)
 	{
-		if (ins.Operand is not string operand)
+		if (ins.Operand is not string str)
 			throw new InstructionException(ins, "Expecting String");
 
-		WriteUShort(DexWriter.StringLookup[operand], ref _ip);
+		WriteUShort(DexWriter.StringLookup[str], ref _ip);
 	}
 
 	private void WriteShortTypeIndex(Instruction ins)
 	{
-		if (ins.Operand is not TypeReference operand)
+		if (ins.Operand is not TypeReference tref)
 			throw new InstructionException(ins, "Expecting TypeReference");
 
-		WriteUShort(DexWriter.TypeLookup[operand], ref _ip);
+		WriteUShort(DexWriter.TypeLookup[tref], ref _ip);
 	}
 
 	private void WriteShort(Instruction ins, int shift)
@@ -533,7 +530,7 @@ internal class InstructionWriter
 		WriteShort(ins.Operand, ref _ip);
 	}
 
-	private void WriteShort(object value, ref int codeUnitOffset)
+	private void WriteShort(object? value, ref int codeUnitOffset)
 	{
 		Codes[codeUnitOffset++] = (ushort)Convert.ToInt16(value);
 	}
@@ -545,21 +542,21 @@ internal class InstructionWriter
 
 	private void WriteIntInstructionOffset(Instruction ins)
 	{
-		if (!(ins.Operand is Instruction))
+		if (ins.Operand is not Instruction instruction)
 			throw new InstructionException(ins, "Expecting Instruction");
 
-		WriteInt(((Instruction)ins.Operand).Offset - ins.Offset, ref _ip);
+		WriteInt(instruction.Offset - ins.Offset, ref _ip);
 	}
 
 	private void WriteIntStringIndex(Instruction ins)
 	{
-		if (ins.Operand is not string operand)
+		if (ins.Operand is not string str)
 			throw new InstructionException(ins, "Expecting String");
 
-		WriteUInt(DexWriter.StringLookup[operand], ref _ip);
+		WriteUInt(DexWriter.StringLookup[str], ref _ip);
 	}
 
-	private void WriteInt(object value, ref int codeUnitOffset)
+	private void WriteInt(object? value, ref int codeUnitOffset)
 	{
 		var result = Convert.ToInt32(value);
 		Codes[codeUnitOffset++] = (ushort)(result & 0xffff);
@@ -578,7 +575,7 @@ internal class InstructionWriter
 		WriteInt(ins.Operand, ref _ip);
 	}
 
-	private void WriteLong(object value, ref int codeUnitOffset)
+	private void WriteLong(object? value, ref int codeUnitOffset)
 	{
 		var result = Convert.ToInt64(value);
 		Codes[codeUnitOffset++] = (ushort)(result & 0xffff);
@@ -635,7 +632,7 @@ internal class InstructionWriter
 			{
 				case 1:
 					if (next)
-						Codes[_extraOffset++] |= (ushort)((byte)(Convert.ToSByte(element)) << 8);
+						Codes[_extraOffset++] |= (ushort)((byte)Convert.ToSByte(element) << 8);
 					else
 						Codes[_extraOffset] |= (byte)Convert.ToSByte(element);
 					next = !next;

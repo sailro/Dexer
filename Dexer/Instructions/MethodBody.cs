@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Collections.Generic;
-using System;
 using Dexer.IO;
 using System.Runtime.InteropServices;
 using Dexer.Core;
@@ -29,7 +27,7 @@ namespace Dexer.Instructions;
 
 public class MethodBody
 {
-	public DebugInfo DebugInfo { get; set; }
+	public DebugInfo? DebugInfo { get; set; }
 	public List<Register> Registers { get; set; }
 	public List<Instruction> Instructions { get; set; }
 	public List<ExceptionHandler> Exceptions { get; set; }
@@ -40,19 +38,19 @@ public class MethodBody
 	public MethodBody(MethodDefinition method, int registersSize)
 	{
 		Owner = method;
-		Registers = new List<Register>();
+		Registers = [];
 		for (var i = 0; i < registersSize; i++)
 		{
 			Registers.Add(new Register(i));
 		}
 
-		Instructions = new List<Instruction>();
-		Exceptions = new List<ExceptionHandler>();
+		Instructions = [];
+		Exceptions = [];
 	}
 
 	internal static void CheckArrayData(Instruction ins, out Array elements, out Type elementtype, out int elementsize)
 	{
-		if (!(ins.Operand is Array) || ((Array)ins.Operand).Length == 0)
+		if (ins.Operand is not Array || ((Array)ins.Operand).Length == 0)
 			throw new InstructionException(ins, "Expecting non empty Array");
 
 		elements = (Array)ins.Operand;

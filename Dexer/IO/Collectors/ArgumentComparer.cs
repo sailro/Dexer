@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
-using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Metadata;
 
@@ -28,7 +26,7 @@ namespace Dexer.IO.Collectors;
 
 internal class ArgumentComparer : IComparer<AnnotationArgument>
 {
-	private static int CompareValue(object x, object y)
+	private static int CompareValue(object? x, object? y)
 	{
 		var xf = ValueFormat.GetFormat(x);
 		var yf = ValueFormat.GetFormat(y);
@@ -49,22 +47,22 @@ internal class ArgumentComparer : IComparer<AnnotationArgument>
 			case ValueFormats.Double:
 			case ValueFormats.Boolean:
 			case ValueFormats.String:
-				return ((IComparable)x).CompareTo(y);
+				return ((IComparable)x!).CompareTo(y);
 			case ValueFormats.Null:
 				return 0;
 			case ValueFormats.Type:
-				return new TypeReferenceComparer().Compare((TypeReference)x, (TypeReference)y);
+				return new TypeReferenceComparer().Compare((TypeReference)x!, (TypeReference)y!);
 			case ValueFormats.Field:
 			case ValueFormats.Enum:
-				return new FieldReferenceComparer().Compare((FieldReference)x, (FieldReference)y);
+				return new FieldReferenceComparer().Compare((FieldReference)x!, (FieldReference)y!);
 			case ValueFormats.Method:
-				return new MethodReferenceComparer().Compare((MethodReference)x, (MethodReference)y);
+				return new MethodReferenceComparer().Compare((MethodReference)x!, (MethodReference)y!);
 			case ValueFormats.Annotation:
-				return new AnnotationComparer().Compare((Annotation)x, (Annotation)y);
+				return new AnnotationComparer().Compare((Annotation)x!, (Annotation)y!);
 			case ValueFormats.Array:
 
-				var ax = (Array)x;
-				var ay = (Array)y;
+				var ax = (Array)x!;
+				var ay = (Array)y!;
 				for (var i = 0; i < Math.Min(ax.Length, ay.Length); i++)
 				{
 					result = CompareValue(ax.GetValue(i), ay.GetValue(i));

@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,14 +21,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Dexer.Instructions;
 
-public class Register
+public class Register(int index)
 {
-	public int Index { get; set; }
-
-	public Register(int index)
-	{
-		Index = index;
-	}
+	public int Index { get; set; } = index;
 
 	public override string ToString()
 	{

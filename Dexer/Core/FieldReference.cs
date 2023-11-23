@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,15 +23,11 @@ using System.Text;
 
 namespace Dexer.Core;
 
-public class FieldReference : IMemberReference
+public class FieldReference(ClassReference owner, TypeReference type, string name) : IMemberReference
 {
-	public ClassReference Owner { get; set; }
-	public string Name { get; set; }
-	public TypeReference Type { get; set; }
-
-	internal FieldReference()
-	{
-	}
+	public ClassReference Owner { get; set; } = owner;
+	public string Name { get; set; } = name;
+	public TypeReference Type { get; set; } = type;
 
 	public override string ToString()
 	{

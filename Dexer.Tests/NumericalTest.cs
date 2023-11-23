@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -20,11 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
 using Dexer.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Dexer.Tests;
 
@@ -37,7 +33,7 @@ public class NumericalTest : BaseTest
 		var reader = new BinaryReader(stream);
 		var writer = new BinaryWriter(stream);
 
-		foreach (var expected in values.Select(item => (T)Convert.ChangeType(item, typeof(T))))
+		foreach (var expected in values.Select(item => (T)Convert.ChangeType(item, typeof(T))!))
 		{
 			TestContext.WriteLine("{0}, {0:x}", expected);
 

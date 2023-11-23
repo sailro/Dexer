@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,12 +19,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.IO;
 using Dexer.Extensions;
 
 namespace Dexer.IO.Markers;
 
-internal class UIntMarker : Marker<uint>
+internal class UIntMarker(BinaryWriter writer) : Marker<uint>(writer)
 {
 	public override uint Value
 	{
@@ -43,6 +42,4 @@ internal class UIntMarker : Marker<uint>
 	{
 		Writer.Write((uint)0);
 	}
-
-	public UIntMarker(BinaryWriter writer) : base(writer) { }
 }

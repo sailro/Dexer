@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
 using System.Globalization;
 using System.Text;
 using Dexer.Metadata;
@@ -31,8 +30,8 @@ public class ClassReference : CompositeType, IMemberReference
 	public const char NamespaceSeparator = '.';
 	public const char InternalNamespaceSeparator = '/';
 
-	public string Namespace { get; set; }
-	public string Name { get; set; }
+	public string Namespace { get; private set; } = string.Empty;
+	public string Name { get; private set; } = string.Empty;
 
 	public string Fullname
 	{
@@ -46,6 +45,12 @@ public class ClassReference : CompositeType, IMemberReference
 		}
 		set
 		{
+			Name = string.Empty;
+			Namespace = string.Empty;
+
+			if (string.IsNullOrEmpty(value))
+				return;
+
 			value = value.Replace(InternalNamespaceSeparator, NamespaceSeparator);
 			var items = value.Split(NamespaceSeparator);
 			if (items.Length > 0)
@@ -53,11 +58,6 @@ public class ClassReference : CompositeType, IMemberReference
 				Name = items[items.Length - 1];
 				Array.Resize(ref items, items.Length - 1);
 				Namespace = string.Join(NamespaceSeparator.ToString(CultureInfo.InvariantCulture), items);
-			}
-			else
-			{
-				Name = string.Empty;
-				Namespace = string.Empty;
 			}
 		}
 	}
@@ -67,20 +67,15 @@ public class ClassReference : CompositeType, IMemberReference
 		return Fullname;
 	}
 
-	public ClassReference()
+	public ClassReference(string fullname)
 	{
 		TypeDescriptor = TypeDescriptors.FullyQualifiedName;
-	}
-
-	public ClassReference(string fullname) : this()
-	{
 		Fullname = fullname;
 	}
 
 	public bool Equals(ClassReference other)
 	{
-		return base.Equals(other)
-		       && Fullname == other.Fullname;
+		return base.Equals(other) && Fullname == other.Fullname;
 	}
 
 	public override bool Equals(TypeReference other)

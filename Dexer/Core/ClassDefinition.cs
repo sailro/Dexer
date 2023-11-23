@@ -19,10 +19,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Collections.Generic;
 using System.Globalization;
 using Dexer.Metadata;
-using System.Linq;
 using Dexer.IO;
 using Dexer.IO.Collectors;
 
@@ -31,31 +29,32 @@ namespace Dexer.Core;
 public class ClassDefinition : ClassReference, IMemberDefinition
 {
 	public AccessFlags AccessFlags { get; set; }
-	public ClassReference SuperClass { get; set; }
+	public ClassReference? SuperClass { get; set; }
 	public List<ClassDefinition> InnerClasses { get; set; }
 	public List<ClassReference> Interfaces { get; set; }
-	public string SourceFile { get; set; }
+	public string? SourceFile { get; set; }
 	public List<Annotation> Annotations { get; set; }
 	public List<FieldDefinition> Fields { get; set; }
 	public List<MethodDefinition> Methods { get; set; }
-	public ClassDefinition Owner { get; set; }
 
-	internal ClassDefinition()
+#pragma warning disable CS8766 // Nullability of reference types in return type doesn't match implicitly implemented member (possibly because of nullability attributes).
+	public ClassDefinition? Owner { get; set; }
+#pragma warning restore CS8766 // Nullability of reference types in return type doesn't match implicitly implemented member (possibly because of nullability attributes).
+
+	internal ClassDefinition(string fullname) : base(fullname)
 	{
 		TypeDescriptor = TypeDescriptors.FullyQualifiedName;
 
-		Interfaces = new List<ClassReference>();
-		Annotations = new List<Annotation>();
-		Fields = new List<FieldDefinition>();
-		Methods = new List<MethodDefinition>();
-		InnerClasses = new List<ClassDefinition>();
+		Interfaces = [];
+		Annotations = [];
+		Fields = [];
+		Methods = [];
+		InnerClasses = [];
+		Fullname = fullname;
 	}
 
-	internal ClassDefinition(ClassReference cref) : this()
+	internal ClassDefinition(ClassReference cref) : this(cref.Fullname)
 	{
-		Fullname = cref.Fullname;
-		Namespace = cref.Namespace;
-		Name = cref.Name;
 	}
 
 	public IEnumerable<MethodDefinition> GetMethods(string name)

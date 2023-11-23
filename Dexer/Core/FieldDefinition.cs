@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,34 +19,24 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Collections.Generic;
-
 namespace Dexer.Core;
 
-public class FieldDefinition : FieldReference, IMemberDefinition
+public class FieldDefinition(ClassDefinition owner, TypeReference type, string name) : FieldReference(owner, type, name), IMemberDefinition
 {
 	public AccessFlags AccessFlags { get; set; }
 
 	public new ClassDefinition Owner
 	{
-		get => base.Owner as ClassDefinition;
+		get => (ClassDefinition)base.Owner;
 		set => base.Owner = value;
 	}
 
-	public List<Annotation> Annotations { get; set; }
-	public object Value { get; set; }
-
-	public FieldDefinition()
-	{
-		Annotations = new List<Annotation>();
-	}
+	public List<Annotation> Annotations { get; set; } = [];
+	public object? Value { get; set; }
 
 	// for prefetching
-	internal FieldDefinition(FieldReference fref) : this()
+	internal FieldDefinition(FieldReference fref) : this((ClassDefinition) fref.Owner, fref.Type, fref.Name)
 	{
-		Owner = fref.Owner as ClassDefinition;
-		Type = fref.Type;
-		Name = fref.Name;
 	}
 
 	// ReSharper disable ValueParameterNotUsed

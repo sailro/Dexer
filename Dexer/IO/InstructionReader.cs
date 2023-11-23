@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,9 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Dexer.Core;
 using Dexer.Instructions;
 
@@ -30,57 +27,56 @@ namespace Dexer.IO;
 internal class InstructionReader
 {
 	private MethodDefinition MethodDefinition { get; }
-	private List<Action> LazyInstructionsSetters { get; }
+	private List<Action> LazyInstructionsSetters { get; } = [];
 	private Dex Dex { get; }
 
-	internal int[] Codes { get; set; }
-	private int[] Lower { get; set; }
-	private int[] Upper { get; set; }
-	private int _ip;
+	internal int[] Codes { get; set; } = [];
+	private int[] Lower { get; set; } = [];
+	private int[] Upper { get; set; } = [];
+	private int _ip = 0;
 	private uint InstructionsSize { get; set; }
 
-	internal Dictionary<int, Instruction> Lookup; // instructions by starting offset
-	internal Dictionary<int, Instruction> LookupLast; // instructions by ending offset
+	internal Dictionary<int, Instruction> Lookup { get; } = []; // instructions by starting offset
+	internal Dictionary<int, Instruction> LookupLast { get; } = []; // instructions by ending offset
 
 	public InstructionReader(Dex dex, MethodDefinition mdef)
 	{
+		if (mdef.Body == null)
+			throw new ArgumentNullException(nameof(mdef.Body));
+
 		Dex = dex;
 		MethodDefinition = mdef;
-		Lookup = new Dictionary<int, Instruction>();
-		LookupLast = new Dictionary<int, Instruction>();
-		LazyInstructionsSetters = new List<Action>();
-		_ip = 0;
 	}
 
 	private void ReadvA(Instruction ins)
 	{
-		ins.Registers.Add(MethodDefinition.Body.Registers[Upper[_ip] & 0xF]);
+		ins.Registers.Add(MethodDefinition.Body!.Registers[Upper[_ip] & 0xF]);
 	}
 
 	private void ReadvAA(Instruction ins)
 	{
-		ins.Registers.Add(MethodDefinition.Body.Registers[Upper[_ip++]]);
+		ins.Registers.Add(MethodDefinition.Body!.Registers[Upper[_ip++]]);
 	}
 
 	private void ReadvAAAA(Instruction ins)
 	{
 		_ip++;
-		ins.Registers.Add(MethodDefinition.Body.Registers[Codes[_ip++]]);
+		ins.Registers.Add(MethodDefinition.Body!.Registers[Codes[_ip++]]);
 	}
 
 	private void ReadvB(Instruction ins)
 	{
-		ins.Registers.Add(MethodDefinition.Body.Registers[Upper[_ip++] >> 4]);
+		ins.Registers.Add(MethodDefinition.Body!.Registers[Upper[_ip++] >> 4]);
 	}
 
 	private void ReadvBB(Instruction ins)
 	{
-		ins.Registers.Add(MethodDefinition.Body.Registers[Lower[_ip]]);
+		ins.Registers.Add(MethodDefinition.Body!.Registers[Lower[_ip]]);
 	}
 
 	private void ReadvBBBB(Instruction ins)
 	{
-		ins.Registers.Add(MethodDefinition.Body.Registers[Codes[_ip++]]);
+		ins.Registers.Add(MethodDefinition.Body!.Registers[Codes[_ip++]]);
 	}
 
 	private void ReadvCC(Instruction ins)
@@ -133,7 +129,7 @@ internal class InstructionReader
 
 	public void ReadFrom(BinaryReader reader)
 	{
-		var registers = MethodDefinition.Body.Registers;
+		var registers = MethodDefinition.Body!.Registers;
 		InstructionsSize = reader.ReadUInt32();
 
 		Codes = new int[InstructionsSize];
@@ -553,7 +549,7 @@ internal class InstructionReader
 	{
 		var registerCount = registerMask >> 20;
 		for (var i = 0; i < registerCount; i++)
-			ins.Registers.Add(MethodDefinition.Body.Registers[(registerMask >> (i * 4)) & 0xF]);
+			ins.Registers.Add(MethodDefinition.Body!.Registers[(registerMask >> (i * 4)) & 0xF]);
 	}
 
 	// ReSharper disable UnusedParameter.Local
@@ -652,6 +648,6 @@ internal class InstructionReader
 		if (offset - baseOffset != (elementsize * elementcount + 1) / 2 + 4)
 			throw new MalformedException("Unexpected Fill-array-data blocksize");
 
-		return items.ToArray();
+		return [.. items];
 	}
 }

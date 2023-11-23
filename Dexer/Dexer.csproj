@@ -2,25 +2,18 @@
   
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>10.0</LangVersion>
-	
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	
-    <Authors>Sebastien Lebreton</Authors>
-    <RepositoryUrl>https://github.com/sailro/dexer</RepositoryUrl>
-    <VersionPrefix>0.8.0</VersionPrefix>
-    <Copyright>Sebastien Lebreton</Copyright>
-    <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageTags>DEX Android Dalvik</PackageTags>
-    <Description>Dexer is a .NET library to read, manipulate and write Android/Dalvik DEX files</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/sailro/dexer</PackageProjectUrl>	
+    <PackageReadmeFile>README.md</PackageReadmeFile>	
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>  
   
   <ItemGroup>

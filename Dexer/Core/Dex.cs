@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Collections.Generic;
-using System.IO;
 using Dexer.IO;
 
 namespace Dexer.Core;
@@ -86,7 +84,7 @@ public class Dex
 	public void Write(Stream stream, bool bufferize)
 	{
 		var deststream = stream;
-		MemoryStream memorystream = null;
+		MemoryStream? memorystream = null;
 
 		if (bufferize)
 		{
@@ -99,7 +97,7 @@ public class Dex
 		var writer = new DexWriter(this);
 		writer.WriteTo(binaryWriter);
 
-		if (!bufferize)
+		if (memorystream == null)
 			return;
 
 		memorystream.Position = 0;
@@ -115,21 +113,21 @@ public class Dex
 
 	public Dex()
 	{
-		Classes = new List<ClassDefinition>();
-		TypeReferences = new List<TypeReference>();
-		FieldReferences = new List<FieldReference>();
-		MethodReferences = new List<MethodReference>();
+		Classes = [];
+		TypeReferences = [];
+		FieldReferences = [];
+		MethodReferences = [];
 
-		Prototypes = new List<Prototype>();
-		Strings = new List<string>();
+		Prototypes = [];
+		Strings = [];
 	}
 
-	public ClassDefinition GetClass(string fullname)
+	public ClassDefinition? GetClass(string fullname)
 	{
 		return GetClass(fullname, Classes);
 	}
 
-	internal ClassDefinition GetClass(string fullname, List<ClassDefinition> container)
+	internal ClassDefinition? GetClass(string fullname, List<ClassDefinition> container)
 	{
 		foreach (var item in container)
 		{

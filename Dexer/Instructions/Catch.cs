@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,16 +21,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Globalization;
 using Dexer.Core;
-using System;
 using System.Text;
 using Dexer.Metadata;
 
 namespace Dexer.Instructions;
 
-public class Catch : ICloneable, IEquatable<Catch>
+public class Catch(TypeReference type, Instruction instruction) : ICloneable, IEquatable<Catch>
 {
-	public TypeReference Type { get; set; }
-	public Instruction Instruction { get; set; }
+	public TypeReference Type { get; set; } = type;
+	public Instruction Instruction { get; set; } = instruction;
 
 	internal Catch Clone()
 	{
@@ -39,7 +38,7 @@ public class Catch : ICloneable, IEquatable<Catch>
 
 	object ICloneable.Clone()
 	{
-		var result = new Catch {Type = Type, Instruction = Instruction};
+		var result = new Catch(Type, Instruction);
 		return result;
 	}
 

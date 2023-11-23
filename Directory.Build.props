@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+
+    <Authors>Sebastien Lebreton</Authors>
+    <RepositoryUrl>https://github.com/sailro/dexer</RepositoryUrl>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <Copyright>Sebastien Lebreton</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+
+    <PackageTags>DEX Android Dalvik</PackageTags>
+    <Description>Dexer is a .NET library to read, manipulate and write Android/Dalvik DEX files</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/sailro/dexer</PackageProjectUrl>	
+  </PropertyGroup>
+</Project>

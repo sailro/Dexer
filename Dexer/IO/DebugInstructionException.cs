@@ -1,4 +1,4 @@
-/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,12 +23,7 @@ using Dexer.Instructions;
 
 namespace Dexer.IO;
 
-public class DebugInstructionException : MalformedException
+public class DebugInstructionException(DebugInstruction instruction, string message) : MalformedException(message)
 {
-	public DebugInstruction Instruction { get; set; }
-
-	public DebugInstructionException(DebugInstruction instruction, string message) : base(message)
-	{
-		Instruction = instruction;
-	}
+	public DebugInstruction Instruction { get; set; } = instruction;
 }

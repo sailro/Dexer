@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,12 +19,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.IO;
 using Dexer.Extensions;
 
 namespace Dexer.IO.Markers;
 
-internal class SignatureMarker : Marker<byte[]>
+internal class SignatureMarker(BinaryWriter writer) : Marker<byte[]>(writer)
 {
 	public override byte[] Value
 	{
@@ -43,6 +42,4 @@ internal class SignatureMarker : Marker<byte[]>
 	{
 		Writer.Write(new byte[DexConsts.SignatureSize]);
 	}
-
-	public SignatureMarker(BinaryWriter writer) : base(writer) { }
 }

@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -39,17 +37,13 @@ public abstract class BaseTest
 		return Directory.GetFiles(basePath, "*.dex");
 	}
 
-	public TestContext TestContext
-	{
-		get;
-		set;
-	}
+	public required TestContext TestContext { get; set; }
 
-	public void DumpList<T>(string filename, List<T> list)
+	public static void DumpList<T>(string filename, List<T> list)
 	{
 		var output = new StringBuilder();
 		foreach (var item in list)
-			output.AppendLine(item.ToString());
+			output.AppendLine(item?.ToString());
 
 		File.WriteAllText(filename, output.ToString());
 	}

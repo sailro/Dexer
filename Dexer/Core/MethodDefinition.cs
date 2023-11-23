@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,42 +19,26 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Collections.Generic;
 using Dexer.Instructions;
 
 namespace Dexer.Core;
 
-public class MethodDefinition : MethodReference, IMemberDefinition
+public class MethodDefinition(ClassDefinition owner, string name, Prototype prototype) : MethodReference(owner, name, prototype), IMemberDefinition
 {
 	public AccessFlags AccessFlags { get; set; }
 
 	public new ClassDefinition Owner
 	{
-		get => base.Owner as ClassDefinition;
+		get => (ClassDefinition)base.Owner;
 		set => base.Owner = value;
 	}
 
-	public List<Annotation> Annotations { get; set; }
-	public MethodBody Body { get; set; }
-
-	public MethodDefinition()
-	{
-		Annotations = new List<Annotation>();
-	}
+	public List<Annotation> Annotations { get; set; } = [];
+	public MethodBody? Body { get; set; }
 
 	// for prefetching
-	internal MethodDefinition(MethodReference mref) : this()
+	internal MethodDefinition(MethodReference mref) : this((ClassDefinition)mref.Owner, mref.Name, mref.Prototype)
 	{
-		Owner = mref.Owner as ClassDefinition;
-		Name = mref.Name;
-		Prototype = mref.Prototype;
-	}
-
-	public MethodDefinition(ClassDefinition owner, string name, Prototype prototype) : this()
-	{
-		Owner = owner;
-		Name = name;
-		Prototype = prototype;
 	}
 
 	public bool IsVirtual

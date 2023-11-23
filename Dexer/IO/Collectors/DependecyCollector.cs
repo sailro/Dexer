@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -40,7 +40,10 @@ internal class DependencyCollector : BaseCollector<ClassDefinition>
 	{
 		Collect(@class.InnerClasses);
 		Collect(@class.Interfaces);
-		Collect(@class.SuperClass);
+
+		if (@class.SuperClass != null)
+			Collect(@class.SuperClass);
+
 		Collect(@class as ClassReference);
 	}
 }

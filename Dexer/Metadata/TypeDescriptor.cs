@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -29,7 +29,7 @@ public class TypeDescriptor
 	internal static TypeReference Allocate(string tdString)
 	{
 		if (string.IsNullOrEmpty(tdString))
-			return null;
+			throw new ArgumentNullException(nameof(tdString));
 
 		var prefix = tdString[0];
 		var td = (TypeDescriptors)prefix;
@@ -45,9 +45,11 @@ public class TypeDescriptor
 			TypeDescriptors.Long => PrimitiveType.Long,
 			TypeDescriptors.Short => PrimitiveType.Short,
 			TypeDescriptors.Void => PrimitiveType.Void,
-			TypeDescriptors.Array => new ArrayType(),
-			TypeDescriptors.FullyQualifiedName => new ClassReference(),
-			_ => null
+
+			TypeDescriptors.Array => new ArrayType(null!),                   // we pass null temporarily, TypeDescriptor.Fill will initialize the ElementType shortly
+			TypeDescriptors.FullyQualifiedName => new ClassReference(null!), // we pass null temporarily, TypeDescriptor.Fill will initialize the Fullname shortly
+
+			_ => throw new ArgumentException(nameof(tdString))
 		};
 	}
 

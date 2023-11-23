@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,9 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Dexer.Core;
 using Dexer.Instructions;
 
@@ -33,7 +31,7 @@ internal class BaseCollector<T>
 
 	public BaseCollector()
 	{
-		Items = new Dictionary<T, int>();
+		Items = [];
 	}
 
 	public List<T> ToList()
@@ -145,7 +143,10 @@ internal class BaseCollector<T>
 		Collect(@class.Interfaces);
 		Collect(@class.Methods);
 		Collect(@class.SourceFile);
-		Collect(@class.SuperClass);
+
+		if (@class.SuperClass != null)
+			Collect(@class.SuperClass);
+
 		Collect(@class as ClassReference);
 	}
 
@@ -278,7 +279,7 @@ internal class BaseCollector<T>
 		Collect(instruction.Operands);
 	}
 
-	public virtual void Collect(object obj)
+	public virtual void Collect(object? obj)
 	{
 		switch (obj)
 		{
@@ -320,7 +321,7 @@ internal class BaseCollector<T>
 		}
 	}
 
-	public virtual void Collect(string str)
+	public virtual void Collect(string? str)
 	{
 	}
 }

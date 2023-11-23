@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
-using System.IO;
 using Dexer.IO.Markers;
 
 namespace Dexer.Extensions;
@@ -193,6 +191,7 @@ public static class BinaryWriterExtensions
 		return (n >> s) + (2 << ~s);
 	}
 
+#pragma warning disable IDE0060
 	public static int GetByteCountForSignedPackedNumber(this BinaryWriter writer, long value)
 	{
 		var requiredBits = 65 - NumberOfLeadingZeros(value ^ (value >> 63));
@@ -211,6 +210,7 @@ public static class BinaryWriterExtensions
 
 		return result;
 	}
+#pragma warning restore IDE0060
 
 	public static void WritePackedSignedNumber(this BinaryWriter writer, long value)
 	{

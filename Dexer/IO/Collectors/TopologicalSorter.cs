@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,11 +19,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Dexer.IO.Collectors;
+
 /* Taken from (great thanks)
  * http://stackoverflow.com/questions/1982592/topological-sorting-using-linq
  */
@@ -33,7 +30,7 @@ internal interface IPartialComparer<in T>
 	int? PartialCompare(T x, T y);
 }
 
-internal class ReferenceEqualityComparer<T> : IEqualityComparer<T>
+internal class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : notnull
 {
 	public bool Equals(T x, T y)
 	{
@@ -48,7 +45,7 @@ internal class ReferenceEqualityComparer<T> : IEqualityComparer<T>
 
 internal class TopologicalSorter
 {
-	private class DepthFirstSearch<TElement, TKey>
+	private class DepthFirstSearch<TElement, TKey> where TElement : notnull
 	{
 		readonly IEnumerable<TElement> _elements;
 		readonly IPartialComparer<TKey> _comparer;
@@ -71,7 +68,7 @@ internal class TopologicalSorter
 				selector,
 				referenceComparer
 			);
-			_sorted = new List<TElement>();
+			_sorted = [];
 		}
 
 		public IEnumerable<TElement> VisitAll()
@@ -102,10 +99,7 @@ internal class TopologicalSorter
 		}
 	}
 
-	public IEnumerable<TElement> TopologicalSort<TElement>(
-		IList<TElement> elements,
-		IPartialComparer<TElement> comparer
-	)
+	public IEnumerable<TElement> TopologicalSort<TElement>(IList<TElement> elements, IPartialComparer<TElement> comparer) where TElement : notnull
 	{
 		var search = new DepthFirstSearch<TElement, TElement>(
 			elements,
@@ -115,10 +109,7 @@ internal class TopologicalSorter
 		return search.VisitAll();
 	}
 
-	public IEnumerable<TElement> TopologicalSort<TElement, TKey>(
-		IList<TElement> elements,
-		Func<TElement, TKey> selector, IPartialComparer<TKey> comparer
-	)
+	public IEnumerable<TElement> TopologicalSort<TElement, TKey>(IList<TElement> elements, Func<TElement, TKey> selector, IPartialComparer<TKey> comparer) where TElement : notnull
 	{
 		var search = new DepthFirstSearch<TElement, TKey>(
 			elements,

@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,29 +19,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System;
 using Dexer.Metadata;
 
 namespace Dexer.Core;
 
-public class Prototype : ICloneable, IEquatable<Prototype>
+public class Prototype(TypeReference returntype, params Parameter[] parameters) : ICloneable, IEquatable<Prototype>
 {
-	public TypeReference ReturnType { get; set; }
-	public List<Parameter> Parameters { get; set; }
-
-	public Prototype()
-	{
-		Parameters = new List<Parameter>();
-	}
-
-	public Prototype(TypeReference returntype, params Parameter[] parameters) : this()
-	{
-		ReturnType = returntype;
-		Parameters = new List<Parameter>(parameters);
-	}
+	public TypeReference ReturnType { get; set; } = returntype;
+	public List<Parameter> Parameters { get; set; } = new List<Parameter>(parameters);
 
 	public bool ContainsAnnotation()
 	{
@@ -73,7 +59,7 @@ public class Prototype : ICloneable, IEquatable<Prototype>
 
 	object ICloneable.Clone()
 	{
-		var result = new Prototype {ReturnType = ReturnType};
+		var result = new Prototype(ReturnType);
 
 		foreach (var p in Parameters)
 		{

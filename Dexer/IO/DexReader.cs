@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,10 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using Dexer.Core;
 using Dexer.Extensions;
 using Dexer.Instructions;
@@ -30,18 +27,11 @@ using Dexer.Metadata;
 
 namespace Dexer.IO;
 
-public class DexReader
+public class DexReader(Dex dex)
 {
-	private Dex Dex { get; }
-	internal Map Map { get; set; }
-	internal DexHeader Header { get; set; }
-
-	public DexReader(Dex dex)
-	{
-		Dex = dex;
-		Map = new Map();
-		Header = new DexHeader();
-	}
+	private Dex Dex { get; } = dex;
+	internal Map Map { get; } = [];
+	internal DexHeader Header { get; } = new DexHeader();
 
 	#region Header
 
@@ -309,7 +299,7 @@ public class DexReader
 
 	private Annotation ReadAnnotation(BinaryReader reader, uint annotationOffset)
 	{
-		Annotation annotation = null;
+		Annotation annotation = default!;
 		reader.PreserveCurrentPosition(annotationOffset, () =>
 		{
 			var visibility = reader.ReadByte();
@@ -324,14 +314,12 @@ public class DexReader
 		var typeIndex = (int)reader.ReadULEB128();
 		var elementSize = (int)reader.ReadULEB128();
 
-		var annotation = new Annotation {Type = (ClassReference)Dex.TypeReferences[typeIndex]};
+		var annotation = new Annotation((ClassReference)Dex.TypeReferences[typeIndex]);
 
 		for (var i = 0; i < elementSize; i++)
 		{
-			var argument = new AnnotationArgument();
 			var nameIndex = (int)reader.ReadULEB128();
-			argument.Name = Dex.Strings[nameIndex];
-			argument.Value = ReadValue(reader);
+			var argument = new AnnotationArgument(Dex.Strings[nameIndex], ReadValue(reader));
 			annotation.Arguments.Add(argument);
 		}
 
@@ -354,7 +342,7 @@ public class DexReader
 				var returnTypeIndex = reader.ReadInt32();
 				var parametersOffset = reader.ReadUInt32();
 
-				var prototype = new Prototype {ReturnType = Dex.TypeReferences[returnTypeIndex]};
+				var prototype = new Prototype(Dex.TypeReferences[returnTypeIndex]);
 
 				if (parametersOffset > 0)
 				{
@@ -373,9 +361,8 @@ public class DexReader
 			var typecount = reader.ReadUInt32();
 			for (var j = 0; j < typecount; j++)
 			{
-				var parameter = new Parameter();
 				var typeIndex = reader.ReadUInt16();
-				parameter.Type = Dex.TypeReferences[typeIndex];
+				var parameter = new Parameter(Dex.TypeReferences[typeIndex]);
 				prototype.Parameters.Add(parameter);
 			}
 		});
@@ -459,48 +446,31 @@ public class DexReader
 		return array.ToArray();
 	}
 
-	private object ReadValue(BinaryReader reader)
+	private object? ReadValue(BinaryReader reader)
 	{
 		int data = reader.ReadByte();
 		var valueFormat = data & 0x1F;
 		var valueArgument = data >> 5;
 
-		switch ((ValueFormats)valueFormat)
+		return (ValueFormats)valueFormat switch
 		{
-			case ValueFormats.Byte:
-				return (sbyte)reader.ReadSignedPackedNumber(valueArgument + 1);
-			case ValueFormats.Short:
-				return (short)reader.ReadSignedPackedNumber(valueArgument + 1);
-			case ValueFormats.Char:
-				return (char)reader.ReadUnsignedPackedNumber(valueArgument + 1);
-			case ValueFormats.Int:
-				return (int)reader.ReadSignedPackedNumber(valueArgument + 1);
-			case ValueFormats.Long:
-				return reader.ReadSignedPackedNumber(valueArgument + 1);
-			case ValueFormats.Float:
-				return BitConverter.ToSingle(BitConverter.GetBytes((int)reader.ReadSignedPackedNumber(valueArgument + 1)), 0);
-			case ValueFormats.Double:
-				return BitConverter.Int64BitsToDouble(reader.ReadSignedPackedNumber(valueArgument + 1));
-			case ValueFormats.String:
-				return Dex.Strings[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)];
-			case ValueFormats.Type:
-				return Dex.TypeReferences[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)];
-			case ValueFormats.Field:
-			case ValueFormats.Enum:
-				return Dex.FieldReferences[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)];
-			case ValueFormats.Method:
-				return Dex.MethodReferences[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)];
-			case ValueFormats.Array:
-				return ReadValues(reader);
-			case ValueFormats.Annotation:
-				return ReadEncodedAnnotation(reader);
-			case ValueFormats.Null:
-				return null;
-			case ValueFormats.Boolean:
-				return valueArgument != 0;
-			default:
-				throw new ArgumentException();
-		}
+			ValueFormats.Byte => (sbyte)reader.ReadSignedPackedNumber(valueArgument + 1),
+			ValueFormats.Short => (short)reader.ReadSignedPackedNumber(valueArgument + 1),
+			ValueFormats.Char => (char)reader.ReadUnsignedPackedNumber(valueArgument + 1),
+			ValueFormats.Int => (int)reader.ReadSignedPackedNumber(valueArgument + 1),
+			ValueFormats.Long => reader.ReadSignedPackedNumber(valueArgument + 1),
+			ValueFormats.Float => BitConverter.ToSingle(BitConverter.GetBytes((int)reader.ReadSignedPackedNumber(valueArgument + 1)), 0),
+			ValueFormats.Double => BitConverter.Int64BitsToDouble(reader.ReadSignedPackedNumber(valueArgument + 1)),
+			ValueFormats.String => Dex.Strings[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)],
+			ValueFormats.Type => Dex.TypeReferences[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)],
+			ValueFormats.Field or ValueFormats.Enum => Dex.FieldReferences[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)],
+			ValueFormats.Method => Dex.MethodReferences[(int)reader.ReadUnsignedPackedNumber(valueArgument + 1)],
+			ValueFormats.Array => ReadValues(reader),
+			ValueFormats.Annotation => ReadEncodedAnnotation(reader),
+			ValueFormats.Null => null,
+			ValueFormats.Boolean => valueArgument != 0,
+			_ => throw new ArgumentException(),
+		};
 	}
 
 	private void ReadFieldDefinitions(BinaryReader reader, ClassDefinition classDefinition, uint fieldcount)
@@ -568,6 +538,9 @@ public class DexReader
 
 	private void ReadDebugInfo(BinaryReader reader, MethodDefinition mdef, uint debugOffset)
 	{
+		if (mdef.Body == null)
+			return;
+
 		reader.PreserveCurrentPosition(debugOffset, () =>
 		{
 			var debugInfo = new DebugInfo(mdef.Body);
@@ -580,7 +553,7 @@ public class DexReader
 			for (var i = 0; i < parametersSize; i++)
 			{
 				var index = reader.ReadULEB128P1();
-				string name = null;
+				string? name = null;
 				if (index != DexConsts.NoIndex && index >= 0)
 					name = Dex.Strings[(int)index];
 				debugInfo.Parameters.Add(name);
@@ -593,7 +566,7 @@ public class DexReader
 
 				uint registerIndex;
 				long nameIndex;
-				string name;
+				string? name;
 
 				switch (ins.OpCode)
 				{
@@ -637,7 +610,7 @@ public class DexReader
 						ins.Operands.Add(name);
 
 						var typeIndex = reader.ReadULEB128P1();
-						TypeReference type = null;
+						TypeReference? type = null;
 						if (typeIndex != DexConsts.NoIndex && typeIndex >= 0)
 							type = Dex.TypeReferences[(int)typeIndex];
 						ins.Operands.Add(type);
@@ -645,7 +618,7 @@ public class DexReader
 						if (isExtended)
 						{
 							var signatureIndex = reader.ReadULEB128P1();
-							string signature = null;
+							string? signature = null;
 							if (signatureIndex != DexConsts.NoIndex && signatureIndex >= 0)
 								signature = Dex.Strings[(int)signatureIndex];
 							ins.Operands.Add(signature);
@@ -667,6 +640,9 @@ public class DexReader
 
 	private void ReadExceptionHandlers(BinaryReader reader, MethodDefinition mdef, InstructionReader instructionReader, ushort triesSize)
 	{
+		if (mdef.Body == null)
+			return;
+
 		var exceptionLookup = new Dictionary<uint, List<ExceptionHandler>>();
 		for (var i = 0; i < triesSize; i++)
 		{
@@ -675,17 +651,15 @@ public class DexReader
 			var endOffset = startOffset + insCount - 1;
 			uint handlerOffset = reader.ReadUInt16();
 
-			var ehandler = new ExceptionHandler();
-			mdef.Body.Exceptions.Add(ehandler);
 			if (!exceptionLookup.ContainsKey(handlerOffset))
 			{
-				exceptionLookup.Add(handlerOffset, new List<ExceptionHandler>());
+				exceptionLookup.Add(handlerOffset, []);
 			}
 
-			exceptionLookup[handlerOffset].Add(ehandler);
-			ehandler.TryStart = instructionReader.Lookup[(int)startOffset];
 			// The last code unit covered (inclusive) is start_addr + insn_count - 1
-			ehandler.TryEnd = instructionReader.LookupLast[(int)endOffset];
+			var ehandler = new ExceptionHandler(instructionReader.Lookup[(int)startOffset], instructionReader.LookupLast[(int)endOffset]);
+			mdef.Body.Exceptions.Add(ehandler);
+			exceptionLookup[handlerOffset].Add(ehandler);
 		}
 
 		var baseOffset = reader.BaseStream.Position;
@@ -701,7 +675,7 @@ public class DexReader
 			{
 				var typeIndex = reader.ReadULEB128();
 				var offset = reader.ReadULEB128();
-				var @catch = new Catch {Type = Dex.TypeReferences[(int)typeIndex], Instruction = instructionReader.Lookup[(int)offset]};
+				var @catch = new Catch(Dex.TypeReferences[(int)typeIndex], instructionReader.Lookup[(int)offset]);
 
 				// As catch handler can be used in several tries, let's clone the catch
 				foreach (var ehandler in exceptionLookup[(uint)itemoffset])
@@ -747,13 +721,11 @@ public class DexReader
 				int prototypeIndex = reader.ReadUInt16();
 				int nameIndex = reader.ReadInt32();
 
-				var mref = new MethodReference
-				{
-					Owner = (CompositeType)Dex.TypeReferences[classIndex],
-					// Clone the prototype so we can annotate & update it easily
-					Prototype = Dex.Prototypes[prototypeIndex].Clone(),
-					Name = Dex.Strings[nameIndex]
-				};
+				var mref = new MethodReference(
+					(CompositeType)Dex.TypeReferences[classIndex],
+					Dex.Strings[nameIndex],
+					Dex.Prototypes[prototypeIndex].Clone() // Clone the prototype so we can annotate & update it easily
+				);
 
 				Dex.MethodReferences.Add(mref);
 			}
@@ -770,7 +742,7 @@ public class DexReader
 				var typeIndex = reader.ReadUInt16();
 				var nameIndex = reader.ReadInt32();
 
-				var fref = new FieldReference {Owner = (ClassReference)Dex.TypeReferences[classIndex], Type = Dex.TypeReferences[typeIndex], Name = Dex.Strings[nameIndex]};
+				var fref = new FieldReference((ClassReference)Dex.TypeReferences[classIndex], Dex.TypeReferences[typeIndex], Dex.Strings[nameIndex]);
 
 				Dex.FieldReferences.Add(fref);
 			}

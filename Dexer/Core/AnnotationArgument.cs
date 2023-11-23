@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,17 +19,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System.Linq;
 using Dexer.Metadata;
 using System.Text;
-using System;
 
 namespace Dexer.Core;
 
-public class AnnotationArgument : IEquatable<AnnotationArgument>
+public class AnnotationArgument(string name, object? value) : IEquatable<AnnotationArgument>
 {
-	public string Name { get; set; }
-	public object Value { get; set; }
+	public string Name { get; } = name;
+	public object? Value { get; } = value;
 
 	public override string ToString()
 	{
@@ -47,7 +45,7 @@ public class AnnotationArgument : IEquatable<AnnotationArgument>
 
 		return Name.Equals(other.Name)
 		       && ValueFormat.GetFormat(Value).Equals(ValueFormat.GetFormat(other.Value))
-		       && (ValueFormat.GetFormat(Value) == ValueFormats.Array && ArrayEquals(Value as Array, other.Value as Array) || Equals(Value, other.Value));
+		       && (ValueFormat.GetFormat(Value) == ValueFormats.Array && ArrayEquals((Array)Value!, (Array)other.Value!) || Equals(Value, other.Value));
 	}
 
 	internal static bool ArrayEquals(Array array1, Array array2)

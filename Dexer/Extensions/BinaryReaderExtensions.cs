@@ -1,4 +1,4 @@
-﻿/* Dexer Copyright (c) 2010-2022 Sebastien Lebreton
+﻿/* Dexer Copyright (c) 2010-2023 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -18,9 +18,6 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
-
-using System;
-using System.IO;
 
 namespace Dexer.Extensions;
 
@@ -83,28 +80,13 @@ public static class BinaryReaderExtensions
 		for (int j = 0, jLength = chars.Length; j < jLength; j++)
 		{
 			int data = reader.ReadByte();
-			switch (data >> 4)
+			chars[j] = (data >> 4) switch
 			{
-				case 0:
-				case 1:
-				case 2:
-				case 3:
-				case 4:
-				case 5:
-				case 6:
-				case 7:
-					chars[j] = (char)data;
-					break;
-				case 12:
-				case 13:
-					chars[j] = (char)(((data & 0x1F) << 6) | (reader.ReadByte() & 0x3F));
-					break;
-				case 14:
-					chars[j] = (char)(((data & 0x0F) << 12) | ((reader.ReadByte() & 0x3F) << 6) | (reader.ReadByte() & 0x3F));
-					break;
-				default:
-					throw new ArgumentException("illegal MUTF8 byte");
-			}
+				0 or 1 or 2 or 3 or 4 or 5 or 6 or 7 => (char)data,
+				12 or 13 => (char)(((data & 0x1F) << 6) | (reader.ReadByte() & 0x3F)),
+				14 => (char)(((data & 0x0F) << 12) | ((reader.ReadByte() & 0x3F) << 6) | (reader.ReadByte() & 0x3F)),
+				_ => throw new ArgumentException("illegal MUTF8 byte"),
+			};
 		}
 
 		reader.ReadByte(); // 0 padded;
