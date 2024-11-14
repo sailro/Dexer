@@ -61,15 +61,15 @@ public class InstructionTest : BaseCollectorTest
 			}
 		}
 
-		bool IsPartial = false;
-		foreach (OpCodes opcode in Enum.GetValues(typeof(OpCodes)))
+		var isPartial = false;
+		foreach (var opcode in Enum.GetValues<OpCodes>())
 			if (!coverage.ContainsKey(opcode))
 			{
-				IsPartial = true;
+				isPartial = true;
 				TestContext.WriteLine("OpCode {0} was not covered", opcode);
 			}
 
-		if (IsPartial)
-			TestContext.WriteLine("Some OpCode(s) were not covered ({0:P} coverage)", (double)coverage.Count / Enum.GetNames(typeof(OpCodes)).Length);
+		if (isPartial)
+			TestContext.WriteLine("Some OpCode(s) were not covered ({0:P} coverage)", (double)coverage.Count / Enum.GetNames<OpCodes>().Length);
 	}
 }

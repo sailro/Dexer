@@ -276,7 +276,7 @@ public class DexReader(Dex dex)
 			for (uint i = 0; i < size; i++)
 			{
 				var offset = reader.ReadUInt32();
-				result.Add(offset == 0 ? new List<Annotation>(0) : ReadAnnotationSet(reader, offset));
+				result.Add(offset == 0 ? [] : ReadAnnotationSet(reader, offset));
 			}
 		});
 		return result;
