@@ -22,7 +22,7 @@ jobs:
         dotnet-version: 9.0.x
     
     - name: Build
-      run: dotnet build -c Debug Dexer.sln
+      run: dotnet build -c Debug Dexer.slnx
 
     - name: Test
-      run: dotnet test --no-build -c Debug Dexer.sln
+      run: dotnet test --no-build -c Debug Dexer.slnx
