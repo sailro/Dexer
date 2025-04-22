@@ -3,14 +3,14 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <GlobalPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.11.0" />
-    <GlobalPackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.12.19" />
+    <GlobalPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.13.0" />
+    <GlobalPackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.13.61" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-    <PackageVersion Include="MSTest.TestAdapter" Version="3.6.3" />
-    <PackageVersion Include="MSTest.TestFramework" Version="3.6.3" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.8.3" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.8.3" />
     <PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.3" />
   </ItemGroup>
 </Project>
